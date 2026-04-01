@@ -1,22 +1,25 @@
 {
-  "name": "AI Tool Hub",
-  "short_name": "AI Tools",
-  "description": "一站式AI工具聚合导航平台",
-  "version": "2.0",
-  "start_url": "/ai-tool-hub/",
+  "name": "AI Tool Hub v3.0",
+  "short_name": "AI Tool Hub",
+  "description": "一站式AI工具聚合导航平台，支持用户系统、工具对比、个性化推荐",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0a0a0f",
   "theme_color": "#6366f1",
   "orientation": "portrait-primary",
-  "scope": "/ai-tool-hub/",
+  "scope": "./",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect fill='%236366f1' width='512' height='512' rx='128'/%3E%3Ctext x='256' y='340' font-size='280' text-anchor='middle' fill='white'%3E🤖%3C/text%3E%3C/svg%3E",
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ],
-  "categories": ["productivity", "utilities", "developer"],
-  "lang": "zh-CN",
-  "dir": "ltr"
+  "categories": ["productivity", "utilities"],
+  "lang": "zh-CN"
 }
