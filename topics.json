@@ -1,0 +1,56 @@
+{
+  "version": "2.0",
+  "lastUpdated": "2026-04-01",
+  "topics": [
+    {
+      "id": "self-media",
+      "name": "自媒体创作专属",
+      "icon": "fa-video",
+      "cover": "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800",
+      "color": "from-pink-500 to-rose-500",
+      "description": "专为自媒体创作者打造的AI工具合集，涵盖文案写作、视频剪辑、配音、图片设计等全流程创作工具",
+      "tags": ["写作", "视频", "配音", "设计"],
+      "tools": [1, 2, 3, 4, 5, 31, 32, 33, 34, 35, 41, 42, 43, 51, 52]
+    },
+    {
+      "id": "developer",
+      "name": "程序员开发必备",
+      "icon": "fa-code",
+      "cover": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800",
+      "color": "from-blue-500 to-cyan-500",
+      "description": "开发者必备的AI编程助手，代码补全、智能生成、Bug修复、技术文档一站式解决方案",
+      "tags": ["编程", "代码", "开发", "AI助手"],
+      "tools": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30]
+    },
+    {
+      "id": "student",
+      "name": "学生学习辅助",
+      "icon": "fa-graduation-cap",
+      "cover": "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800",
+      "color": "from-green-500 to-emerald-500",
+      "description": "学生群体专属AI学习工具，论文写作、知识问答、PPT制作、语言学习全覆盖",
+      "tags": ["学习", "写作", "办公", "翻译"],
+      "tools": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 51, 52, 53, 54, 59]
+    },
+    {
+      "id": "office",
+      "name": "职场办公高效",
+      "icon": "fa-briefcase",
+      "cover": "https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=800",
+      "color": "from-purple-500 to-indigo-500",
+      "description": "职场人士效率提升神器，文档处理、会议记录、演示设计、团队协作AI工具精选",
+      "tags": ["办公", "文档", "会议", "协作"],
+      "tools": [2, 3, 4, 8, 53, 54, 59, 60, 33, 34, 51, 52]
+    },
+    {
+      "id": "design",
+      "name": "设计创意灵感",
+      "icon": "fa-palette",
+      "cover": "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800",
+      "color": "from-orange-500 to-amber-500",
+      "description": "设计师的AI创意宝库，图像生成、海报设计、UI设计、素材创作灵感无限",
+      "tags": ["设计", "绘画", "创意", "UI"],
+      "tools": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 51, 52, 55, 56, 57, 58]
+    }
+  ]
+}
