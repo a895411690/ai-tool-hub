@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://a895411690.github.io/ai-tool-hub/sitemap.xml

@@ -2,8 +2,8 @@
 <html lang="zh-CN" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Tool Hub v2.0 - 智能工具聚合平台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Tool Hub v2.5 - 智能工具聚合平台</title>
     <meta name="description" content="一站式AI工具聚合导航平台，收录60+款优质AI工具，涵盖写作、绘画、代码、视频、语音、设计、办公等领域">
     <meta name="keywords" content="AI工具,人工智能,AI写作,AI绘画,AI代码,AI视频,AI语音,AI设计,AI办公">
     <meta name="author" content="AI Tool Hub">
@@ -11,717 +11,462 @@
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#6366f1',
-                        secondary: '#a855f7',
-                        accent: '#06b6d4',
-                        dark: {
-                            900: '#0a0a0f',
-                            800: '#12121a',
-                            700: '#1a1a2e',
-                            600: '#252542',
-                            500: '#303050'
-                        }
-                    },
-                    animation: {
-                        'glow': 'glow 2s ease-in-out infinite alternate',
-                        'float': 'float 3s ease-in-out infinite',
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'shimmer': 'shimmer 2s linear infinite',
-                        'fade-in': 'fadeIn 0.5s ease-out',
-                        'slide-up': 'slideUp 0.3s ease-out'
-                    },
-                    keyframes: {
-                        glow: {
-                            '0%': { boxShadow: '0 0 5px #6366f1, 0 0 10px #6366f1, 0 0 15px #a855f7' },
-                            '100%': { boxShadow: '0 0 10px #6366f1, 0 0 20px #6366f1, 0 0 30px #a855f7' }
-                        },
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' }
-                        },
-                        shimmer: {
-                            '0%': { backgroundPosition: '-200% 0' },
-                            '100%': { backgroundPosition: '200% 0' }
-                        },
-                        fadeIn: {
-                            '0%': { opacity: '0' },
-                            '100%': { opacity: '1' }
-                        },
-                        slideUp: {
-                            '0%': { transform: 'translateY(20px)', opacity: '0' },
-                            '100%': { transform: 'translateY(0)', opacity: '1' }
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.18.2/dist/index.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; scroll-behavior: smooth; }
-        .glass { background: rgba(26, 26, 46, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(99, 102, 241, 0.2); }
-        .glass-nav { background: rgba(10, 10, 15, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid rgba(99, 102, 241, 0.15); }
-        .glass-card { background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(99, 102, 241, 0.2); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .glass-card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(99, 102, 241, 0.5); box-shadow: 0 20px 40px rgba(99, 102, 241, 0.25), 0 0 60px rgba(168, 85, 247, 0.15); }
+        * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-tap-highlight-color: transparent; }
+        html { scroll-behavior: smooth; }
+        .glass { background: rgba(26, 26, 46, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(99, 102, 241, 0.2); }
+        .glass-nav { background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(99, 102, 241, 0.15); }
+        .glass-card { background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%); backdrop-filter: blur(10px); border: 1px solid rgba(99, 102, 241, 0.2); transition: all 0.3s ease; }
+        .glass-card:hover { transform: translateY(-8px); border-color: rgba(99, 102, 241, 0.5); box-shadow: 0 20px 40px rgba(99, 102, 241, 0.25); }
         .neon-text { text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(168, 85, 247, 0.6); }
-        .tech-grid { background-image: linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px); background-size: 50px 50px; }
-        .gradient-text { background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #06b6d4 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .category-btn { transition: all 0.3s ease; }
-        .category-btn.active { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: white; box-shadow: 0 0 20px rgba(99, 102, 241, 0.5); transform: scale(1.05); }
-        .scroll-top { opacity: 0; visibility: hidden; transition: all 0.3s ease; }
-        .scroll-top.visible { opacity: 1; visibility: visible; }
-        .tool-icon { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .tag-free { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
-        .tag-vip { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
-        .tag-hot { background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(251, 146, 60, 0.2)); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); animation: pulse 2s infinite; }
-        .star-btn { transition: all 0.3s ease; cursor: pointer; }
-        .star-btn:hover { transform: scale(1.2); }
-        .star-btn.active { color: #a855f7; filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.8)); }
-        .skeleton { background: linear-gradient(90deg, #1a1a2e 25%, #252542 50%, #1a1a2e 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 8px; }
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(100px); background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: white; padding: 12px 24px; border-radius: 50px; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4); opacity: 0; transition: all 0.3s ease; z-index: 1000; }
+        .gradient-text { background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #06b6d4 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .category-btn.active { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: white; box-shadow: 0 0 20px rgba(99, 102, 241, 0.5); }
+        .tag-stable { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .tag-recommended { background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.2)); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
+        .tag-new { background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2)); color: #a78bfa; border: 1px solid rgba(99, 102, 241, 0.4); animation: pulse 2s infinite; }
+        .tag-beginner { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+        .tag-advanced { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .pull-refresh { position: fixed; top: -60px; left: 0; right: 0; height: 60px; display: flex; align-items: center; justify-content: center; z-index: 100; transition: transform 0.3s ease; }
+        .pull-refresh.visible { transform: translateY(60px); }
+        .share-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; display: none; align-items: center; justify-content: center; }
+        .share-modal.active { display: flex; }
+        .announcement-bar { background: linear-gradient(90deg, #6366f1, #a855f7); color: white; padding: 8px; text-align: center; font-size: 14px; position: relative; }
+        .announcement-bar .close { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; }
+        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(26, 26, 46, 0.95); color: white; padding: 12px 24px; border-radius: 50px; border: 1px solid rgba(99, 102, 241, 0.3); opacity: 0; transition: all 0.3s ease; z-index: 1000; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        .floating-nav { position: fixed; right: 20px; top: 50%; transform: translateY(-50%); z-index: 40; display: flex; flex-direction: column; gap: 12px; }
-        .floating-nav-btn { width: 48px; height: 48px; border-radius: 50%; background: rgba(26, 26, 46, 0.9); border: 1px solid rgba(99, 102, 241, 0.3); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease; backdrop-filter: blur(10px); }
-        .floating-nav-btn:hover { background: rgba(99, 102, 241, 0.3); transform: scale(1.1); box-shadow: 0 0 20px rgba(99, 102, 241, 0.4); }
-        .filter-panel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-        .filter-panel.open { max-height: 500px; }
-        .topic-card { background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 16px; overflow: hidden; transition: all 0.3s ease; }
-        .topic-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2); }
-        .rating-stars { display: flex; gap: 4px; }
-        .rating-star { cursor: pointer; transition: all 0.2s ease; color: #4b5563; }
-        .rating-star:hover, .rating-star.active { color: #fbbf24; transform: scale(1.2); }
-        .lazy-img { opacity: 0; transition: opacity 0.3s ease; }
-        .lazy-img.loaded { opacity: 1; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0a0a0f; }
-        ::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #6366f1, #a855f7); border-radius: 4px; }
+        .search-history { position: absolute; top: 100%; left: 0; right: 0; background: #1a1a2e; border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 12px; margin-top: 8px; padding: 8px; z-index: 50; display: none; }
+        .search-history.show { display: block; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(10, 10, 15, 0.95); border-top: 1px solid rgba(99, 102, 241, 0.2); padding: 8px; z-index: 90; display: none; }
+        @media (max-width: 768px) { .bottom-nav { display: flex; } .floating-nav { display: none !important; } }
+        .skeleton { background: linear-gradient(90deg, #1a1a2e 25%, #252542 50%, #1a1a2e 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        .update-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 300; display: none; align-items: center; justify-content: center; }
+        .update-modal.active { display: flex; }
     </style>
 </head>
-<body class="bg-dark-900 text-gray-100 min-h-screen">
-    <!-- Toast Notification -->
-    <div id="toast" class="toast"><i class="fas fa-check-circle mr-2"></i><span id="toastMsg">操作成功</span></div>
-
-    <!-- Floating Navigation -->
-    <div class="floating-nav hidden md:flex">
-        <button class="floating-nav-btn" onclick="showFavorites()" title="我的收藏"><i class="fas fa-star text-yellow-400"></i></button>
-        <button class="floating-nav-btn" onclick="showRecent()" title="最近访问"><i class="fas fa-history text-primary"></i></button>
-        <button class="floating-nav-btn" onclick="openRandomTool()" title="随机推荐"><i class="fas fa-dice text-orange-400"></i></button>
-        <button class="floating-nav-btn" onclick="copyCurrentUrl()" title="复制链接"><i class="fas fa-link text-green-400"></i></button>
-        <button class="floating-nav-btn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="回到顶部"><i class="fas fa-arrow-up text-white"></i></button>
+<body class="bg-[#0a0a0f] text-gray-100 min-h-screen pb-16 md:pb-0">
+    <!-- Pull to Refresh Indicator -->
+    <div class="pull-refresh" id="pullRefresh"><i class="fas fa-sync-alt fa-spin text-2xl text-primary"></i></div>
+    
+    <!-- Announcement Bar -->
+    <div class="announcement-bar" id="announcementBar" style="display: none;">
+        <span id="announcementText"></span>
+        <span class="close" onclick="closeAnnouncement()"><i class="fas fa-times"></i></span>
     </div>
 
+    <!-- Update Modal -->
+    <div class="update-modal" id="updateModal">
+        <div class="glass p-8 rounded-2xl max-w-md mx-4 text-center">
+            <i class="fas fa-rocket text-5xl text-primary mb-4"></i>
+            <h3 class="text-2xl font-bold mb-2">发现新版本</h3>
+            <p class="text-gray-400 mb-6">网站已更新到 v2.5，新增分享功能、键盘快捷键、搜索历史等</p>
+            <button onclick="closeUpdateModal()" class="px-8 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-medium">立即体验</button>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="share-modal" id="shareModal" onclick="closeShareModal(event)">
+        <div class="glass p-6 rounded-2xl max-w-sm mx-4" onclick="event.stopPropagation()">
+            <h3 class="text-xl font-bold mb-4 text-center">分享</h3>
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <button onclick="shareToWeChat()" class="flex flex-col items-center gap-2 p-3 rounded-xl bg-dark-700 hover:bg-primary/20 transition-all">
+                    <i class="fab fa-weixin text-2xl text-green-500"></i>
+                    <span class="text-xs">微信</span>
+                </button>
+                <button onclick="shareToQQ()" class="flex flex-col items-center gap-2 p-3 rounded-xl bg-dark-700 hover:bg-primary/20 transition-all">
+                    <i class="fab fa-qq text-2xl text-blue-500"></i>
+                    <span class="text-xs">QQ</span>
+                </button>
+                <button onclick="copyShareLink()" class="flex flex-col items-center gap-2 p-3 rounded-xl bg-dark-700 hover:bg-primary/20 transition-all">
+                    <i class="fas fa-link text-2xl text-primary"></i>
+                    <span class="text-xs">复制</span>
+                </button>
+                <button onclick="generateShareImage()" class="flex flex-col items-center gap-2 p-3 rounded-xl bg-dark-700 hover:bg-primary/20 transition-all">
+                    <i class="fas fa-image text-2xl text-purple-500"></i>
+                    <span class="text-xs">图片</span>
+                </button>
+            </div>
+            <button onclick="closeShareModal()" class="w-full py-3 rounded-xl bg-dark-700 text-gray-400 hover:text-white transition-all">取消</button>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"><i class="fas fa-check-circle mr-2 text-primary"></i><span id="toastMsg"></span></div>
+
     <!-- Navigation -->
-    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 glass-nav transition-all duration-300">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                        <i class="fas fa-robot text-white text-lg"></i>
+    <nav class="glass-nav fixed top-0 left-0 right-0 z-50 transition-all" id="navbar">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between h-14 md:h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                        <i class="fas fa-robot text-white"></i>
                     </div>
-                    <span class="text-xl font-bold gradient-text">AI Tool Hub</span>
-                    <span class="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">v2.0</span>
+                    <div>
+                        <span class="font-bold gradient-text text-lg">AI Tool Hub</span>
+                        <span class="text-xs text-primary ml-1">v2.5</span>
+                    </div>
                 </div>
-                <div class="hidden md:flex items-center space-x-6">
-                    <a href="#home" class="text-gray-300 hover:text-white transition-colors">首页</a>
-                    <a href="#topics" class="text-gray-300 hover:text-white transition-colors">专题</a>
-                    <a href="#tools" class="text-gray-300 hover:text-white transition-colors">工具</a>
-                    <button onclick="showFavorites()" class="text-gray-300 hover:text-white transition-colors flex items-center gap-2"><i class="fas fa-star text-yellow-400"></i>收藏</button>
-                    <button onclick="toggleTheme()" id="themeToggle" class="p-2 rounded-lg bg-dark-700 border border-primary/30 hover:border-primary transition-colors">
-                        <i class="fas fa-moon text-primary"></i>
+                <div class="hidden md:flex items-center gap-6">
+                    <a href="#home" class="text-gray-300 hover:text-white transition-colors text-sm">首页</a>
+                    <a href="#tools" class="text-gray-300 hover:text-white transition-colors text-sm">工具</a>
+                    <button onclick="showShareModal()" class="text-gray-300 hover:text-white transition-colors text-sm"><i class="fas fa-share-alt mr-1"></i>分享</button>
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg bg-dark-700/50 border border-primary/30">
+                        <i class="fas fa-moon text-primary" id="themeIcon"></i>
                     </button>
                 </div>
-                <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg bg-dark-700 border border-primary/30">
-                    <i class="fas fa-bars text-primary"></i>
-                </button>
             </div>
         </div>
     </nav>
 
-    <!-- Mobile Menu -->
-    <div id="mobileMenu" class="mobile-menu fixed inset-0 z-40 bg-dark-900/95 backdrop-blur-lg md:hidden">
-        <div class="p-6">
-            <div class="flex justify-between items-center mb-8">
-                <span class="text-xl font-bold gradient-text">AI Tool Hub v2.0</span>
-                <button id="closeMobileMenu" class="p-2 rounded-lg bg-dark-700"><i class="fas fa-times text-primary"></i></button>
-            </div>
-            <div class="space-y-4">
-                <a href="#home" class="block py-3 px-4 rounded-lg bg-dark-700 text-white">首页</a>
-                <a href="#topics" class="block py-3 px-4 rounded-lg bg-dark-700 text-white">专题</a>
-                <a href="#tools" class="block py-3 px-4 rounded-lg bg-dark-700 text-white">工具</a>
-                <button onclick="showFavorites()" class="block w-full text-left py-3 px-4 rounded-lg bg-dark-700 text-white"><i class="fas fa-star text-yellow-400 mr-2"></i>我的收藏</button>
-                <button onclick="showRecent()" class="block w-full text-left py-3 px-4 rounded-lg bg-dark-700 text-white"><i class="fas fa-history text-primary mr-2"></i>最近访问</button>
-                <button onclick="openRandomTool()" class="block w-full text-left py-3 px-4 rounded-lg bg-dark-700 text-white"><i class="fas fa-dice text-orange-400 mr-2"></i>随机推荐</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Hero Section -->
-    <section id="home" class="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
-        <div class="absolute inset-0 tech-grid"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-secondary/5"></div>
-        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full filter blur-3xl animate-pulse-slow"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/20 rounded-full filter blur-3xl animate-pulse-slow" style="animation-delay: 1.5s;"></div>
-        
-        <div class="relative z-10 text-center px-4 max-w-5xl mx-auto">
-            <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full glass mb-6 animate-float">
-                <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                <span class="text-sm text-gray-300">已收录 60+ 款优质 AI 工具</span>
-            </div>
-            
-            <h1 class="text-5xl md:text-7xl font-bold mb-6">
-                <span class="gradient-text neon-text">AI Tool Hub</span>
-            </h1>
-            
-            <p class="text-xl md:text-2xl text-gray-400 mb-4 max-w-3xl mx-auto">探索未来智能，一站式 AI 工具聚合平台</p>
-            <p class="text-gray-500 mb-10 max-w-2xl mx-auto">涵盖写作、绘画、代码、视频、语音、设计、办公等领域</p>
-            
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-                <a href="#tools" class="px-8 py-4 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg hover:shadow-primary/50 transition-all transform hover:scale-105">
-                    <i class="fas fa-compass mr-2"></i>探索工具
-                </a>
-                <button onclick="openRandomTool()" class="px-8 py-4 rounded-full glass text-white font-semibold hover:border-primary transition-all flex items-center gap-2">
-                    <i class="fas fa-dice"></i>随机推荐
-                </button>
-            </div>
-            
-            <div class="mt-12 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
-                <div class="text-center">
-                    <div class="text-3xl font-bold gradient-text">60+</div>
-                    <div class="text-sm text-gray-500 mt-1">优质工具</div>
+    <!-- Main Content -->
+    <main class="pt-14 md:pt-16">
+        <!-- Hero Section -->
+        <section id="home" class="min-h-[80vh] flex items-center justify-center relative overflow-hidden">
+            <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);"></div>
+            <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass mb-6 animate-pulse">
+                    <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                    <span class="text-sm text-gray-300">v2.5 全新升级 | 支持键盘快捷键</span>
                 </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold gradient-text">7</div>
-                    <div class="text-sm text-gray-500 mt-1">分类领域</div>
+                <h1 class="text-4xl md:text-6xl font-bold mb-4">
+                    <span class="gradient-text neon-text">AI Tool Hub</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-400 mb-8">发现最优质的 AI 工具，提升工作效率</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="#tools" class="px-8 py-4 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-medium hover:shadow-lg hover:shadow-primary/30 transition-all">
+                        探索工具
+                    </a>
+                    <button onclick="showShareModal()" class="px-8 py-4 rounded-full glass text-white font-medium hover:border-primary transition-all">
+                        <i class="fas fa-share-alt mr-2"></i>分享
+                    </button>
                 </div>
-                <div class="text-center">
-                    <div class="text-3xl font-bold gradient-text">5</div>
-                    <div class="text-sm text-gray-500 mt-1">使用场景</div>
+                <div class="mt-8 flex justify-center gap-2 text-sm text-gray-500">
+                    <span class="px-3 py-1 rounded-full bg-dark-700/50">按 / 键搜索</span>
+                    <span class="px-3 py-1 rounded-full bg-dark-700/50">按 ESC 清空</span>
                 </div>
             </div>
-        </div>
-        
-        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <i class="fas fa-chevron-down text-primary text-2xl"></i>
-        </div>
-    </section>
+        </section>
 
-    <!-- Topics Section -->
-    <section id="topics" class="py-20 px-4">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4"><span class="gradient-text">热门专题</span></h2>
-                <p class="text-gray-400 max-w-2xl mx-auto">针对不同场景精选的AI工具合集</p>
-            </div>
-            <div id="topicsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Topics will be loaded here -->
-            </div>
-        </div>
-    </section>
-
-    <!-- Tools Section -->
-    <section id="tools" class="py-20 px-4 border-t border-dark-700">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4"><span class="gradient-text">全部工具</span></h2>
-                <p class="text-gray-400 max-w-2xl mx-auto">发现最适合你的AI工具</p>
-            </div>
-            
-            <!-- Search Bar -->
-            <div class="max-w-2xl mx-auto mb-8">
-                <div class="relative">
-                    <input type="text" id="mainSearch" placeholder="搜索工具名称或功能（支持拼音）..." 
-                        class="w-full bg-dark-700 border border-primary/30 rounded-2xl px-6 py-4 pl-14 text-white placeholder-gray-400 focus:outline-none focus:border-primary text-lg">
-                    <i class="fas fa-search absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl"></i>
-                </div>
-            </div>
-
-            <!-- Filter Toggle Button -->
-            <div class="flex justify-center mb-6">
-                <button onclick="toggleFilterPanel()" class="px-6 py-3 rounded-full glass flex items-center gap-2 hover:border-primary transition-all">
-                    <i class="fas fa-filter text-primary"></i>
-                    <span>高级筛选</span>
-                    <i class="fas fa-chevron-down transition-transform" id="filterArrow"></i>
-                </button>
-            </div>
-
-            <!-- Filter Panel -->
-            <div id="filterPanel" class="filter-panel mb-8">
-                <div class="glass rounded-2xl p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-2">分类</label>
-                            <select id="filterCategory" onchange="applyFilters()" class="w-full bg-dark-700 border border-primary/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary">
-                                <option value="all">全部分类</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-2">价格</label>
-                            <select id="filterPrice" onchange="applyFilters()" class="w-full bg-dark-700 border border-primary/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary">
-                                <option value="all">全部</option>
-                                <option value="free">免费</option>
-                                <option value="vip">会员</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-2">地区</label>
-                            <select id="filterRegion" onchange="applyFilters()" class="w-full bg-dark-700 border border-primary/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary">
-                                <option value="all">全部</option>
-                                <option value="domestic">国产</option>
-                                <option value="overseas">海外</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-2">登录</label>
-                            <select id="filterLogin" onchange="applyFilters()" class="w-full bg-dark-700 border border-primary/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary">
-                                <option value="all">全部</option>
-                                <option value="nologin">无需登录</option>
-                                <option value="login">需要登录</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="flex flex-wrap items-center justify-between gap-4">
-                        <div class="flex items-center gap-4">
-                            <label class="text-sm text-gray-400">排序：</label>
-                            <select id="sortOrder" onchange="applyFilters()" class="bg-dark-700 border border-primary/30 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary">
-                                <option value="hot">按热度</option>
-                                <option value="rating">按评分</option>
-                                <option value="newest">按更新</option>
-                                <option value="name">按名称</option>
-                            </select>
-                        </div>
-                        <button onclick="clearFilters()" class="text-sm text-gray-400 hover:text-primary transition-colors">
-                            <i class="fas fa-undo mr-1"></i>清空筛选
+        <!-- Tools Section -->
+        <section id="tools" class="py-12 px-4">
+            <div class="max-w-7xl mx-auto">
+                <!-- Search Bar with History -->
+                <div class="max-w-2xl mx-auto mb-8 relative">
+                    <div class="relative">
+                        <input type="text" id="mainSearch" placeholder="搜索工具（按 / 键快速聚焦）..." 
+                            class="w-full bg-[#1a1a2e] border border-primary/30 rounded-2xl px-6 py-4 pl-12 text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-all">
+                        <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+                        <button onclick="clearSearch()" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white hidden" id="clearSearchBtn">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
+                    <!-- Search History -->
+                    <div class="search-history" id="searchHistory"></div>
+                </div>
+
+                <!-- Category Filter -->
+                <div id="categoryFilter" class="flex flex-wrap justify-center gap-2 mb-8">
+                    <button class="category-btn active px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="all">全部</button>
+                </div>
+
+                <!-- Tools Grid -->
+                <div id="toolsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <!-- Tools will be loaded here -->
+                </div>
+
+                <!-- Loading State -->
+                <div id="loadingState" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    ${Array(8).fill(0).map(() => `
+                        <div class="glass-card rounded-2xl p-5">
+                            <div class="skeleton h-24 rounded-xl mb-4"></div>
+                            <div class="skeleton h-4 w-3/4 rounded mb-2"></div>
+                            <div class="skeleton h-3 w-full rounded"></div>
+                        </div>
+                    `).join('')}
                 </div>
             </div>
+        </section>
+    </main>
 
-            <!-- Category Filter -->
-            <div id="categoryFilter" class="flex flex-wrap justify-center gap-3 mb-8">
-                <!-- Categories will be loaded here -->
-            </div>
-            
-            <!-- Skeleton Loading -->
-            <div id="skeletonLoader" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <div class="glass-card rounded-2xl p-6"><div class="skeleton h-32 mb-4"></div><div class="skeleton h-6 w-3/4 mb-2"></div><div class="skeleton h-4 w-full"></div></div>
-                <div class="glass-card rounded-2xl p-6"><div class="skeleton h-32 mb-4"></div><div class="skeleton h-6 w-3/4 mb-2"></div><div class="skeleton h-4 w-full"></div></div>
-                <div class="glass-card rounded-2xl p-6"><div class="skeleton h-32 mb-4"></div><div class="skeleton h-6 w-3/4 mb-2"></div><div class="skeleton h-4 w-full"></div></div>
-                <div class="glass-card rounded-2xl p-6"><div class="skeleton h-32 mb-4"></div><div class="skeleton h-6 w-3/4 mb-2"></div><div class="skeleton h-4 w-full"></div></div>
-            </div>
-            
-            <!-- Tools Grid -->
-            <div id="toolsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden">
-                <!-- Tools will be loaded here -->
-            </div>
-            
-            <!-- No Results -->
-            <div id="noResults" class="hidden text-center py-20">
-                <div class="w-24 h-24 mx-auto mb-6 rounded-full glass flex items-center justify-center">
-                    <i class="fas fa-search text-4xl text-gray-500"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-gray-300 mb-2">未找到相关工具</h3>
-                <p class="text-gray-500">尝试调整筛选条件</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="py-20 px-4 border-t border-dark-700">
-        <div class="max-w-4xl mx-auto text-center">
-            <h2 class="text-3xl md:text-4xl font-bold mb-6"><span class="gradient-text">关于 AI Tool Hub</span></h2>
-            <p class="text-gray-400 mb-8 leading-relaxed">AI Tool Hub 是一个专注于聚合优质 AI 工具的导航平台。我们精心挑选了来自全球各地的人工智能工具，涵盖写作、绘画、代码、视频、语音、设计、办公等多个领域。</p>
-            <div class="flex flex-wrap justify-center gap-6">
-                <div class="glass-card px-6 py-4 rounded-xl"><i class="fas fa-bolt text-primary text-2xl mb-2"></i><div class="text-white font-semibold">快速访问</div></div>
-                <div class="glass-card px-6 py-4 rounded-xl"><i class="fas fa-star text-yellow-400 text-2xl mb-2"></i><div class="text-white font-semibold">本地收藏</div></div>
-                <div class="glass-card px-6 py-4 rounded-xl"><i class="fas fa-mobile-alt text-accent text-2xl mb-2"></i><div class="text-white font-semibold">PWA支持</div></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="py-8 px-4 border-t border-dark-700">
-        <div class="max-w-7xl mx-auto text-center">
-            <p class="text-gray-500">&copy; 2026 AI Tool Hub v2.0. 仅供导航聚合，非官方网站。</p>
-        </div>
-    </footer>
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav justify-around" id="bottomNav">
+        <a href="#home" class="flex flex-col items-center gap-1 p-2 text-primary"><i class="fas fa-home"></i><span class="text-xs">首页</span></a>
+        <a href="#tools" class="flex flex-col items-center gap-1 p-2 text-gray-500"><i class="fas fa-th-large"></i><span class="text-xs">工具</span></a>
+        <button onclick="showShareModal()" class="flex flex-col items-center gap-1 p-2 text-gray-500"><i class="fas fa-share-alt"></i><span class="text-xs">分享</span></button>
+        <button onclick="toggleTheme()" class="flex flex-col items-center gap-1 p-2 text-gray-500"><i class="fas fa-moon"></i><span class="text-xs">主题</span></button>
+    </nav>
 
     <script>
-        // Global state
+        // Global State
         let allTools = [];
-        let allTopics = [];
         let categories = [];
-        let favorites = JSON.parse(localStorage.getItem('ai-tool-hub-favorites') || '[]');
-        let recentVisits = JSON.parse(localStorage.getItem('ai-tool-hub-recent') || '[]');
-        let toolRatings = JSON.parse(localStorage.getItem('ai-tool-hub-ratings') || '{}');
-        let toolNotes = JSON.parse(localStorage.getItem('ai-tool-hub-notes') || '{}');
         let currentCategory = 'all';
-        let isShowingFavorites = false;
-
-        // Pinyin map for search
-        const pinyinMap = {
-            '秘': 'mi', '塔': 'ta', '写': 'xie', '作': 'zuo', '猫': 'mao',
-            '文': 'wen', '心': 'xin', '言': 'yan', '百': 'bai', '度': 'du',
-            '讯': 'xun', '飞': 'fei', '星': 'xing', '火': 'huo', '豆': 'dou',
-            '包': 'bao', '智': 'zhi', '谱': 'pu', '清': 'qing', '问': 'wen'
-        };
-
+        let searchHistory = JSON.parse(localStorage.getItem('ai-tool-hub-search-history') || '[]');
+        let favorites = JSON.parse(localStorage.getItem('ai-tool-hub-favorites') || '[]');
+        
         // Initialize
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Register service worker for PWA
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('sw.js').catch(console.error);
-            }
-            
-            // Check system theme preference
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-                document.documentElement.classList.remove('dark');
-                updateThemeIcon();
-            }
-            
-            await Promise.all([loadToolsData(), loadTopicsData()]);
-            renderCategories();
-            renderTopics();
-            renderTools(allTools);
-            setupEventListeners();
-            setupScrollEffects();
-            
-            document.getElementById('skeletonLoader').classList.add('hidden');
-            document.getElementById('toolsGrid').classList.remove('hidden');
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTools();
+            setupKeyboardShortcuts();
+            setupPullToRefresh();
+            checkForUpdate();
+            loadAnnouncement();
         });
 
-        // Load tools data
-        async function loadToolsData() {
+        // Load Tools
+        async function loadTools() {
             try {
                 const response = await fetch('tools.json');
-                if (!response.ok) throw new Error('Failed to fetch');
                 const data = await response.json();
-                allTools = data.tools.map(tool => ({
-                    ...tool,
-                    rating: toolRatings[tool.id] || 0,
-                    visitCount: JSON.parse(localStorage.getItem('ai-tool-hub-visits') || '{}')[tool.id] || 0
-                }));
+                allTools = data.tools;
                 categories = data.categories;
+                renderCategories();
+                renderTools(allTools);
+                document.getElementById('loadingState').classList.add('hidden');
             } catch (error) {
-                console.error('Failed to load tools:', error);
-                // Fallback: show error message in grid
-                document.getElementById('skeletonLoader').innerHTML = `
-                    <div class="col-span-full text-center py-12">
-                        <i class="fas fa-exclamation-triangle text-5xl text-red-400 mb-4"></i>
-                        <h3 class="text-xl text-gray-300 mb-2">加载失败</h3>
-                        <p class="text-gray-500 mb-4">无法加载工具数据，请刷新页面重试</p>
-                        <button onclick="location.reload()" class="px-6 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-medium">
-                            <i class="fas fa-refresh mr-2"></i>刷新页面
-                        </button>
-                    </div>
-                `;
+                showToast('加载失败，请刷新重试');
             }
         }
 
-        // Load topics data
-        async function loadTopicsData() {
-            try {
-                const response = await fetch('topics.json');
-                const data = await response.json();
-                allTopics = data.topics;
-            } catch (error) {
-                console.error('Failed to load topics:', error);
-            }
-        }
-
-        // Render categories
+        // Render Categories
         function renderCategories() {
             const container = document.getElementById('categoryFilter');
-            const filterSelect = document.getElementById('filterCategory');
-            
-            const allBtn = `<button class="category-btn active px-6 py-3 rounded-full glass text-sm font-medium" data-category="all" onclick="filterByCategory('all')">全部</button>`;
-            
-            const categoryBtns = categories.map(cat => 
-                `<button class="category-btn px-6 py-3 rounded-full glass text-sm font-medium" data-category="${cat.id}" onclick="filterByCategory('${cat.id}')">${cat.name}</button>`
+            const buttons = categories.map(cat => 
+                `<button class="category-btn px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="${cat.id}" onclick="filterCategory('${cat.id}')">${cat.name}</button>`
             ).join('');
-            
-            container.innerHTML = allBtn + categoryBtns;
-            
-            // Populate filter dropdown
-            categories.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat.id;
-                option.textContent = cat.name;
-                filterSelect.appendChild(option);
-            });
+            container.innerHTML = '<button class="category-btn active px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="all" onclick="filterCategory('all')">全部</button>' + buttons;
         }
 
-        // Render topics
-        function renderTopics() {
-            const container = document.getElementById('topicsGrid');
-            container.innerHTML = allTopics.map(topic => `
-                <div class="topic-card cursor-pointer group" onclick="showTopicDetail('${topic.id}')">
-                    <div class="h-48 overflow-hidden relative">
-                        <img src="${topic.cover}" alt="${topic.name}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
-                        <div class="absolute inset-0 bg-gradient-to-t from-dark-900 to-transparent"></div>
-                        <div class="absolute bottom-4 left-4 right-4">
-                            <div class="flex items-center gap-2 mb-2">
-                                <i class="fas ${topic.icon} text-2xl text-white"></i>
-                                <h3 class="text-xl font-bold text-white">${topic.name}</h3>
-                            </div>
-                            <div class="flex flex-wrap gap-2">
-                                ${topic.tags.map(tag => `<span class="text-xs px-2 py-1 rounded-full bg-white/20 text-white">${tag}</span>`).join('')}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-4">
-                        <p class="text-gray-400 text-sm line-clamp-2">${topic.description}</p>
-                        <div class="mt-3 flex items-center justify-between">
-                            <span class="text-sm text-gray-500">${topic.tools.length} 个工具</span>
-                            <span class="text-primary text-sm font-medium">查看详情 <i class="fas fa-arrow-right"></i></span>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Render tools
+        // Render Tools
         function renderTools(tools) {
             const grid = document.getElementById('toolsGrid');
-            const noResults = document.getElementById('noResults');
-            
-            if (tools.length === 0) {
-                grid.classList.add('hidden');
-                noResults.classList.remove('hidden');
-                return;
-            }
-            
-            grid.classList.remove('hidden');
-            noResults.classList.add('hidden');
-            
-            grid.innerHTML = tools.map(tool => {
-                const isFavorited = favorites.includes(tool.id);
-                const categoryName = categories.find(c => c.id === tool.category)?.name || tool.category;
-                const isHot = tool.visitCount > 100;
-                
-                return `
-                <div class="glass-card rounded-2xl p-5 group relative" data-id="${tool.id}">
-                    <div class="absolute top-3 right-3 flex gap-2">
-                        ${isHot ? '<span class="tag-hot text-xs px-2 py-0.5 rounded-full flex items-center gap-1"><i class="fas fa-fire"></i>热门</span>' : ''}
-                        <button onclick="toggleFavorite(${tool.id}, this)" class="star-btn w-8 h-8 flex items-center justify-center rounded-full bg-dark-700/50 ${isFavorited ? 'active' : 'text-gray-400'}">
-                            <i class="fas fa-star"></i>
+            grid.innerHTML = tools.map(tool => `
+                <div class="glass-card rounded-2xl p-5 group cursor-pointer" onclick="showToolDetail(${tool.id})">
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                            <i class="fas ${tool.icon} text-xl text-primary"></i>
+                        </div>
+                        <div class="flex gap-2">
+                            ${tool.tags?.includes('new') ? '<span class="tag-new text-xs px-2 py-0.5 rounded-full">NEW</span>' : ''}
+                            <button onclick="toggleFavorite(${tool.id}, event)" class="text-gray-500 hover:text-yellow-400 transition-all ${favorites.includes(tool.id) ? 'text-yellow-400' : ''}">
+                                <i class="fas fa-star"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-white mb-1">${tool.name}</h3>
+                    <p class="text-gray-400 text-sm mb-3 line-clamp-2">${tool.desc}</p>
+                    <div class="flex flex-wrap gap-1 mb-3">
+                        ${tool.tags?.includes('free') ? '<span class="tag-stable text-xs px-2 py-0.5 rounded">免费</span>' : ''}
+                        ${tool.tags?.includes('hot') ? '<span class="tag-recommended text-xs px-2 py-0.5 rounded">热门</span>' : ''}
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-500">${categories.find(c => c.id === tool.category)?.name}</span>
+                        <button onclick="openTool(${tool.id}, '${tool.url}', event)" class="px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-secondary text-white text-sm hover:shadow-lg transition-all">
+                            使用
                         </button>
                     </div>
-                    
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                            <i class="fas ${tool.icon} text-xl tool-icon"></i>
-                        </div>
-                        <div class="flex-1 min-w-0">
-                            <h3 class="font-bold text-white truncate">${tool.name}</h3>
-                            <div class="flex flex-wrap gap-1 mt-1">
-                                ${tool.tags.map(tag => `<span class="tag-${tag} text-xs px-1.5 py-0.5 rounded">${tag === 'free' ? '免费' : '会员'}</span>`).join('')}
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <p class="text-gray-400 text-sm mb-3 line-clamp-2">${tool.desc}</p>
-                    
-                    <div class="flex items-center gap-1 mb-3">
-                        ${renderRatingStars(tool.id, tool.rating)}
-                        <span class="text-xs text-gray-500 ml-1">${tool.rating > 0 ? tool.rating + '分' : '未评分'}</span>
-                    </div>
-                    
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs text-gray-500">${categoryName}</span>
-                        <a href="${tool.url}" target="_blank" rel="noopener noreferrer" onclick="recordVisit(${tool.id})" 
-                            class="px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium hover:shadow-lg transition-all">
-                            使用 <i class="fas fa-external-link-alt text-xs"></i>
-                        </a>
-                    </div>
                 </div>
-                `;
-            }).join('');
-        }
-
-        // Render rating stars
-        function renderRatingStars(toolId, rating) {
-            return [1, 2, 3, 4, 5].map(star => `
-                <i class="fas fa-star rating-star ${star <= rating ? 'active' : ''}" 
-                   onclick="rateTool(${toolId}, ${star}, event)"
-                   data-rating="${star}"></i>
             `).join('');
         }
 
-        // Rate tool
-        function rateTool(toolId, rating, event) {
-            event.preventDefault();
-            event.stopPropagation();
-            toolRatings[toolId] = rating;
-            localStorage.setItem('ai-tool-hub-ratings', JSON.stringify(toolRatings));
-            
-            const tool = allTools.find(t => t.id === toolId);
-            if (tool) tool.rating = rating;
-            
-            applyFilters();
-            showToast(`已评分: ${rating} 星`);
-        }
-
-        // Toggle favorite
-        function toggleFavorite(toolId, btn) {
-            const index = favorites.indexOf(toolId);
-            if (index > -1) {
-                favorites.splice(index, 1);
-                btn.classList.remove('active');
-                btn.classList.add('text-gray-400');
-                showToast('已取消收藏');
-            } else {
-                favorites.push(toolId);
-                btn.classList.add('active');
-                btn.classList.remove('text-gray-400');
-                showToast('已收藏');
-            }
-            localStorage.setItem('ai-tool-hub-favorites', JSON.stringify(favorites));
-        }
-
-        // Filter functions
-        function filterByCategory(category) {
+        // Filter Category
+        function filterCategory(category) {
             currentCategory = category;
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.dataset.category === category) btn.classList.add('active');
             });
-            applyFilters();
-        }
-
-        function toggleFilterPanel() {
-            const panel = document.getElementById('filterPanel');
-            const arrow = document.getElementById('filterArrow');
-            panel.classList.toggle('open');
-            arrow.style.transform = panel.classList.contains('open') ? 'rotate(180deg)' : '';
-        }
-
-        function applyFilters() {
-            const searchTerm = document.getElementById('mainSearch').value.toLowerCase();
-            const priceFilter = document.getElementById('filterPrice').value;
-            const regionFilter = document.getElementById('filterRegion').value;
-            const loginFilter = document.getElementById('filterLogin').value;
-            const sortOrder = document.getElementById('sortOrder').value;
-            const categoryFilter = document.getElementById('filterCategory').value;
-
-            let filtered = allTools.filter(tool => {
-                if (currentCategory !== 'all' && tool.category !== currentCategory) return false;
-                if (categoryFilter !== 'all' && tool.category !== categoryFilter) return false;
-                if (priceFilter !== 'all' && !tool.tags.includes(priceFilter)) return false;
-                if (regionFilter !== 'all' && !tool.toolTags.includes(regionFilter === 'domestic' ? '国产' : '海外')) return false;
-                if (loginFilter !== 'all' && !tool.toolTags.includes(loginFilter === 'nologin' ? '无需登录' : '需登录')) return false;
-                if (searchTerm) {
-                    const nameMatch = tool.name.toLowerCase().includes(searchTerm);
-                    const descMatch = tool.desc.toLowerCase().includes(searchTerm);
-                    const pinyinMatch = tool.name.split('').some(char => {
-                        const py = pinyinMap[char];
-                        return py && py.startsWith(searchTerm);
-                    });
-                    return nameMatch || descMatch || pinyinMatch;
-                }
-                return true;
-            });
-
-            // Sort
-            filtered.sort((a, b) => {
-                if (sortOrder === 'hot') return b.visitCount - a.visitCount;
-                if (sortOrder === 'rating') return b.rating - a.rating;
-                if (sortOrder === 'newest') return b.id - a.id;
-                if (sortOrder === 'name') return a.name.localeCompare(b.name, 'zh');
-                return 0;
-            });
-
+            const filtered = category === 'all' ? allTools : allTools.filter(t => t.category === category);
             renderTools(filtered);
         }
 
-        function clearFilters() {
-            document.getElementById('mainSearch').value = '';
-            document.getElementById('filterPrice').value = 'all';
-            document.getElementById('filterRegion').value = 'all';
-            document.getElementById('filterLogin').value = 'all';
-            document.getElementById('filterCategory').value = 'all';
-            document.getElementById('sortOrder').value = 'hot';
-            currentCategory = 'all';
-            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector('[data-category="all"]').classList.add('active');
-            applyFilters();
-        }
-
-        function showFavorites() {
-            isShowingFavorites = true;
-            const favoriteTools = allTools.filter(t => favorites.includes(t.id));
-            renderTools(favoriteTools);
-            document.getElementById('tools').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function recordVisit(toolId) {
-            const tool = allTools.find(t => t.id === toolId);
-            if (!tool) return;
+        // Search with History
+        const searchInput = document.getElementById('mainSearch');
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            document.getElementById('clearSearchBtn').classList.toggle('hidden', !term);
             
-            const visits = JSON.parse(localStorage.getItem('ai-tool-hub-visits') || '{}');
-            visits[toolId] = (visits[toolId] || 0) + 1;
-            localStorage.setItem('ai-tool-hub-visits', JSON.stringify(visits));
-            tool.visitCount = visits[toolId];
-
-            recentVisits = recentVisits.filter(v => v.id !== toolId);
-            recentVisits.unshift({ id: toolId, name: tool.name, icon: tool.icon, url: tool.url, time: Date.now() });
-            recentVisits = recentVisits.slice(0, 10);
-            localStorage.setItem('ai-tool-hub-recent', JSON.stringify(recentVisits));
-        }
-
-        function openRandomTool() {
-            if (allTools.length === 0) return;
-            const randomTool = allTools[Math.floor(Math.random() * allTools.length)];
-            recordVisit(randomTool.id);
-            window.open(randomTool.url, '_blank');
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            document.getElementById('toastMsg').textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2500);
-        }
-
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
-            updateThemeIcon();
-        }
-
-        function updateThemeIcon() {
-            const isDark = document.documentElement.classList.contains('dark');
-            document.getElementById('themeToggle').innerHTML = `<i class="fas fa-${isDark ? 'moon' : 'sun'} ${isDark ? 'text-primary' : 'text-yellow-400'}"></i>`;
-        }
-
-        function copyCurrentUrl() {
-            navigator.clipboard.writeText(window.location.href).then(() => showToast('链接已复制'));
-        }
-
-        function setupEventListeners() {
-            document.getElementById('mainSearch')?.addEventListener('input', applyFilters);
-            document.getElementById('mobileMenuBtn')?.addEventListener('click', () => document.getElementById('mobileMenu').classList.add('open'));
-            document.getElementById('closeMobileMenu')?.addEventListener('click', () => document.getElementById('mobileMenu').classList.remove('open'));
+            const filtered = allTools.filter(tool => 
+                tool.name.toLowerCase().includes(term) || 
+                tool.desc.toLowerCase().includes(term)
+            );
+            renderTools(filtered);
             
-            if (window.matchMedia) {
-                window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', e => {
-                    if (e.matches) document.documentElement.classList.remove('dark');
-                    else document.documentElement.classList.add('dark');
-                    updateThemeIcon();
-                });
+            if (term && !searchHistory.includes(term)) {
+                searchHistory.unshift(term);
+                searchHistory = searchHistory.slice(0, 10);
+                localStorage.setItem('ai-tool-hub-search-history', JSON.stringify(searchHistory));
+            }
+        });
+
+        searchInput.addEventListener('focus', () => {
+            if (searchHistory.length > 0) {
+                document.getElementById('searchHistory').innerHTML = searchHistory.map(h => 
+                    `<div class="px-4 py-2 hover:bg-primary/20 cursor-pointer flex items-center gap-2" onclick="setSearch('${h}')">
+                        <i class="fas fa-history text-gray-500 text-sm"></i><span>${h}</span>
+                    </div>`
+                ).join('');
+                document.getElementById('searchHistory').classList.add('show');
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-history') && !e.target.closest('#mainSearch')) {
+                document.getElementById('searchHistory').classList.remove('show');
+            }
+        });
+
+        function setSearch(term) {
+            searchInput.value = term;
+            document.getElementById('searchHistory').classList.remove('show');
+            searchInput.dispatchEvent(new Event('input'));
+        }
+
+        function clearSearch() {
+            searchInput.value = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            renderTools(allTools);
+        }
+
+        // Keyboard Shortcuts
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === '/' || e.key === 's' || e.key === 'S') {
+                    if (document.activeElement !== searchInput) {
+                        e.preventDefault();
+                        searchInput.focus();
+                    }
+                }
+                if (e.key === 'Escape') {
+                    clearSearch();
+                    document.getElementById('searchHistory').classList.remove('show');
+                    closeShareModal();
+                }
+            });
+        }
+
+        // Pull to Refresh (Mobile)
+        function setupPullToRefresh() {
+            let startY = 0;
+            let refreshing = false;
+            
+            document.addEventListener('touchstart', (e) => {
+                if (window.scrollY === 0) startY = e.touches[0].clientY;
+            }, { passive: true });
+            
+            document.addEventListener('touchmove', (e) => {
+                if (refreshing || window.scrollY > 0) return;
+                const diff = e.touches[0].clientY - startY;
+                if (diff > 80) {
+                    document.getElementById('pullRefresh').classList.add('visible');
+                }
+            }, { passive: true });
+            
+            document.addEventListener('touchend', () => {
+                if (document.getElementById('pullRefresh').classList.contains('visible')) {
+                    refreshing = true;
+                    setTimeout(() => {
+                        location.reload();
+                    }, 500);
+                }
+            });
+        }
+
+        // Tool Actions
+        function openTool(id, url, event) {
+            event.stopPropagation();
+            window.open(url, '_blank');
+        }
+
+        function toggleFavorite(id, event) {
+            event.stopPropagation();
+            const index = favorites.indexOf(id);
+            if (index > -1) {
+                favorites.splice(index, 1);
+                showToast('已取消收藏');
+            } else {
+                favorites.push(id);
+                showToast('已收藏');
+            }
+            localStorage.setItem('ai-tool-hub-favorites', JSON.stringify(favorites));
+            renderTools(currentCategory === 'all' ? allTools : allTools.filter(t => t.category === currentCategory));
+        }
+
+        // Share Functions
+        function showShareModal() {
+            document.getElementById('shareModal').classList.add('active');
+        }
+
+        function closeShareModal(event) {
+            if (!event || event.target === document.getElementById('shareModal')) {
+                document.getElementById('shareModal').classList.remove('active');
             }
         }
 
-        function setupScrollEffects() {
-            window.addEventListener('scroll', () => {
-                const btn = document.querySelector('.floating-nav');
-                if (window.pageYOffset > 300) btn?.classList.remove('hidden');
-            });
+        function shareToWeChat() {
+            showToast('请截图分享到微信');
+        }
+
+        function shareToQQ() {
+            const url = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(window.location.href)}&title=AI%20Tool%20Hub`;
+            window.open(url, '_blank');
+        }
+
+        function copyShareLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => showToast('链接已复制'));
+        }
+
+        function generateShareImage() {
+            showToast('生成分享图片功能开发中');
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            document.getElementById('themeIcon').className = `fas fa-${isDark ? 'moon' : 'sun'} ${isDark ? 'text-primary' : 'text-yellow-400'}`;
+        }
+
+        // Toast
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // Announcement
+        function loadAnnouncement() {
+            const announcement = localStorage.getItem('ai-tool-hub-announcement');
+            if (announcement && !localStorage.getItem('ai-tool-hub-announcement-closed')) {
+                document.getElementById('announcementText').textContent = announcement;
+                document.getElementById('announcementBar').style.display = 'block';
+            }
+        }
+
+        function closeAnnouncement() {
+            document.getElementById('announcementBar').style.display = 'none';
+            localStorage.setItem('ai-tool-hub-announcement-closed', 'true');
+        }
+
+        // Update Check
+        function checkForUpdate() {
+            if (!localStorage.getItem('ai-tool-hub-v2-5-shown')) {
+                document.getElementById('updateModal').classList.add('active');
+                localStorage.setItem('ai-tool-hub-v2-5-shown', 'true');
+            }
+        }
+
+        function closeUpdateModal() {
+            document.getElementById('updateModal').classList.remove('active');
+        }
+
+        // Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(console.error);
         }
     </script>
 </body>
