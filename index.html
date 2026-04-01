@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Tool Hub - 智能工具聚合平台</title>
+    <title>AI Tool Hub v1.5 - 智能工具聚合平台</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.18.2/dist/index.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -19,14 +20,18 @@
                             900: '#0a0a0f',
                             800: '#12121a',
                             700: '#1a1a2e',
-                            600: '#252542'
+                            600: '#252542',
+                            500: '#303050'
                         }
                     },
                     animation: {
                         'glow': 'glow 2s ease-in-out infinite alternate',
                         'float': 'float 3s ease-in-out infinite',
                         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'shimmer': 'shimmer 2s linear infinite'
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'bounce-soft': 'bounceSoft 2s infinite'
                     },
                     keyframes: {
                         glow: {
@@ -40,6 +45,18 @@
                         shimmer: {
                             '0%': { backgroundPosition: '-200% 0' },
                             '100%': { backgroundPosition: '200% 0' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        },
+                        bounceSoft: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' }
                         }
                     }
                 }
@@ -60,41 +77,29 @@
             border: 1px solid rgba(99, 102, 241, 0.2);
         }
         
+        .glass-nav {
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+        }
+        
         .glass-card {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            transition: all 0.3s ease;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .glass-card:hover {
-            transform: translateY(-8px);
-            border-color: rgba(99, 102, 241, 0.6);
-            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3), 0 0 60px rgba(168, 85, 247, 0.2);
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.25), 0 0 60px rgba(168, 85, 247, 0.15);
         }
         
         .neon-text {
             text-shadow: 0 0 10px rgba(99, 102, 241, 0.8), 0 0 20px rgba(168, 85, 247, 0.6);
-        }
-        
-        .neon-border {
-            position: relative;
-        }
-        
-        .neon-border::before {
-            content: '';
-            position: absolute;
-            inset: -2px;
-            background: linear-gradient(45deg, #6366f1, #a855f7, #06b6d4, #6366f1);
-            border-radius: inherit;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .neon-border:hover::before {
-            opacity: 1;
         }
         
         .tech-grid {
@@ -111,10 +116,15 @@
             background-clip: text;
         }
         
+        .category-btn {
+            transition: all 0.3s ease;
+        }
+        
         .category-btn.active {
             background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
             color: white;
             box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+            transform: scale(1.05);
         }
         
         .search-input:focus {
@@ -140,33 +150,124 @@
         }
         
         .tag-free {
-            background: rgba(34, 197, 94, 0.2);
+            background: rgba(34, 197, 94, 0.15);
             color: #4ade80;
             border: 1px solid rgba(34, 197, 94, 0.3);
         }
         
         .tag-vip {
-            background: rgba(251, 191, 36, 0.2);
+            background: rgba(251, 191, 36, 0.15);
             color: #fbbf24;
             border: 1px solid rgba(251, 191, 36, 0.3);
         }
         
         .tag-online {
-            background: rgba(99, 102, 241, 0.2);
+            background: rgba(99, 102, 241, 0.15);
             color: #818cf8;
             border: 1px solid rgba(99, 102, 241, 0.3);
         }
         
+        .tag-domestic {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        
+        .tag-overseas {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        
+        .tag-nologin {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        
         .mobile-menu {
             transform: translateX(-100%);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .mobile-menu.open {
             transform: translateX(0);
         }
         
-        /* Scrollbar styling */
+        /* Skeleton loading */
+        .skeleton {
+            background: linear-gradient(90deg, #1a1a2e 25%, #252542 50%, #1a1a2e 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 8px;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        /* Star button */
+        .star-btn {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .star-btn:hover {
+            transform: scale(1.2);
+        }
+        
+        .star-btn.active {
+            color: #a855f7;
+            filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.8));
+        }
+        
+        /* Copy button */
+        .copy-btn {
+            transition: all 0.2s ease;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(99, 102, 241, 0.3);
+            transform: scale(1.1);
+        }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            font-weight: 500;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .empty-icon {
+            font-size: 64px;
+            color: #6366f1;
+            opacity: 0.5;
+            margin-bottom: 20px;
+        }
+        
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -183,11 +284,57 @@
         ::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(180deg, #818cf8, #c084fc);
         }
+        
+        /* Recent visits */
+        .recent-bar {
+            background: rgba(26, 26, 46, 0.5);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .recent-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 50px;
+            margin: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .recent-item:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        /* Random button */
+        .random-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            animation: pulse 2s infinite;
+        }
+        
+        .random-btn:hover {
+            animation: none;
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(245, 158, 11, 0.5);
+        }
     </style>
 </head>
 <body class="bg-dark-900 text-gray-100 min-h-screen">
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="fas fa-check-circle mr-2"></i><span id="toastMsg">操作成功</span>
+    </div>
+
     <!-- Navigation -->
-    <nav class="fixed top-0 left-0 right-0 z-50 glass">
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 glass-nav transition-all duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
@@ -196,17 +343,26 @@
                         <i class="fas fa-robot text-white text-lg"></i>
                     </div>
                     <span class="text-xl font-bold gradient-text">AI Tool Hub</span>
+                    <span class="text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">v1.5</span>
                 </div>
                 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="#home" class="text-gray-300 hover:text-white transition-colors">首页</a>
                     <a href="#tools" class="text-gray-300 hover:text-white transition-colors">分类</a>
+                    <button onclick="showFavorites()" class="text-gray-300 hover:text-white transition-colors flex items-center gap-2">
+                        <i class="fas fa-star text-yellow-400"></i>我的收藏
+                    </button>
                     <a href="#about" class="text-gray-300 hover:text-white transition-colors">关于</a>
                 </div>
                 
                 <!-- Right side -->
                 <div class="hidden md:flex items-center space-x-4">
+                    <!-- Random Tool Button -->
+                    <button onclick="openRandomTool()" class="random-btn px-4 py-2 rounded-full text-white text-sm font-medium flex items-center gap-2">
+                        <i class="fas fa-dice"></i>随机推荐
+                    </button>
+                    
                     <!-- Search -->
                     <div class="relative">
                         <input type="text" id="navSearch" placeholder="搜索工具..." 
@@ -240,6 +396,12 @@
             <div class="space-y-4">
                 <a href="#home" class="block py-3 px-4 rounded-lg bg-dark-700 text-white">首页</a>
                 <a href="#tools" class="block py-3 px-4 rounded-lg bg-dark-700 text-white">分类</a>
+                <button onclick="showFavorites(); closeMobileMenu();" class="block w-full text-left py-3 px-4 rounded-lg bg-dark-700 text-white">
+                    <i class="fas fa-star text-yellow-400 mr-2"></i>我的收藏
+                </button>
+                <button onclick="openRandomTool(); closeMobileMenu();" class="block w-full text-left py-3 px-4 rounded-lg bg-dark-700 text-white">
+                    <i class="fas fa-dice text-orange-400 mr-2"></i>随机推荐
+                </button>
                 <a href="#about" class="block py-3 px-4 rounded-lg bg-dark-700 text-white">关于</a>
                 <div class="pt-4 border-t border-dark-600">
                     <input type="text" id="mobileSearch" placeholder="搜索工具..." 
@@ -264,7 +426,7 @@
         <div class="relative z-10 text-center px-4 max-w-5xl mx-auto">
             <div class="inline-flex items-center space-x-2 px-4 py-2 rounded-full glass mb-6 animate-float">
                 <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
-                <span class="text-sm text-gray-300">已收录 32+ 款优质 AI 工具</span>
+                <span class="text-sm text-gray-300">已收录 60+ 款优质 AI 工具</span>
             </div>
             
             <h1 class="text-5xl md:text-7xl font-bold mb-6">
@@ -278,19 +440,19 @@
                 汇集写作、绘画、代码、视频、语音、设计、办公等领域顶尖 AI 工具，助你工作效率倍增
             </p>
             
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
                 <a href="#tools" class="px-8 py-4 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg hover:shadow-primary/50 transition-all transform hover:scale-105">
                     <i class="fas fa-compass mr-2"></i>探索工具
                 </a>
-                <a href="#all-tools" class="px-8 py-4 rounded-full glass text-white font-semibold hover:border-primary transition-all">
-                    <i class="fas fa-th-large mr-2"></i>全部工具
-                </a>
+                <button onclick="openRandomTool()" class="px-8 py-4 rounded-full glass text-white font-semibold hover:border-primary transition-all flex items-center gap-2">
+                    <i class="fas fa-dice"></i>随机推荐
+                </button>
             </div>
             
             <!-- Stats -->
-            <div class="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+            <div class="mt-12 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
                 <div class="text-center">
-                    <div class="text-3xl font-bold gradient-text">32+</div>
+                    <div class="text-3xl font-bold gradient-text">60+</div>
                     <div class="text-sm text-gray-500 mt-1">优质工具</div>
                 </div>
                 <div class="text-center">
@@ -310,6 +472,26 @@
         </div>
     </section>
 
+    <!-- Recent Visits Section -->
+    <section id="recentSection" class="px-4 -mt-8 hidden">
+        <div class="max-w-7xl mx-auto">
+            <div class="recent-bar">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-history text-primary"></i>
+                        <span class="font-semibold text-white">最近访问</span>
+                    </div>
+                    <button onclick="clearRecentVisits()" class="text-sm text-gray-400 hover:text-red-400 transition-colors">
+                        <i class="fas fa-trash-alt mr-1"></i>清空
+                    </button>
+                </div>
+                <div id="recentVisitsList" class="flex flex-wrap">
+                    <!-- Recent items will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Tools Section -->
     <section id="tools" class="py-20 px-4">
         <div class="max-w-7xl mx-auto">
@@ -324,45 +506,27 @@
             </div>
             
             <!-- Category Filter -->
-            <div class="flex flex-wrap justify-center gap-3 mb-12">
-                <button class="category-btn active px-6 py-3 rounded-full glass text-sm font-medium transition-all" data-category="all">
-                    <i class="fas fa-th-large mr-2"></i>全部
-                </button>
-                <button class="category-btn px-6 py-3 rounded-full glass text-sm font-medium transition-all" data-category="writing">
-                    <i class="fas fa-pen-nib mr-2"></i>AI写作
-                </button>
-                <button class="category-btn px-6 py-3 rounded-full glass text-sm font-medium transition-all" data-category="painting">
-                    <i class="fas fa-palette mr-2"></i>AI绘画
-                </button>
-                <button class="category-btn px-6 py-3 rounded-full glass text-sm font-medium transition-all" data-category="code">
-                    <i class="fas fa-code mr-2"></i>AI代码
-                </button>
-                <button class="category-btn px-6 py-3 rounded-full glass text-sm font-medium transition-all" data-category="video">
-                    <i class="fas fa-video mr-2"></i>AI视频
-                </button>
-                <button class="category-btn px-6 py-3 rounded-full glass text-sm font-medium transition-all" data-category="voice">
-                    <i class="fas fa-microphone mr-2"></i>AI语音
-                </button>
-                <button class="category-btn px-6 py-3 rounded-full glass text-sm font-medium transition-all" data-category="design">
-                    <i class="fas fa-paint-brush mr-2"></i>AI设计
-                </button>
-                <button class="category-btn px-6 py-3 rounded-full glass text-sm font-medium transition-all" data-category="office">
-                    <i class="fas fa-briefcase mr-2"></i>AI办公
-                </button>
+            <div id="categoryFilter" class="flex flex-wrap justify-center gap-3 mb-12">
+                <!-- Categories will be inserted here -->
             </div>
             
             <!-- Search Bar -->
             <div class="max-w-2xl mx-auto mb-12">
                 <div class="relative">
-                    <input type="text" id="mainSearch" placeholder="搜索工具名称或功能..." 
+                    <input type="text" id="mainSearch" placeholder="搜索工具名称或功能（支持拼音首字母）..." 
                         class="search-input w-full bg-dark-700 border border-primary/30 rounded-2xl px-6 py-4 pl-14 text-white placeholder-gray-400 focus:outline-none focus:border-primary text-lg">
                     <i class="fas fa-search absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl"></i>
                 </div>
             </div>
             
+            <!-- Skeleton Loading -->
+            <div id="skeletonLoader" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Skeleton cards will be inserted here -->
+            </div>
+            
             <!-- Tools Grid -->
-            <div id="toolsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <!-- Tools will be inserted here by JavaScript -->
+            <div id="toolsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden">
+                <!-- Tools will be inserted here -->
             </div>
             
             <!-- No Results -->
@@ -371,7 +535,23 @@
                     <i class="fas fa-search text-4xl text-gray-500"></i>
                 </div>
                 <h3 class="text-xl font-semibold text-gray-300 mb-2">未找到相关工具</h3>
-                <p class="text-gray-500">尝试使用其他关键词搜索</p>
+                <p class="text-gray-500 mb-6">尝试使用其他关键词搜索</p>
+                <div id="similarTools" class="hidden">
+                    <p class="text-gray-400 mb-4">你可能对以下工具感兴趣：</p>
+                    <div id="similarToolsList" class="flex flex-wrap justify-center gap-4"></div>
+                </div>
+            </div>
+            
+            <!-- Empty Favorites State -->
+            <div id="emptyFavorites" class="hidden empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-300 mb-4">暂无收藏</h3>
+                <p class="text-gray-500 mb-6">点击工具卡片上的星星图标，收藏你喜欢的 AI 工具</p>
+                <button onclick="showAllTools()" class="px-6 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-medium hover:shadow-lg transition-all">
+                    浏览全部工具
+                </button>
             </div>
         </div>
     </section>
@@ -403,6 +583,11 @@
                     <div class="text-white font-semibold">持续更新</div>
                     <div class="text-sm text-gray-500">紧跟 AI 前沿</div>
                 </div>
+                <div class="glass-card px-6 py-4 rounded-xl">
+                    <i class="fas fa-star text-yellow-400 text-2xl mb-2"></i>
+                    <div class="text-white font-semibold">本地收藏</div>
+                    <div class="text-sm text-gray-500">隐私保护</div>
+                </div>
             </div>
         </div>
     </section>
@@ -416,6 +601,7 @@
                         <i class="fas fa-robot text-white text-sm"></i>
                     </div>
                     <span class="font-semibold gradient-text">AI Tool Hub</span>
+                    <span class="text-xs text-gray-500">v1.5</span>
                 </div>
                 <div class="text-sm text-gray-500 text-center md:text-right">
                     <p>&copy; 2026 AI Tool Hub. 仅供导航聚合，非官方网站。</p>
@@ -430,169 +616,419 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <script>
-        // Tools data
-        const toolsData = [
-            // AI写作类
-            { id: 1, name: '秘塔写作猫', category: 'writing', icon: 'fa-cat', desc: 'AI写作校对、文案生成', tags: ['free', 'online'], url: 'https://xiezuocat.com' },
-            { id: 2, name: 'ChatGPT', category: 'writing', icon: 'fa-comment-dots', desc: '全能AI对话、文案创作', tags: ['vip', 'online'], url: 'https://chat.openai.com' },
-            { id: 3, name: '文心一言', category: 'writing', icon: 'fa-brain', desc: '百度AI大模型、文案撰写', tags: ['free', 'online'], url: 'https://yiyan.baidu.com' },
-            { id: 4, name: '讯飞星火', category: 'writing', icon: 'fa-star', desc: '讯飞AI写作、内容生成', tags: ['free', 'online'], url: 'https://xinghuo.xfyun.cn' },
-            { id: 5, name: '豆包', category: 'writing', icon: 'fa-cookie', desc: '字节AI写作、问答、文案', tags: ['free', 'online'], url: 'https://www.doubao.com' },
-            { id: 6, name: '有道文案', category: 'writing', icon: 'fa-pen', desc: 'AI文案、广告语生成', tags: ['free', 'online'], url: 'https://zuowen.youdao.com' },
-            
-            // AI绘画类
-            { id: 7, name: 'Midjourney', category: 'painting', icon: 'fa-image', desc: 'AI绘画、艺术创作', tags: ['vip', 'online'], url: 'https://www.midjourney.com' },
-            { id: 8, name: 'Stable Diffusion', category: 'painting', icon: 'fa-layer-group', desc: '开源AI绘画、图像生成', tags: ['free', 'local'], url: 'https://stablediffusionwebui.com' },
-            { id: 9, name: '文心一格', category: 'painting', icon: 'fa-paint-brush', desc: '百度AI绘画、海报生成', tags: ['free', 'online'], url: 'https://yige.baidu.com' },
-            { id: 10, name: '讯飞智绘', category: 'painting', icon: 'fa-magic', desc: '讯飞AI绘画、插画设计', tags: ['free', 'online'], url: 'https://zhihui.xfyun.cn' },
-            { id: 11, name: '醒图AI', category: 'painting', icon: 'fa-wand-magic-sparkles', desc: 'AI绘画、图片创作', tags: ['free', 'online'], url: 'https://www.xingtu.com' },
-            { id: 12, name: '6pen Art', category: 'painting', icon: 'fa-fan', desc: '国风AI绘画、艺术创作', tags: ['free', 'online'], url: 'https://6pen.art' },
-            
-            // AI代码类
-            { id: 13, name: 'GitHub Copilot', category: 'code', icon: 'fa-github', desc: 'AI代码补全、编程辅助', tags: ['vip', 'online'], url: 'https://github.com/copilot' },
-            { id: 14, name: 'CodeGeeX', category: 'code', icon: 'fa-code', desc: '开源AI代码生成、注释', tags: ['free', 'online'], url: 'https://codegeex.cn' },
-            { id: 15, name: 'Cursor', category: 'code', icon: 'fa-terminal', desc: 'AI编程编辑器、代码生成', tags: ['free', 'online'], url: 'https://cursor.sh' },
-            { id: 16, name: '通义灵码', category: 'code', icon: 'fa-laptop-code', desc: '阿里AI代码助手、编程', tags: ['free', 'online'], url: 'https://lingma.aliyun.com' },
-            { id: 17, name: 'Tabnine', category: 'code', icon: 'fa-keyboard', desc: 'AI代码补全、多语言支持', tags: ['free', 'online'], url: 'https://www.tabnine.com' },
-            { id: 18, name: 'Codeium', category: 'code', icon: 'fa-robot', desc: 'AI代码生成、开发辅助', tags: ['free', 'online'], url: 'https://codeium.com' },
-            
-            // AI视频类
-            { id: 19, name: 'Runway Gen-2', category: 'video', icon: 'fa-film', desc: 'AI视频生成、剪辑', tags: ['vip', 'online'], url: 'https://runwayml.com' },
-            { id: 20, name: 'Pika Labs', category: 'video', icon: 'fa-play-circle', desc: 'AI动画视频、动态生成', tags: ['vip', 'online'], url: 'https://pika.art' },
-            { id: 21, name: '剪映AI', category: 'video', icon: 'fa-scissors', desc: 'AI视频剪辑、文案生成', tags: ['free', 'online'], url: 'https://www.capcut.cn' },
-            { id: 22, name: '讯飞听见', category: 'video', icon: 'fa-closed-captioning', desc: 'AI视频字幕、语音转文字', tags: ['free', 'online'], url: 'https://ting.iflytek.com' },
-            { id: 23, name: '即梦AI', category: 'video', icon: 'fa-video', desc: 'AI视频生成、短视频创作', tags: ['free', 'online'], url: 'https://jimengai.com' },
-            { id: 24, name: '万彩动画', category: 'video', icon: 'fa-film', desc: 'AI视频制作、动画生成', tags: ['free', 'online'], url: 'https://www.animiz.cn' },
-            
-            // AI语音类
-            { id: 25, name: '讯飞配音', category: 'voice', icon: 'fa-microphone-alt', desc: 'AI语音合成、真人配音', tags: ['free', 'online'], url: 'https://peiyin.xunfei.cn' },
-            { id: 26, name: 'ElevenLabs', category: 'voice', icon: 'fa-volume-up', desc: 'AI真人语音、音色生成', tags: ['vip', 'online'], url: 'https://elevenlabs.io' },
-            { id: 27, name: '腾讯智影', category: 'voice', icon: 'fa-headset', desc: 'AI语音、视频配音', tags: ['free', 'online'], url: 'https://zenvideo.qq.com' },
-            { id: 28, name: '魔音工坊', category: 'voice', icon: 'fa-music', desc: 'AI配音、有声书制作', tags: ['free', 'online'], url: 'https://www.moyin.com' },
-            { id: 29, name: '百度语音', category: 'voice', icon: 'fa-assistive-listening-systems', desc: 'AI语音合成、识别', tags: ['free', 'online'], url: 'https://ai.baidu.com/tech/speech' },
-            
-            // AI设计+办公类
-            { id: 30, name: '稿定设计', category: 'design', icon: 'fa-object-group', desc: 'AI海报、PPT设计', tags: ['free', 'online'], url: 'https://www.gaoding.com' },
-            { id: 31, name: 'Canva可画', category: 'design', icon: 'fa-palette', desc: 'AI设计、图文排版', tags: ['free', 'online'], url: 'https://www.canva.cn' },
-            { id: 32, name: 'WPS AI', category: 'office', icon: 'fa-file-word', desc: 'AI办公、文档生成', tags: ['free', 'online'], url: 'https://ai.wps.cn' },
-            { id: 33, name: '飞书AI', category: 'office', icon: 'fa-paper-plane', desc: 'AI办公协作、文案处理', tags: ['free', 'online'], url: 'https://www.feishu.cn' }
-        ];
 
-        // Category names
-        const categoryNames = {
-            writing: 'AI写作',
-            painting: 'AI绘画',
-            code: 'AI代码',
-            video: 'AI视频',
-            voice: 'AI语音',
-            design: 'AI设计',
-            office: 'AI办公'
+    <script>
+        // Global state
+        let allTools = [];
+        let categories = [];
+        let favorites = JSON.parse(localStorage.getItem('ai-tool-hub-favorites') || '[]');
+        let recentVisits = JSON.parse(localStorage.getItem('ai-tool-hub-recent') || '[]');
+        let currentCategory = 'all';
+        let isShowingFavorites = false;
+
+        // Pinyin dictionary for Chinese characters
+        const pinyinMap = {
+            '秘': 'mi', '塔': 'ta', '写': 'xie', '作': 'zuo', '猫': 'mao',
+            '文': 'wen', '心': 'xin', '一': 'yi', '言': 'yan', '百': 'bai', '度': 'du',
+            '讯': 'xun', '飞': 'fei', '星': 'xing', '火': 'huo', '豆': 'dou', '包': 'bao',
+            '字': 'zi', '节': 'jie', '有': 'you', '道': 'dao', '克': 'ke', '拉': 'la',
+            '德': 'de', '通': 'tong', '义': 'yi', '千': 'qian', '问': 'wen', '智': 'zhi',
+            '谱': 'pu', '清': 'qing', '画': 'hua', '绘': 'hui', '图': 'tu', '醒': 'xing',
+            ' pen': 'pen', 'Art': 'art', '代': 'dai', '码': 'ma', '编': 'bian', '程': 'cheng',
+            '灵': 'ling', '码': 'ma', '剪': 'jian', '映': 'ying', '听': 'ting', '见': 'jian',
+            '梦': 'meng', '动': 'dong', '配': 'pei', '音': 'yin', '影': 'ying', '魔': 'mo',
+            '工': 'gong', '坊': 'fang', '稿': 'gao', '定': 'ding', '设': 'she', '计': 'ji',
+            '办': 'ban', '公': 'gong', '书': 'shu', '钉': 'ding', '钉': 'ding', '飞': 'fei'
         };
 
-        // Render tools
-        function renderTools(tools) {
-            const grid = document.getElementById('toolsGrid');
-            const noResults = document.getElementById('noResults');
-            
-            if (tools.length === 0) {
-                grid.innerHTML = '';
-                noResults.classList.remove('hidden');
-                return;
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            showSkeletonLoader();
+            await loadToolsData();
+            renderCategories();
+            renderTools(allTools);
+            updateRecentVisitsDisplay();
+            setupEventListeners();
+            setupScrollEffects();
+            hideSkeletonLoader();
+        });
+
+        // Load tools data from JSON
+        async function loadToolsData() {
+            try {
+                const response = await fetch('tools.json');
+                const data = await response.json();
+                allTools = data.tools;
+                categories = data.categories;
+            } catch (error) {
+                console.error('Failed to load tools:', error);
+                showToast('加载工具数据失败，请刷新页面');
             }
-            
-            noResults.classList.add('hidden');
-            grid.innerHTML = tools.map(tool => `
-                <div class="glass-card rounded-2xl p-6 neon-border group" data-category="${tool.category}">
+        }
+
+        // Show skeleton loader
+        function showSkeletonLoader() {
+            const skeletonLoader = document.getElementById('skeletonLoader');
+            skeletonLoader.innerHTML = Array(8).fill(0).map(() => `
+                <div class="glass-card rounded-2xl p-6">
                     <div class="flex items-start justify-between mb-4">
-                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                            <i class="fas ${tool.icon} text-2xl tool-icon"></i>
-                        </div>
-                        <div class="flex flex-wrap gap-2">
-                            ${tool.tags.map(tag => `
-                                <span class="tag-${tag} text-xs px-2 py-1 rounded-full">${getTagText(tag)}</span>
-                            `).join('')}
-                        </div>
+                        <div class="w-14 h-14 rounded-xl skeleton"></div>
+                        <div class="w-20 h-6 rounded-full skeleton"></div>
                     </div>
-                    <h3 class="text-lg font-bold text-white mb-2 group-hover:text-primary transition-colors">${tool.name}</h3>
-                    <p class="text-gray-400 text-sm mb-4 line-clamp-2">${tool.desc}</p>
+                    <div class="h-6 w-3/4 rounded skeleton mb-2"></div>
+                    <div class="h-4 w-full rounded skeleton mb-4"></div>
                     <div class="flex items-center justify-between">
-                        <span class="text-xs text-gray-500 bg-dark-700 px-3 py-1 rounded-full">${categoryNames[tool.category]}</span>
-                        <a href="${tool.url}" target="_blank" rel="noopener noreferrer" 
-                            class="px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium hover:shadow-lg hover:shadow-primary/30 transition-all transform hover:scale-105">
-                            访问 <i class="fas fa-external-link-alt ml-1 text-xs"></i>
-                        </a>
+                        <div class="w-24 h-6 rounded-full skeleton"></div>
+                        <div class="w-20 h-8 rounded-lg skeleton"></div>
                     </div>
                 </div>
             `).join('');
         }
 
+        // Hide skeleton loader
+        function hideSkeletonLoader() {
+            document.getElementById('skeletonLoader').classList.add('hidden');
+            document.getElementById('toolsGrid').classList.remove('hidden');
+        }
+
+        // Render categories
+        function renderCategories() {
+            const container = document.getElementById('categoryFilter');
+            const allBtn = `
+                <button class="category-btn active px-6 py-3 rounded-full glass text-sm font-medium transition-all" data-category="all" onclick="filterByCategory('all')">
+                    <i class="fas fa-th-large mr-2"></i>全部
+                </button>
+            `;
+            const categoryBtns = categories.map(cat => `
+                <button class="category-btn px-6 py-3 rounded-full glass text-sm font-medium transition-all" data-category="${cat.id}" onclick="filterByCategory('${cat.id}')">
+                    <i class="fas ${cat.icon} mr-2"></i>${cat.name}
+                </button>
+            `).join('');
+            container.innerHTML = allBtn + categoryBtns;
+        }
+
+        // Render tools
+        function renderTools(tools, containerId = 'toolsGrid') {
+            const grid = document.getElementById(containerId);
+            const noResults = document.getElementById('noResults');
+            const emptyFavorites = document.getElementById('emptyFavorites');
+            
+            if (isShowingFavorites && tools.length === 0) {
+                grid.classList.add('hidden');
+                noResults.classList.add('hidden');
+                emptyFavorites.classList.remove('hidden');
+                return;
+            }
+            
+            emptyFavorites.classList.add('hidden');
+            
+            if (tools.length === 0 && !isShowingFavorites) {
+                grid.classList.add('hidden');
+                noResults.classList.remove('hidden');
+                showSimilarTools();
+                return;
+            }
+            
+            noResults.classList.add('hidden');
+            grid.classList.remove('hidden');
+            
+            grid.innerHTML = tools.map(tool => {
+                const isFavorited = favorites.includes(tool.id);
+                const categoryName = categories.find(c => c.id === tool.category)?.name || tool.category;
+                
+                return `
+                <div class="glass-card rounded-2xl p-6 group relative" data-category="${tool.category}" data-id="${tool.id}">
+                    <!-- Favorite Button -->
+                    <button onclick="toggleFavorite(${tool.id}, this)" class="star-btn absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-dark-700/50 border border-primary/20 z-10 ${isFavorited ? 'active' : 'text-gray-400'}">
+                        <i class="fas fa-star"></i>
+                    </button>
+                    
+                    <div class="flex items-start justify-between mb-4 pr-8">
+                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                            <i class="fas ${tool.icon} text-2xl tool-icon"></i>
+                        </div>
+                        <div class="flex flex-wrap gap-1">
+                            ${tool.tags.map(tag => `
+                                <span class="tag-${tag} text-xs px-2 py-0.5 rounded-full">${getTagText(tag)}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-lg font-bold text-white mb-2 group-hover:text-primary transition-colors">${tool.name}</h3>
+                    <p class="text-gray-400 text-sm mb-3 line-clamp-2">${tool.desc}</p>
+                    
+                    <!-- Tool Tags -->
+                    <div class="flex flex-wrap gap-1 mb-4">
+                        ${tool.toolTags.map(tt => `
+                            <span class="text-xs px-2 py-0.5 rounded bg-dark-700 text-gray-400 border border-dark-600">${tt}</span>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs text-gray-500 bg-dark-700 px-3 py-1 rounded-full">${categoryName}</span>
+                        <div class="flex gap-2">
+                            <button onclick="copyToolLink('${tool.url}', '${tool.name}')" class="copy-btn w-8 h-8 rounded-lg bg-dark-700 border border-primary/30 flex items-center justify-center text-gray-400 hover:text-primary" title="复制链接">
+                                <i class="fas fa-link text-sm"></i>
+                            </button>
+                            <a href="${tool.url}" target="_blank" rel="noopener noreferrer" onclick="recordVisit(${tool.id})"
+                                class="px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-secondary text-white text-sm font-medium hover:shadow-lg hover:shadow-primary/30 transition-all transform hover:scale-105 flex items-center gap-1">
+                                使用 <i class="fas fa-external-link-alt text-xs"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // Get tag text
         function getTagText(tag) {
-            const tagTexts = {
-                free: '免费',
-                vip: '会员',
-                online: '在线',
-                local: '本地'
-            };
+            const tagTexts = { free: '免费', vip: '会员', online: '在线', local: '本地' };
             return tagTexts[tag] || tag;
         }
 
-        // Category filter
-        document.querySelectorAll('.category-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                
-                const category = btn.dataset.category;
-                const searchTerm = document.getElementById('mainSearch').value.toLowerCase();
-                filterTools(category, searchTerm);
+        // Filter by category
+        function filterByCategory(category) {
+            isShowingFavorites = false;
+            currentCategory = category;
+            
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.category === category) {
+                    btn.classList.add('active');
+                }
             });
-        });
-
-        // Search functionality
-        function filterTools(category, searchTerm) {
-            let filtered = toolsData;
             
-            if (category !== 'all') {
-                filtered = filtered.filter(tool => tool.category === category);
-            }
-            
+            let filtered = category === 'all' ? allTools : allTools.filter(t => t.category === category);
+            const searchTerm = document.getElementById('mainSearch').value.toLowerCase();
             if (searchTerm) {
-                filtered = filtered.filter(tool => 
-                    tool.name.toLowerCase().includes(searchTerm) ||
-                    tool.desc.toLowerCase().includes(searchTerm) ||
-                    categoryNames[tool.category].includes(searchTerm)
-                );
+                filtered = filterBySearch(filtered, searchTerm);
             }
             
             renderTools(filtered);
         }
 
+        // Search functionality with pinyin support
+        function filterBySearch(tools, searchTerm) {
+            return tools.filter(tool => {
+                const nameMatch = tool.name.toLowerCase().includes(searchTerm);
+                const descMatch = tool.desc.toLowerCase().includes(searchTerm);
+                const categoryMatch = categories.find(c => c.id === tool.category)?.name.includes(searchTerm);
+                
+                // Pinyin initial match
+                const pinyinMatch = tool.name.split('').some(char => {
+                    const py = pinyinMap[char];
+                    return py && py.startsWith(searchTerm);
+                });
+                
+                return nameMatch || descMatch || categoryMatch || pinyinMatch;
+            });
+        }
+
         // Main search
-        document.getElementById('mainSearch').addEventListener('input', (e) => {
+        document.getElementById('mainSearch')?.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
-            const activeCategory = document.querySelector('.category-btn.active').dataset.category;
-            filterTools(activeCategory, searchTerm);
+            let filtered = currentCategory === 'all' ? allTools : allTools.filter(t => t.category === currentCategory);
+            
+            if (searchTerm) {
+                filtered = filterBySearch(filtered, searchTerm);
+            }
+            
+            renderTools(filtered);
         });
 
         // Nav search
-        document.getElementById('navSearch').addEventListener('input', (e) => {
+        document.getElementById('navSearch')?.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             document.getElementById('mainSearch').value = searchTerm;
-            const activeCategory = document.querySelector('.category-btn.active').dataset.category;
-            filterTools(activeCategory, searchTerm);
+            
+            let filtered = currentCategory === 'all' ? allTools : allTools.filter(t => t.category === currentCategory);
+            if (searchTerm) {
+                filtered = filterBySearch(filtered, searchTerm);
+            }
+            
+            renderTools(filtered);
             document.getElementById('tools').scrollIntoView({ behavior: 'smooth' });
         });
 
         // Mobile search
-        document.getElementById('mobileSearch').addEventListener('input', (e) => {
+        document.getElementById('mobileSearch')?.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             document.getElementById('mainSearch').value = searchTerm;
-            const activeCategory = document.querySelector('.category-btn.active').dataset.category;
-            filterTools(activeCategory, searchTerm);
+            
+            let filtered = currentCategory === 'all' ? allTools : allTools.filter(t => t.category === currentCategory);
+            if (searchTerm) {
+                filtered = filterBySearch(filtered, searchTerm);
+            }
+            
+            renderTools(filtered);
             document.getElementById('mobileMenu').classList.remove('open');
             document.getElementById('tools').scrollIntoView({ behavior: 'smooth' });
         });
+
+        // Show similar tools when no results
+        function showSimilarTools() {
+            const similarSection = document.getElementById('similarTools');
+            const similarList = document.getElementById('similarToolsList');
+            const searchTerm = document.getElementById('mainSearch').value.toLowerCase();
+            
+            if (!searchTerm) {
+                similarSection.classList.add('hidden');
+                return;
+            }
+            
+            // Find tools from related categories
+            const relatedTools = allTools.filter(tool => {
+                const categoryName = categories.find(c => c.id === tool.category)?.name || '';
+                return categoryName.includes(searchTerm) || tool.category.includes(searchTerm);
+            }).slice(0, 4);
+            
+            if (relatedTools.length > 0) {
+                similarSection.classList.remove('hidden');
+                similarList.innerHTML = relatedTools.map(tool => `
+                    <button onclick="showToolDetail(${tool.id})" class="px-4 py-2 rounded-full glass text-sm hover:bg-primary/20 transition-colors">
+                        <i class="fas ${tool.icon} mr-2"></i>${tool.name}
+                    </button>
+                `).join('');
+            } else {
+                similarSection.classList.add('hidden');
+            }
+        }
+
+        // Toggle favorite
+        function toggleFavorite(toolId, btn) {
+            const index = favorites.indexOf(toolId);
+            if (index > -1) {
+                favorites.splice(index, 1);
+                btn.classList.remove('active');
+                btn.classList.add('text-gray-400');
+                showToast('已取消收藏');
+            } else {
+                favorites.push(toolId);
+                btn.classList.add('active');
+                btn.classList.remove('text-gray-400');
+                showToast('已添加到收藏');
+            }
+            localStorage.setItem('ai-tool-hub-favorites', JSON.stringify(favorites));
+            
+            if (isShowingFavorites) {
+                showFavorites();
+            }
+        }
+
+        // Show favorites
+        function showFavorites() {
+            isShowingFavorites = true;
+            const favoriteTools = allTools.filter(t => favorites.includes(t.id));
+            
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('mainSearch').value = '';
+            
+            renderTools(favoriteTools);
+            document.getElementById('tools').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Show all tools
+        function showAllTools() {
+            isShowingFavorites = false;
+            filterByCategory('all');
+        }
+
+        // Record visit
+        function recordVisit(toolId) {
+            const tool = allTools.find(t => t.id === toolId);
+            if (!tool) return;
+            
+            // Remove if already exists
+            recentVisits = recentVisits.filter(v => v.id !== toolId);
+            
+            // Add to beginning
+            recentVisits.unshift({
+                id: toolId,
+                name: tool.name,
+                icon: tool.icon,
+                url: tool.url,
+                time: Date.now()
+            });
+            
+            // Keep only last 10
+            recentVisits = recentVisits.slice(0, 10);
+            
+            localStorage.setItem('ai-tool-hub-recent', JSON.stringify(recentVisits));
+            updateRecentVisitsDisplay();
+        }
+
+        // Update recent visits display
+        function updateRecentVisitsDisplay() {
+            const section = document.getElementById('recentSection');
+            const list = document.getElementById('recentVisitsList');
+            
+            if (recentVisits.length === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+            
+            section.classList.remove('hidden');
+            list.innerHTML = recentVisits.map(item => `
+                <div class="recent-item" onclick="window.open('${item.url}', '_blank'); recordVisit(${item.id});">
+                    <i class="fas ${item.icon} text-primary text-sm"></i>
+                    <span>${item.name}</span>
+                </div>
+            `).join('');
+        }
+
+        // Clear recent visits
+        function clearRecentVisits() {
+            recentVisits = [];
+            localStorage.setItem('ai-tool-hub-recent', JSON.stringify(recentVisits));
+            updateRecentVisitsDisplay();
+            showToast('已清空最近访问');
+        }
+
+        // Copy tool link
+        function copyToolLink(url, name) {
+            navigator.clipboard.writeText(url).then(() => {
+                showToast(`已复制 ${name} 链接`);
+            }).catch(() => {
+                // Fallback
+                const input = document.createElement('input');
+                input.value = url;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                showToast(`已复制 ${name} 链接`);
+            });
+        }
+
+        // Open random tool
+        function openRandomTool() {
+            if (allTools.length === 0) return;
+            const randomTool = allTools[Math.floor(Math.random() * allTools.length)];
+            recordVisit(randomTool.id);
+            window.open(randomTool.url, '_blank');
+        }
+
+        // Show toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // Show tool detail (placeholder for future expansion)
+        function showToolDetail(toolId) {
+            const tool = allTools.find(t => t.id === toolId);
+            if (tool) {
+                document.getElementById('mainSearch').value = tool.name;
+                filterBySearch(allTools, tool.name.toLowerCase());
+                renderTools([tool]);
+                document.getElementById('tools').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
 
         // Theme toggle
         const themeToggle = document.getElementById('themeToggle');
@@ -611,24 +1047,24 @@
             }
         }
 
-        themeToggle.addEventListener('click', toggleTheme);
-        mobileThemeToggle.addEventListener('click', toggleTheme);
+        themeToggle?.addEventListener('click', toggleTheme);
+        mobileThemeToggle?.addEventListener('click', toggleTheme);
 
         // Mobile menu
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const mobileMenu = document.getElementById('mobileMenu');
-        const closeMobileMenu = document.getElementById('closeMobileMenu');
+        const closeMobileMenuBtn = document.getElementById('closeMobileMenu');
 
-        mobileMenuBtn.addEventListener('click', () => {
+        mobileMenuBtn?.addEventListener('click', () => {
             mobileMenu.classList.add('open');
         });
 
-        closeMobileMenu.addEventListener('click', () => {
+        closeMobileMenuBtn?.addEventListener('click', () => {
             mobileMenu.classList.remove('open');
         });
 
         // Close mobile menu when clicking on links
-        mobileMenu.querySelectorAll('a').forEach(link => {
+        mobileMenu?.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', () => {
                 mobileMenu.classList.remove('open');
             });
@@ -637,31 +1073,42 @@
         // Scroll to top
         const scrollTopBtn = document.getElementById('scrollTop');
 
-        window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
-                scrollTopBtn.classList.add('visible');
-            } else {
-                scrollTopBtn.classList.remove('visible');
-            }
-        });
+        function setupScrollEffects() {
+            const navbar = document.getElementById('navbar');
+            
+            window.addEventListener('scroll', () => {
+                // Scroll to top button
+                if (window.pageYOffset > 300) {
+                    scrollTopBtn.classList.add('visible');
+                } else {
+                    scrollTopBtn.classList.remove('visible');
+                }
+                
+                // Navbar transparency
+                if (window.pageYOffset > 50) {
+                    navbar.style.background = 'rgba(10, 10, 15, 0.95)';
+                } else {
+                    navbar.style.background = 'rgba(10, 10, 15, 0.8)';
+                }
+            });
+        }
 
-        scrollTopBtn.addEventListener('click', () => {
+        scrollTopBtn?.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
         // Smooth scroll for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth' });
-                }
+        function setupEventListeners() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
             });
-        });
-
-        // Initialize
-        renderTools(toolsData);
+        }
     </script>
 </body>
 </html>
