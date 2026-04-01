@@ -656,13 +656,31 @@
         // Load tools data from JSON
         async function loadToolsData() {
             try {
-                const response = await fetch('tools.json');
+                // Try multiple paths for compatibility
+                let response;
+                try {
+                    response = await fetch('./tools.json');
+                } catch (e) {
+                    response = await fetch('tools.json');
+                }
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch tools.json');
+                }
+                
                 const data = await response.json();
-                allTools = data.tools;
-                categories = data.categories;
+                allTools = data.tools || [];
+                categories = data.categories || [];
+                
+                if (allTools.length === 0) {
+                    throw new Error('No tools loaded');
+                }
             } catch (error) {
                 console.error('Failed to load tools:', error);
-                showToast('加载工具数据失败，请刷新页面');
+                showToast('加载工具数据失败，请刷新页面重试');
+                // Set empty arrays to prevent errors
+                allTools = [];
+                categories = [];
             }
         }
 
