@@ -658,14 +658,19 @@
             try {
                 // Try multiple paths for compatibility
                 let response;
-                try {
-                    response = await fetch('./tools.json');
-                } catch (e) {
-                    response = await fetch('tools.json');
+                const paths = ['./tools.json', 'tools.json', '/ai-tool-hub/tools.json'];
+                
+                for (const path of paths) {
+                    try {
+                        response = await fetch(path);
+                        if (response.ok) break;
+                    } catch (e) {
+                        continue;
+                    }
                 }
                 
-                if (!response.ok) {
-                    throw new Error('Failed to fetch tools.json');
+                if (!response || !response.ok) {
+                    throw new Error('Failed to fetch tools.json from all paths');
                 }
                 
                 const data = await response.json();
@@ -675,10 +680,21 @@
                 if (allTools.length === 0) {
                     throw new Error('No tools loaded');
                 }
+                
+                console.log('Loaded', allTools.length, 'tools');
             } catch (error) {
                 console.error('Failed to load tools:', error);
-                showToast('加载工具数据失败，请刷新页面重试');
-                // Set empty arrays to prevent errors
+                showToast('加载工具数据失败，请检查网络连接后刷新页面');
+                // Show error in the grid
+                document.getElementById('skeletonLoader').innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <i class="fas fa-exclamation-circle text-5xl text-red-400 mb-4"></i>
+                        <p class="text-gray-400 mb-4">加载工具数据失败</p>
+                        <button onclick="location.reload()" class="px-6 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-medium">
+                            <i class="fas fa-refresh mr-2"></i>刷新页面
+                        </button>
+                    </div>
+                `;
                 allTools = [];
                 categories = [];
             }
@@ -1020,7 +1036,18 @@
 
         // Open random tool
         function openRandomTool() {
-            if (allTools.length === 0) return;
+            if (allTools.length === 0) {
+                showToast('工具数据加载中，请稍后重试');
+                // Try to reload data
+                loadToolsData().then(() => {
+                    if (allTools.length > 0) {
+                        renderCategories();
+                        renderTools(allTools);
+                        hideSkeletonLoader();
+                    }
+                });
+                return;
+            }
             const randomTool = allTools[Math.floor(Math.random() * allTools.length)];
             recordVisit(randomTool.id);
             window.open(randomTool.url, '_blank');
