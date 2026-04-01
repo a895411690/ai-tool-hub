@@ -19,7 +19,12 @@
       "desc": "AI写作校对、文案生成",
       "tags": ["free", "online"],
       "toolTags": ["国产", "无需登录", "网页版"],
-      "url": "https://xiezuocat.com"
+      "url": "https://xiezuocat.com",
+      "updateTime": "2024-12",
+      "status": "stable",
+      "difficulty": "beginner",
+      "platform": ["web"],
+      "relatedTools": [3, 4, 5]
     },
     {
       "id": 2,
