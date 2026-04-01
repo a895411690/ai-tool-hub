@@ -45,6 +45,17 @@
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
         .update-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 300; display: none; align-items: center; justify-content: center; }
         .update-modal.active { display: flex; }
+        /* Landscape Mode */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .bottom-nav { display: none !important; }
+            #navbar { position: relative; }
+            #home { min-height: auto; padding: 2rem 0; }
+        }
+        /* Enhanced Touch Targets */
+        @media (pointer: coarse) {
+            .category-btn, .glass-card, button { min-height: 44px; min-width: 44px; }
+            .bottom-nav a, .bottom-nav button { padding: 12px; }
+        }
     </style>
 </head>
 <body class="bg-[#0a0a0f] text-gray-100 min-h-screen pb-16 md:pb-0">
@@ -214,6 +225,7 @@
             setupPullToRefresh();
             checkForUpdate();
             loadAnnouncement();
+            loadSavedFilters();
         });
 
         // Load Tools
@@ -272,15 +284,24 @@
             `).join('');
         }
 
-        // Filter Category
+        // Filter Category with memory
         function filterCategory(category) {
             currentCategory = category;
+            localStorage.setItem('ai-tool-hub-filter-category', category);
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.remove('active');
                 if (btn.dataset.category === category) btn.classList.add('active');
             });
             const filtered = category === 'all' ? allTools : allTools.filter(t => t.category === category);
             renderTools(filtered);
+        }
+
+        // Load saved filters
+        function loadSavedFilters() {
+            const savedCategory = localStorage.getItem('ai-tool-hub-filter-category');
+            if (savedCategory && savedCategory !== 'all') {
+                setTimeout(() => filterCategory(savedCategory), 500);
+            }
         }
 
         // Search with History
