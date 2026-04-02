@@ -3,9 +3,8 @@ const CACHE_NAME = 'ai-tool-hub-v3.0';
 const STATIC_ASSETS = [
     './',
     './index.html',
-    './tools.json',
-    './prompts.json',
-    './manifest.json',
+    '../tools.json',
+    '../manifest.json',
     'https://cdn.tailwindcss.com',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
     'https://cdn.jsdelivr.net/npm/pinyin-pro@3.18.2/dist/index.js'

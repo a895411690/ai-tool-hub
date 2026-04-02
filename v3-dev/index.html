@@ -7,7 +7,7 @@
     <meta name="description" content="一站式AI工具聚合导航平台，支持用户系统、工具对比、个性化推荐">
     <meta name="keywords" content="AI工具,人工智能,AI写作,AI绘画,AI代码,AI视频">
     <meta name="theme-color" content="#6366f1">
-    <link rel="manifest" href="./manifest.json">
+    <link rel="manifest" href="../manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.18.2/dist/index.js"></script>
@@ -60,12 +60,6 @@
                     <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                     <span>上新 <span id="newToolsCount">0</span> 款</span>
                 </div>
-                
-                <!-- Prompts Button -->
-                <button onclick="showPromptsPage()" class="hidden md:flex items-center gap-2 px-4 py-2 rounded-full glass hover:border-primary transition-all text-sm">
-                    <i class="fas fa-wand-magic-sparkles text-purple-400"></i>
-                    <span>提示词</span>
-                </button>
                 
                 <!-- User Menu -->
                 <div class="relative">
@@ -289,10 +283,6 @@
                         <span class="flex items-center gap-3"><i class="fas fa-heart text-red-500"></i> 我的收藏</span>
                         <i class="fas fa-chevron-right text-gray-500"></i>
                     </button>
-                    <button onclick="showPromptsPage(); closeModal(null, 'profileModal');" class="w-full flex items-center justify-between p-4 rounded-xl glass hover:border-primary transition-all">
-                        <span class="flex items-center gap-3"><i class="fas fa-wand-magic-sparkles text-purple-500"></i> AI提示词</span>
-                        <i class="fas fa-chevron-right text-gray-500"></i>
-                    </button>
                     <button onclick="showSection('history')" class="w-full flex items-center justify-between p-4 rounded-xl glass hover:border-primary transition-all">
                         <span class="flex items-center gap-3"><i class="fas fa-history text-blue-500"></i> 浏览足迹</span>
                         <i class="fas fa-chevron-right text-gray-500"></i>
@@ -321,118 +311,6 @@
             </div>
             <div class="p-6" id="compareContent">
                 <!-- Comparison content rendered by JS -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Prompts Page (Full Screen) -->
-    <div id="promptsPage" class="detail-page">
-        <div class="h-full overflow-auto">
-            <div class="sticky top-0 z-10 glass px-4 py-4 flex items-center justify-between">
-                <button onclick="closePromptsPage()" class="flex items-center gap-2 text-gray-400 hover:text-white">
-                    <i class="fas fa-arrow-left"></i> 返回
-                </button>
-                <h3 class="text-lg font-semibold">AI 提示词库</h3>
-                <button onclick="showSubmitPromptModal()" class="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-sm">
-                    <i class="fas fa-plus"></i> 提交
-                </button>
-            </div>
-            
-            <div class="p-4 max-w-6xl mx-auto">
-                <!-- Search -->
-                <div class="relative mb-6">
-                    <input type="text" id="promptSearchInput" placeholder="搜索提示词..." 
-                        class="w-full px-6 py-4 pl-14 rounded-2xl glass text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-all"
-                        oninput="handlePromptSearch(this.value)">
-                    <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-500"></i>
-                </div>
-                
-                <!-- Category Filter -->
-                <div class="flex flex-wrap gap-2 mb-6" id="promptCategoryFilter">
-                    <!-- Categories rendered by JS -->
-                </div>
-                
-                <!-- Prompts Grid -->
-                <div id="promptsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Prompts rendered by JS -->
-                </div>
-                
-                <!-- Empty State -->
-                <div id="promptEmptyState" class="hidden">
-                    <div class="flex flex-col items-center justify-center py-16 text-center">
-                        <div class="w-16 h-16 rounded-full bg-gray-700/50 flex items-center justify-center mb-4">
-                            <i class="fas fa-wand-magic-sparkles text-gray-500 text-2xl"></i>
-                        </div>
-                        <h3 class="text-lg font-semibold mb-2">没有找到提示词</h3>
-                        <p class="text-gray-500">尝试其他关键词或分类</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Prompt Detail Modal -->
-    <div id="promptDetailModal" class="modal" onclick="closeModal(event, 'promptDetailModal')">
-        <div class="modal-content w-full max-w-3xl m-4 max-h-[90vh] overflow-auto">
-            <div class="p-6 border-b border-gray-700 flex items-center justify-between">
-                <h3 class="text-xl font-bold" id="promptDetailTitle">提示词详情</h3>
-                <button onclick="closeModal(null, 'promptDetailModal')" class="text-gray-400 hover:text-white">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <div class="p-6" id="promptDetailContent">
-                <!-- Prompt detail rendered by JS -->
-            </div>
-        </div>
-    </div>
-    
-    <!-- Submit Prompt Modal -->
-    <div id="submitPromptModal" class="modal" onclick="closeModal(event, 'submitPromptModal')">
-        <div class="modal-content w-full max-w-2xl m-4 max-h-[90vh] overflow-auto">
-            <div class="p-6 border-b border-gray-700 flex items-center justify-between">
-                <h3 class="text-xl font-bold">提交新提示词</h3>
-                <button onclick="closeModal(null, 'submitPromptModal')" class="text-gray-400 hover:text-white">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <div class="p-6">
-                <form id="submitPromptForm" onsubmit="handlePromptSubmit(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-2">提示词标题 *</label>
-                        <input type="text" name="title" required class="w-full px-4 py-3 rounded-xl glass bg-transparent focus:border-primary outline-none" placeholder="给提示词起个名字">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-2">分类 *</label>
-                            <select name="category" required class="w-full px-4 py-3 rounded-xl glass bg-transparent focus:border-primary outline-none">
-                                <option value="">选择分类</option>
-                                <option value="writing">写作创作</option>
-                                <option value="coding">编程开发</option>
-                                <option value="design">设计创意</option>
-                                <option value="marketing">营销运营</option>
-                                <option value="analysis">数据分析</option>
-                                <option value="learning">学习研究</option>
-                                <option value="business">商业职场</option>
-                                <option value="life">生活助手</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm text-gray-400 mb-2">标签（逗号分隔）</label>
-                            <input type="text" name="tags" class="w-full px-4 py-3 rounded-xl glass bg-transparent focus:border-primary outline-none" placeholder="AI写作, 小红书, 种草">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-2">简介 *</label>
-                        <input type="text" name="description" required class="w-full px-4 py-3 rounded-xl glass bg-transparent focus:border-primary outline-none" placeholder="简要描述这个提示词的用途">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-2">提示词内容 *</label>
-                        <textarea name="content" required rows="8" class="w-full px-4 py-3 rounded-xl glass bg-transparent focus:border-primary outline-none resize-none font-mono text-sm" placeholder="请输入提示词内容..."></textarea>
-                    </div>
-                    <button type="submit" class="w-full py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 font-semibold hover:opacity-90 transition-all">
-                        提交审核
-                    </button>
-                </form>
             </div>
         </div>
     </div>
@@ -516,7 +394,6 @@
                 <div>
                     <h4 class="font-semibold mb-4">快速链接</h4>
                     <ul class="space-y-2 text-sm text-gray-500">
-                        <li><a href="#" onclick="showPromptsPage(); return false;" class="hover:text-white transition-all">AI提示词库</a></li>
                         <li><a href="#" onclick="showSubmitModal(); return false;" class="hover:text-white transition-all">提交工具</a></li>
                         <li><a href="#" onclick="toggleCompareMode(); return false;" class="hover:text-white transition-all">工具对比</a></li>
                         <li><a href="#" onclick="showProfile(); return false;" class="hover:text-white transition-all">个人中心</a></li>
@@ -561,18 +438,12 @@
             notes: JSON.parse(localStorage.getItem('notes') || '{}'),
             compareList: [],
             compareMode: false,
-            currentCategory: 'all',
-            // Prompts state
-            allPrompts: [],
-            promptCategories: [],
-            promptFavorites: JSON.parse(localStorage.getItem('promptFavorites') || '[]'),
-            currentPromptCategory: 'all'
+            currentCategory: 'all'
         };
 
         // ==================== INIT ====================
         document.addEventListener('DOMContentLoaded', () => {
             loadTools();
-            loadPrompts();
             initUser();
             updateUI();
         });
@@ -682,7 +553,7 @@
             gridEl.classList.add('hidden');
             
             try {
-                const response = await fetch('./tools.json');
+                const response = await fetch('../tools.json');
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data = await response.json();
                 state.allTools = data.tools.map(t => ({...t, rating: state.ratings[t.id] || 0}));
@@ -1497,234 +1368,6 @@
         setTimeout(() => {
             renderRecommendations();
         }, 1000);
-
-        // ==================== PROMPTS ====================
-        async function loadPrompts() {
-            try {
-                const response = await fetch('./prompts.json');
-                if (!response.ok) throw new Error('Failed to load prompts');
-                const data = await response.json();
-                state.allPrompts = data.prompts;
-                state.promptCategories = data.categories;
-            } catch (error) {
-                console.error('Failed to load prompts:', error);
-            }
-        }
-
-        function showPromptsPage() {
-            document.getElementById('promptsPage').classList.add('show');
-            renderPromptCategories();
-            renderPrompts(state.allPrompts);
-        }
-
-        function closePromptsPage() {
-            document.getElementById('promptsPage').classList.remove('show');
-        }
-
-        function renderPromptCategories() {
-            const container = document.getElementById('promptCategoryFilter');
-            const html = `
-                <button class="prompt-cat-btn active px-4 py-2 rounded-full glass text-sm transition-all" data-category="all" onclick="filterPromptCategory('all')">全部</button>
-                ${state.promptCategories.map(cat => `
-                    <button class="prompt-cat-btn px-4 py-2 rounded-full glass text-sm transition-all" data-category="${cat.id}" onclick="filterPromptCategory('${cat.id}')">
-                        <i class="fas ${cat.icon} mr-1"></i>${cat.name}
-                    </button>
-                `).join('')}
-            `;
-            container.innerHTML = html;
-        }
-
-        function renderPrompts(prompts) {
-            const grid = document.getElementById('promptsGrid');
-            const emptyEl = document.getElementById('promptEmptyState');
-            
-            if (prompts.length === 0) {
-                grid.classList.add('hidden');
-                emptyEl.classList.remove('hidden');
-                return;
-            }
-            
-            grid.classList.remove('hidden');
-            emptyEl.classList.add('hidden');
-            
-            grid.innerHTML = prompts.map(prompt => {
-                const cat = state.promptCategories.find(c => c.id === prompt.category);
-                const isFav = state.promptFavorites.includes(prompt.id);
-                return `
-                    <div class="glass-card rounded-2xl p-5 group cursor-pointer hover:neon-border transition-all" onclick="showPromptDetail(${prompt.id})">
-                        <div class="flex items-start justify-between mb-3">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${cat?.color || 'from-gray-500 to-gray-600'} flex items-center justify-center">
-                                    <i class="fas ${cat?.icon || 'fa-wand-magic-sparkles'} text-white text-sm"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-semibold text-sm line-clamp-1">${prompt.title}</h3>
-                                    <p class="text-xs text-gray-500">${cat?.name || prompt.category}</p>
-                                </div>
-                            </div>
-                            <button onclick="event.stopPropagation(); togglePromptFavorite(${prompt.id})" class="text-gray-500 hover:text-red-500 transition-all">
-                                <i class="${isFav ? 'fas text-red-500' : 'far'} fa-heart"></i>
-                            </button>
-                        </div>
-                        <p class="text-sm text-gray-400 mb-3 line-clamp-2">${prompt.description}</p>
-                        <div class="flex items-center justify-between">
-                            <div class="flex flex-wrap gap-1">
-                                ${prompt.tags.slice(0, 3).map(tag => `<span class="px-2 py-0.5 rounded-full text-xs glass">${tag}</span>`).join('')}
-                            </div>
-                            <div class="flex items-center gap-3 text-xs text-gray-500">
-                                <span><i class="fas fa-fire mr-1"></i>${formatNumber(prompt.usage)}</span>
-                                <span><i class="fas fa-star mr-1 text-yellow-500"></i>${prompt.rating}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function formatNumber(num) {
-            if (num >= 10000) return (num / 10000).toFixed(1) + 'w';
-            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
-            return num.toString();
-        }
-
-        function filterPromptCategory(category) {
-            state.currentPromptCategory = category;
-            document.querySelectorAll('.prompt-cat-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.category === category);
-            });
-            const filtered = category === 'all' ? state.allPrompts : state.allPrompts.filter(p => p.category === category);
-            renderPrompts(filtered);
-        }
-
-        function handlePromptSearch(query) {
-            if (!query) {
-                filterPromptCategory(state.currentPromptCategory);
-                return;
-            }
-            const filtered = state.allPrompts.filter(p => 
-                p.title.toLowerCase().includes(query.toLowerCase()) ||
-                p.description.toLowerCase().includes(query.toLowerCase()) ||
-                p.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
-            );
-            renderPrompts(filtered);
-        }
-
-        function showPromptDetail(promptId) {
-            const prompt = state.allPrompts.find(p => p.id === promptId);
-            if (!prompt) return;
-            
-            const cat = state.promptCategories.find(c => c.id === prompt.category);
-            const isFav = state.promptFavorites.includes(promptId);
-            
-            document.getElementById('promptDetailTitle').textContent = prompt.title;
-            document.getElementById('promptDetailContent').innerHTML = `
-                <div class="mb-4">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="px-3 py-1 rounded-full text-xs bg-gradient-to-r ${cat?.color || 'from-gray-500 to-gray-600'}">
-                            <i class="fas ${cat?.icon || 'fa-wand-magic-sparkles'} mr-1"></i>${cat?.name || prompt.category}
-                        </span>
-                        ${prompt.tags.map(tag => `<span class="px-2 py-1 rounded-full text-xs glass">${tag}</span>`).join('')}
-                    </div>
-                    <p class="text-gray-400">${prompt.description}</p>
-                </div>
-                
-                <div class="glass rounded-xl p-4 mb-4 relative group">
-                    <pre class="text-sm text-gray-300 whitespace-pre-wrap font-mono overflow-auto max-h-96">${escapeHtml(prompt.content)}</pre>
-                    <button onclick="copyPrompt(${promptId})" class="absolute top-3 right-3 px-3 py-1.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-xs opacity-0 group-hover:opacity-100 transition-all">
-                        <i class="fas fa-copy mr-1"></i>复制
-                    </button>
-                </div>
-                
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4 text-sm text-gray-500">
-                        <span><i class="fas fa-user mr-1"></i>${prompt.author}</span>
-                        <span><i class="fas fa-fire mr-1"></i>${formatNumber(prompt.usage)} 次使用</span>
-                        <span><i class="fas fa-star mr-1 text-yellow-500"></i>${prompt.rating}</span>
-                    </div>
-                    <button onclick="togglePromptFavorite(${promptId})" class="flex items-center gap-2 px-4 py-2 rounded-full ${isFav ? 'bg-red-500/20 text-red-500' : 'glass text-gray-400'} hover:border-primary transition-all">
-                        <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
-                        <span>${isFav ? '已收藏' : '收藏'}</span>
-                    </button>
-                </div>
-            `;
-            
-            document.getElementById('promptDetailModal').classList.add('active');
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        async function copyPrompt(promptId) {
-            const prompt = state.allPrompts.find(p => p.id === promptId);
-            if (!prompt) return;
-            
-            try {
-                await navigator.clipboard.writeText(prompt.content);
-                showToast('提示词已复制到剪贴板');
-            } catch (err) {
-                // Fallback
-                const textarea = document.createElement('textarea');
-                textarea.value = prompt.content;
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-                showToast('提示词已复制到剪贴板');
-            }
-        }
-
-        function togglePromptFavorite(promptId) {
-            const index = state.promptFavorites.indexOf(promptId);
-            if (index > -1) {
-                state.promptFavorites.splice(index, 1);
-                showToast('已取消收藏');
-            } else {
-                state.promptFavorites.push(promptId);
-                showToast('已收藏提示词');
-            }
-            localStorage.setItem('promptFavorites', JSON.stringify(state.promptFavorites));
-            
-            // Update UI
-            const modal = document.getElementById('promptDetailModal');
-            if (modal.classList.contains('active')) {
-                const prompt = state.allPrompts.find(p => p.id === promptId);
-                if (prompt) showPromptDetail(promptId);
-            }
-            filterPromptCategory(state.currentPromptCategory);
-        }
-
-        function showSubmitPromptModal() {
-            document.getElementById('submitPromptModal').classList.add('active');
-        }
-
-        function handlePromptSubmit(e) {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const promptData = {
-                title: formData.get('title'),
-                category: formData.get('category'),
-                description: formData.get('description'),
-                content: formData.get('content'),
-                tags: formData.get('tags') ? formData.get('tags').split(',').map(t => t.trim()) : []
-            };
-            
-            // Store submission in localStorage for review
-            const submissions = JSON.parse(localStorage.getItem('promptSubmissions') || '[]');
-            submissions.push({
-                ...promptData,
-                id: Date.now(),
-                status: 'pending',
-                submitTime: new Date().toISOString()
-            });
-            localStorage.setItem('promptSubmissions', JSON.stringify(submissions));
-            
-            closeModal(null, 'submitPromptModal');
-            e.target.reset();
-            showToast('提示词已提交，审核通过后将上线');
-        }
     </script>
 </body>
 </html>
