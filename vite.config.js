@@ -1,5 +1,21 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
+import { copyFileSync, mkdirSync, readdirSync, statSync, cpSync } from 'fs'
+
+// Plugin to copy tools directory to dist
+function copyToolsPlugin() {
+  return {
+    name: 'copy-tools',
+    closeBundle() {
+      try {
+        cpSync('tools', 'dist/tools', { recursive: true, force: true })
+        console.log('✓ Tools directory copied to dist/')
+      } catch (err) {
+        console.error('Failed to copy tools:', err)
+      }
+    }
+  }
+}
 
 export default defineConfig({
   root: 'src',
@@ -10,11 +26,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'src/index.html')
-      },
-      output: {
-        manualChunks: {
-          vendor: ['pinyin-pro']
-        }
       }
     },
     minify: 'terser',
@@ -38,5 +49,6 @@ export default defineConfig({
   },
   css: {
     devSourcemap: true
-  }
+  },
+  plugins: [copyToolsPlugin()]
 })
