@@ -1,0 +1,175 @@
+/* AI Resume Optimizer Styles */
+
+/* Form Styles */
+.form-section {
+    @apply bg-gray-800/50 rounded-lg p-4 border border-gray-700;
+}
+
+.form-section-title {
+    @apply text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2;
+}
+
+.form-group {
+    @apply mb-4;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-gray-400 mb-1.5;
+}
+
+.form-input {
+    @apply w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm
+           focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50
+           transition-all placeholder-gray-600;
+}
+
+.form-textarea {
+    @apply w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm
+           focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500/50
+           transition-all placeholder-gray-600 resize-none;
+    min-height: 100px;
+}
+
+/* Resume Preview Styles */
+.resume-preview {
+    @apply bg-white text-gray-900;
+    aspect-ratio: 1/1.414;
+}
+
+.resume-header {
+    @apply border-b-2 border-gray-800 pb-4 mb-4;
+}
+
+.resume-name {
+    @apply text-2xl font-bold text-gray-900;
+}
+
+.resume-title {
+    @apply text-lg text-gray-600 mt-1;
+}
+
+.resume-contact {
+    @apply flex flex-wrap gap-3 mt-3 text-sm text-gray-600;
+}
+
+.resume-section {
+    @apply mb-5;
+}
+
+.resume-section-title {
+    @apply text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 pb-1 mb-3;
+}
+
+.resume-item {
+    @apply mb-4;
+}
+
+.resume-item-header {
+    @apply flex justify-between items-start;
+}
+
+.resume-item-title {
+    @apply font-semibold text-gray-900;
+}
+
+.resume-item-subtitle {
+    @apply text-gray-600;
+}
+
+.resume-item-date {
+    @apply text-sm text-gray-500 text-right;
+}
+
+.resume-item-description {
+    @apply text-sm text-gray-700 mt-2;
+}
+
+/* Skills */
+.skills-list {
+    @apply flex flex-wrap gap-2;
+}
+
+.skill-tag {
+    @apply px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full;
+}
+
+/* Button Styles */
+.btn-add {
+    @apply w-full py-2 border-2 border-dashed border-gray-700 rounded-lg
+           text-gray-500 hover:border-indigo-500 hover:text-indigo-400
+           transition-all flex items-center justify-center gap-2;
+}
+
+.btn-delete {
+    @apply text-red-400 hover:text-red-300 transition-colors;
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    @apply inline-block w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin;
+}
+
+/* AI Panel */
+.ai-panel-open {
+    transform: translateX(0) !important;
+}
+
+.suggestion-card {
+    @apply p-4 bg-gradient-to-r from-purple-500/10 to-indigo-500/10 
+           border border-purple-500/30 rounded-lg;
+}
+
+.suggestion-title {
+    @apply font-semibold text-purple-400 mb-2;
+}
+
+.suggestion-content {
+    @apply text-sm text-gray-300;
+}
+
+.apply-btn {
+    @apply mt-3 px-3 py-1.5 bg-purple-500/20 text-purple-400 text-sm rounded 
+           hover:bg-purple-500/30 transition-colors;
+}
+
+/* Print Styles */
+@media print {
+    nav, .no-print {
+        display: none !important;
+    }
+    
+    #resumePreview {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0;
+        padding: 20mm;
+    }
+}
