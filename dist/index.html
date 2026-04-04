@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Tool Hub v3.0 - 智能工具聚合平台</title>
+    <meta name="description" content="一站式AI工具聚合导航平台，支持用户系统、工具对比、个性化推荐">
+    <meta name="keywords" content="AI工具,人工智能,AI写作,AI绘画,AI代码,AI视频">
+    <meta name="theme-color" content="#6366f1">
+    <link rel="manifest" href="./assets/manifest-BgkueAeV.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.18.2/dist/index.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/main-8kYK6cZK.css">
+</head>
+<body class="text-gray-100 min-h-screen tech-bg">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+                    <i class="fas fa-robot text-white text-lg"></i>
+                </div>
+                <span class="text-xl font-bold gradient-text">AI Tool Hub</span>
+                <span class="text-xs text-gray-500 ml-2">v3.0</span>
+            </a>
+            
+            <div class="flex items-center gap-4">
+                <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full glass text-sm">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    <span>上新 <span id="newToolsCount">0</span> 款</span>
+                </div>
+                
+                <button onclick="showPromptsPage()" class="hidden md:flex items-center gap-2 px-4 py-2 rounded-full glass hover:border-primary transition-all text-sm">
+                    <i class="fas fa-wand-magic-sparkles text-purple-400"></i>
+                    <span>提示词</span>
+                </button>
+                
+                <div class="relative">
+                    <button id="userBtn" onclick="toggleUserMenu()" class="flex items-center gap-2 px-4 py-2 rounded-full glass hover:border-primary transition-all">
+                        <img id="userAvatar" src="" class="w-8 h-8 rounded-full hidden" alt="">
+                        <i id="userIcon" class="fas fa-user-circle text-xl text-gray-400"></i>
+                        <span id="userName" class="hidden md:inline text-sm">游客</span>
+                        <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                    </button>
+                    
+                    <div id="userMenu" class="user-menu">
+                        <div class="p-2 border-b border-gray-700" id="userInfoSection">
+                            <p class="text-sm font-medium" id="menuUserName">游客</p>
+                            <p class="text-xs text-gray-500" id="menuUserEmail">未登录</p>
+                        </div>
+                        <a href="#" onclick="showProfile(); return false;" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                            <i class="fas fa-user text-gray-400"></i> 个人中心
+                        </a>
+                        <a href="#" onclick="syncData(); return false;" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                            <i class="fas fa-sync text-gray-400"></i> 同步数据
+                        </a>
+                        <a href="#" onclick="exportData(); return false;" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
+                            <i class="fas fa-download text-gray-400"></i> 导出数据
+                        </a>
+                        <div class="border-t border-gray-700 mt-2 pt-2" id="authSection">
+                            <button onclick="loginWithGitHub()" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-sm text-left">
+                                <i class="fab fa-github text-gray-400"></i> GitHub登录
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-32" id="mainContent">
+        <!-- Content will be loaded by JavaScript -->
+    </main>
+
+    <!-- Scripts -->
+    <script src="./js/app.js"></script>
+</body>
+</html>
