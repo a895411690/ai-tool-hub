@@ -1,30 +1,334 @@
-    
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        * { font-family: 'Inter', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-        html { scroll-behavior: smooth; }
-        .glass { background: rgba(26, 26, 46, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(99, 102, 241, 0.2); }
-        .glass-card { background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08)); backdrop-filter: blur(10px); border: 1px solid rgba(99, 102, 241, 0.2); }
-        .gradient-text { background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .neon-border { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
-        
-        /* User Profile Dropdown */
-        .user-menu { position: absolute; top: 100%; right: 0; margin-top: 8px; min-width: 200px; background: rgba(26, 26, 46, 0.95); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 8px; display: none; z-index: 100; }
-        .user-menu.show { display: block; }
-        
-        /* Comparison Bar */
-        .compare-bar { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(26, 26, 46, 0.95); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 50px; padding: 12px 24px; display: none; align-items: center; gap: 16px; z-index: 90; }
-        .compare-bar.show { display: flex; }
-        
-        /* Modal */
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; display: none; align-items: center; justify-content: center; }
-        .modal.active { display: flex; }
-        .modal-content { background: linear-gradient(135deg, #1a1a2e, #0a0a0f); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 20px; max-width: 90%; max-height: 90%; overflow: auto; }
-        
-        /* Detail Page */
-        .detail-page { position: fixed; inset: 0; background: #0a0a0f; z-index: 150; transform: translateX(100%); transition: transform 0.3s ease; }
-        .detail-page.show { transform: translateX(0); }
-        
-        /* Toast */
-        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(26, 26, 46, 0.95); color: white; padding: 12px 24px; border-radius: 50px; border: 1px solid rgba(99, 102, 241, 0.3); opacity: 0; transition: all 0.3s; z-index: 1000; }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+* { 
+    font-family: 'Inter', -apple-system, sans-serif; 
+    -webkit-tap-highlight-color: transparent; 
+}
+
+html { 
+    scroll-behavior: smooth; 
+}
+
+/* ========== 科技风背景系统 ========== */
+
+/* 主背景 - 深空科技蓝 */
+body {
+    background: 
+        /* 星空粒子层 */
+        radial-gradient(2px 2px at 20px 30px, rgba(6, 182, 212, 0.4), transparent),
+        radial-gradient(2px 2px at 40px 70px, rgba(139, 92, 246, 0.3), transparent),
+        radial-gradient(1px 1px at 90px 40px, rgba(6, 182, 212, 0.5), transparent),
+        radial-gradient(2px 2px at 160px 120px, rgba(59, 130, 246, 0.3), transparent),
+        radial-gradient(1px 1px at 230px 80px, rgba(139, 92, 246, 0.4), transparent),
+        radial-gradient(2px 2px at 300px 150px, rgba(6, 182, 212, 0.3), transparent),
+        radial-gradient(1px 1px at 380px 60px, rgba(59, 130, 246, 0.5), transparent),
+        /* 动态渐变背景 */
+        linear-gradient(135deg, 
+            #0a0f1a 0%, 
+            #0d1525 25%, 
+            #0a1628 50%, 
+            #0d1a2d 75%, 
+            #0a0f1a 100%
+        );
+    background-attachment: fixed;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* 动态网格叠加 */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* 径向光晕效果 */
+body::after {
+    content: '';
+    position: fixed;
+    top: -50%;
+    right: -30%;
+    width: 80%;
+    height: 150%;
+    background: radial-gradient(ellipse at center, 
+        rgba(6, 182, 212, 0.08) 0%, 
+        rgba(59, 130, 246, 0.05) 30%,
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: -1;
+    animation: pulseGlow 8s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.05); }
+}
+
+/* ========== 玻璃拟态 - 科技版 ========== */
+
+.glass { 
+    background: rgba(13, 21, 37, 0.7); 
+    backdrop-filter: blur(16px) saturate(180%); 
+    border: 1px solid rgba(6, 182, 212, 0.15);
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.glass-card { 
+    background: linear-gradient(135deg, 
+        rgba(6, 182, 212, 0.06), 
+        rgba(59, 130, 246, 0.06),
+        rgba(139, 92, 246, 0.04)
+    ); 
+    backdrop-filter: blur(16px) saturate(180%); 
+    border: 1px solid rgba(6, 182, 212, 0.12);
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+    border-color: rgba(6, 182, 212, 0.25);
+    box-shadow: 
+        0 12px 40px rgba(6, 182, 212, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+}
+
+/* ========== 文字效果 ========== */
+
+.gradient-text { 
+    background: linear-gradient(135deg, #22d3ee, #60a5fa, #a78bfa); 
+    -webkit-background-clip: text; 
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradientShift 5s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* 科技蓝发光边框 */
+.neon-border { 
+    box-shadow: 
+        0 0 20px rgba(6, 182, 212, 0.3),
+        0 0 40px rgba(6, 182, 212, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+/* 霓虹文字发光 */
+.neon-text {
+    text-shadow: 
+        0 0 10px rgba(6, 182, 212, 0.5),
+        0 0 20px rgba(6, 182, 212, 0.3),
+        0 0 30px rgba(6, 182, 212, 0.1);
+    color: #22d3ee;
+}
+
+/* ========== 组件样式 ========== */
+
+/* 导航栏 - 科技版 */
+nav.glass {
+    background: rgba(10, 15, 26, 0.85);
+    border-bottom: 1px solid rgba(6, 182, 212, 0.1);
+}
+
+/* 状态指示器 */
+.status-dot {
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+}
+
+/* 按钮 - 科技风格 */
+.btn-tech {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(59, 130, 246, 0.1));
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    color: #22d3ee;
+    transition: all 0.3s ease;
+}
+
+.btn-tech:hover {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(59, 130, 246, 0.2));
+    border-color: rgba(6, 182, 212, 0.4);
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+}
+
+/* 卡片悬停光效 */
+.card-glow {
+    position: relative;
+    overflow: hidden;
+}
+
+.card-glow::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        rgba(6, 182, 212, 0.03) 60deg,
+        transparent 120deg
+    );
+    animation: rotate 8s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 代码字体 */
+.code-font {
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* ========== 原有组件样式 ========== */
+
+/* User Profile Dropdown */
+.user-menu { 
+    position: absolute; 
+    top: 100%; 
+    right: 0; 
+    margin-top: 8px; 
+    min-width: 200px; 
+    background: rgba(10, 15, 26, 0.98); 
+    border: 1px solid rgba(6, 182, 212, 0.2); 
+    border-radius: 12px; 
+    padding: 8px; 
+    display: none; 
+    z-index: 100;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.user-menu.show { 
+    display: block; 
+}
+
+/* Comparison Bar */
+.compare-bar { 
+    position: fixed; 
+    bottom: 80px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    background: rgba(10, 15, 26, 0.98); 
+    border: 1px solid rgba(6, 182, 212, 0.2); 
+    border-radius: 50px; 
+    padding: 12px 24px; 
+    display: none; 
+    align-items: center; 
+    gap: 16px; 
+    z-index: 90;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.compare-bar.show { 
+    display: flex; 
+}
+
+/* Modal */
+.modal { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(0, 0, 0, 0.85); 
+    backdrop-filter: blur(4px);
+    z-index: 200; 
+    display: none; 
+    align-items: center; 
+    justify-content: center; 
+}
+
+.modal.active { 
+    display: flex; 
+}
+
+.modal-content { 
+    background: linear-gradient(135deg, #0a1628, #0d1525); 
+    border: 1px solid rgba(6, 182, 212, 0.2); 
+    border-radius: 20px; 
+    max-width: 90%; 
+    max-height: 90%; 
+    overflow: auto;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* Detail Page */
+.detail-page { 
+    position: fixed; 
+    inset: 0; 
+    background: linear-gradient(135deg, #0a0f1a, #0d1525); 
+    z-index: 150; 
+    transform: translateX(100%); 
+    transition: transform 0.3s ease; 
+}
+
+.detail-page.show { 
+    transform: translateX(0); 
+}
+
+/* Toast */
+.toast { 
+    position: fixed; 
+    bottom: 100px; 
+    left: 50%; 
+    transform: translateX(-50%) translateY(100px); 
+    background: rgba(10, 15, 26, 0.98); 
+    color: white; 
+    padding: 12px 24px; 
+    border-radius: 50px; 
+    border: 1px solid rgba(6, 182, 212, 0.3); 
+    opacity: 0; 
+    transition: all 0.3s; 
+    z-index: 1000;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 10px 30px rgba(6, 182, 212, 0.1);
+}
+
+.toast.show { 
+    opacity: 1; 
+    transform: translateX(-50%) translateY(0); 
+}
+
+/* 滚动条 - 科技风格 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(10, 15, 26, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3));
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.5), rgba(59, 130, 246, 0.5));
+}
+
+/* 选中文字 */
+::selection {
+    background: rgba(6, 182, 212, 0.3);
+    color: #22d3ee;
+}
