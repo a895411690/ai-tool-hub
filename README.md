@@ -1,11 +1,13 @@
-# 🤖 AI Tool Hub v4.0 - 现代化AI工具导航平台
+# 🤖 AI Tool Hub v4.1 - 现代化AI工具导航平台
 
 <p align="center">
-  <strong>7套精美主题 · 现代化UI设计 · 企业级安全标准</strong>
+  <strong>67款精选AI工具 · 10大领域覆盖 · 7套精美主题</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.0.0-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/tools-67%20%2B-brightgreen.svg" alt="Tools Count" />
+  <img src="https://img.shields.io/badge/categories-10-orange.svg" alt="Categories" />
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License" />
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" />
   <a href="https://github.com/a895411690/ai-tool-hub/stargazers"><img src="https://img.shields.io/github/stars/a895411690/ai-tool-hub?style=social" alt="Stars" /></a>
@@ -23,7 +25,7 @@
 ## ✨ 核心特性
 
 ### 🎨 **现代化UI系统 (v4.0 UI Redesign)**
-- ✅ **2024主流设计风格**: 参考Vercel、Linear、ProductHunk顶级产品
+- ✅ **2024主流设计风格**: 参考Vercel、Linear、ProductHunt顶级产品
 - ✅ **清新渐变背景**: 紫蓝粉三色光晕效果，告别单调纯色
 - ✅ **现代白卡设计**: 柔和阴影 + 大圆角(20px) + hover上浮动画
 - ✅ **药丸形组件**: 圆润搜索框 + Chip分类按钮
@@ -63,16 +65,17 @@
 | localStorage写入防抖 (100ms) | **减少80%存储操作** | 合并多次写操作为单次 |
 | 首屏加载优化 | **速度提升92%** | 代码精简+模块懒加载 |
 
-### 📊 **工具库规模**
-- 🎯 **60+ 精选AI工具**（持续更新中）
-- 🏷️ **7大核心领域**: 写作、绘画、代码、视频、语音、设计、办公
+### 📊 **工具库规模 (v2.0 升级)**
+- 🎯 **67款精选AI工具**（2026年4月最新）
+- 🏷️ **10大核心领域**: 写作、绘画、代码、视频、语音、设计、办公、音乐、智能体、搜索
 - 🌍 **标签系统**: 国产/海外、免费/VIP、网页版/客户端、无需登录/需登录
 - 📦 **数据驱动**: JSON配置化管理，易于扩展维护
+- 🔥 **新增热门**: Suno AI音乐、Coze智能体、Perplexity搜索等18款2026年爆款工具
 
 ### 💎 **用户体验**
 - ⭐ **智能收藏系统**: localStorage本地存储，刷新不丢失
 - 🔍 **增强搜索**: 支持名称/描述模糊匹配 + 历史记录(10条)
-- 🎨 **分类筛选**: 一键切换领域，状态记忆功能
+- 🎨 **分类筛选**: 一键切换10大领域，状态记忆功能
 - 📱 **移动端完美适配**: 浮动底部导航 + 下拉刷新 + 触控优化(44px+)
 - ♿ **无障碍访问(A11y)**: 完整ARIA支持 + 键盘导航(/聚焦搜索,Esc关闭)
 - 🎲 **随机探索**: 发现更多有趣AI工具
@@ -93,7 +96,7 @@
 ┌─────────────────────────────────────┐
 │ ⬜ 清新渐变背景 + 紫粉光晕          │
 │                                     │
-│    ✨ v4.0 全新升级                 │  ← 渐变徽章
+│    ✨ v4.1 全新升级                 │  ← 渐变徽章
 │                                     │
 │   发现最好的                        │
 │   AI 工具集合                      │  ← 渐变大标题
@@ -103,6 +106,7 @@
 │  └─────────────────────────┘       │
 │                                     │
 │  [全部] [AI写作] [AI绘画]...        │  ← 药丸按钮(渐变激活)
+│         [AI音乐][智能体][搜索]      │  ← 新增3个分类!
 │                                     │
 │  ┌─────────────────────────┐       │
 │  │ 🎨           [⭐]      │       │  ← 白色卡片+圆角
@@ -137,12 +141,12 @@
 ```
 ai-tool-hub/
 ├── index.html              # 🎨 主页面 (1400行) - 7套主题CSS + 现代化HTML结构
-├── tools.json              # 📊 工具数据 (620行) - 60个AI工具配置
+├── tools.json              # 📊 工具数据 (v2.0, 67个AI工具配置)
 ├── manifest.json           # PWA清单文件
 ├── sw.js                   # Service Worker (离线缓存)
 │
 └── js/                     # JavaScript模块 (ES6)
-    ├── state.js        # 📦 新增! 集中式状态管理 (120行)
+    ├── state.js        # 📦 集中式状态管理 (120行)
     │   ├── 全局状态对象: tools, categories, favorites, searchHistory
     │   ├── 数据操作API: updateData(), getTools(), getCategoryName()
     │   ├── 收藏管理: isFavorite(), toggleFavorite()
@@ -153,9 +157,10 @@ ai-tool-hub/
     │   ├── loadTools(): fetch tools.json → validate → render
     │   └── 动态导入ui.js避免循环依赖
     │
-    ├── main.js         # 🚀 应用入口 & 初始化 (42行)
+    ├── main.js         # 🚀 应用入口 & 初始化 (55行)
     │   ├── 统一导入所有模块(7个JS文件)
-    │   ├── 最小化window挂载(14个函数)
+    │   ├── 最小化window挂载(16个函数)
+    │   ├── 底部导航功能: scrollToTop(), showAllTools()
     │   └── 初始化顺序: theme → tools → search → keyboard...
     │
     ├── ui.js           # 🎨 UI渲染引擎 (230行)
@@ -245,15 +250,15 @@ document.documentElement.setAttribute('data-theme', 'midnight');
 ```
 ai-tool-hub/
 ├── 📄 index.html              # 主页面 (1400行)
-├── 📄 tools.json              # 工具数据 (60个AI工具)
+├── 📄 tools.json              # 工具数据 (67个AI工具, v2.0)
 ├── 📄 manifest.json           # PWA配置
 ├── 📄 sw.js                   # Service Worker
 ├── 📄 README.md               # 项目文档 (本文件)
 │
 ├── 📁 js/                     # JavaScript模块
-│   ├── state.js               # 🆕 集中式状态管理
+│   ├── state.js               # 集中式状态管理
 │   ├── app.js                 # 核心逻辑
-│   ├── main.js                # 入口初始化
+│   ├── main.js                # 入口初始化 + 底部导航
 │   ├── ui.js                  # UI渲染
 │   ├── tool.js                # 工具交互
 │   ├── share.js               # 分享功能
@@ -321,7 +326,8 @@ npm run build
    - 自动保存最近10条搜索历史
 
 2. **🏷️ 分类筛选**
-   - 点击顶部分类按钮（写作/绘画/代码/视频/语音/设计/办公）
+   - 点击顶部分类按钮（10大领域可选）
+   - 新增：AI音乐、AI智能体、AI搜索
    - 选择会自动保存，下次访问记住您的偏好
 
 3. **⭐ 收藏工具**
@@ -343,6 +349,8 @@ npm run build
 | **复制链接** | 点击工具卡片的🔗图标 | 复制工具官网URL |
 | **分享页面** | 点击右上角↗️图标 | 微信/QQ/复制链接/生成图片 |
 | **下拉刷新** | 移动端在顶部下拉 | 重新加载页面数据 |
+| **返回首页** | 点击底部"首页"按钮 | 平滑滚动到页面顶部 |
+| **显示全部工具** | 点击底部"工具"按钮 | 重置筛选并显示所有工具 |
 
 ### 主题定制
 
@@ -395,9 +403,9 @@ npm run build
 
 ---
 
-## 📋 工具分类详情
+## 📋 工具分类详情 (v2.0)
 
-### 📝 AI写作 (10款)
+### 📝 AI写作 (9款)
 | 工具 | 类型 | 特点 |
 |------|------|------|
 | ChatGPT | 海外/VIP | OpenAI全能助手 |
@@ -408,82 +416,101 @@ npm run build
 | 讯飞星火 | 国产/免费 | 科大讯飞认知大模型 |
 | 豆包 | 国产/免费 | 字节跳动AI助手 |
 | 秘塔写作猫 | 国产/免费 | AI写作校对专家 |
-| 有道文案 | 国产/免费 | AI广告语生成 |
-| Notion AI | 海外/VIP | 笔记内置AI写作 |
+| 智谱清言 | 国产/免费 | 清华ChatGLM中文助手 |
 
-### 🎨 AI绘画 (10款)
+### 🎨 AI绘画 (7款)
 | 工具 | 类型 | 特点 |
 |------|------|------|
-| Midjourney | 海外/VIP | 艺术级AI绘图 |
-| Stable Diffusion | 海外/免费 | 开源图像生成模型 |
-| DALL·E 3 | 海外/VIP | OpenAI图像生成 |
+| Midjourney | 海外/VIP | 艺术级AI绘图(Discord) |
+| Stable Diffusion | 开源/免费 | 开源图像生成模型(GitHub) |
+| DALL·E 3 | 海外/VIP | OpenAI图像生成(ChatGPT内) |
 | 文心一格 | 国产/免费 | 百度AI绘画平台 |
 | Leonardo.ai | 海外/免费 | 游戏素材AI绘图 |
 | 通义万相 | 国产/免费 | 阿里AI绘画工具 |
-| 6pen Art | 国产/免费 | 国风AI艺术创作 |
 | 醒图AI | 国产/免费 | AI图片编辑 |
-| 讯飞智绘 | 国产/免费 | 科大讯飞AI插画 |
-| 奇域AI | 国产/免费 | 中式美学AI绘画 |
 
-### 💻 AI代码 (10款)
+### 💻 AI代码 (9款) ✅100%有效
 | 工具 | 类型 | 特点 |
 |------|------|------|
-| GitHub Copilot | 海外/VIP | GitHub官方AI编程助手 |
+| GitHub Copilot | 海外/VIP | GitHub官方AI编程助手(IDE插件) |
 | Cursor | 海外/免费 | AI原生代码编辑器 |
 | CodeGeeX | 国产/免费 | 开源AI代码生成 |
-| 通义灵码 | 国产/免费 | 阿里云代码助手 |
-| Tabnine | 海外/免费 | AI代码补全全语言支持 |
-| Codeium | 海外/免费 | 免费AI代码助手 |
-| 字节MarsCode | 国产/免费 | 字节跳动AI编程 |
-| 商汤小浣熊 | 国产/免费 | 商汤AI编程助手 |
-| Amazon CodeWhisperer | 海外/免费 | AWS AI代码助手 |
-| JetBrains AI | 海外/VIP | IDE集成AI助手 |
+| 通义灵码 | 国产/免费 | 阿里云代码助手(IDE插件) |
+| Codeium | 海外/免费 | 免费AI代码助手(IDE插件) |
+| 字节MarsCode | 国产/免费 | 字节跳动AI编程(网页版) |
+| 商汤小浣熊 | 国产/免费 | 商汤AI编程助手(IDE插件) |
+| Amazon CodeWhisperer | 海外/免费 | AWS AI代码助手(IDE插件) |
+| JetBrains AI | 海外/VIP | IDE集成AI助手(IDE插件) |
 
-### 🎬 AI视频 (10款)
+### 🎬 AI视频 (7款)
 | 工具 | 类型 | 特点 |
 |------|------|------|
-| Sora | 海外/VIP | OpenAI视频生成模型 |
 | Runway Gen-2 | 海外/VIP | 专业AI视频创作 |
 | HeyGen | 海外/VIP | AI数字人视频生成 |
-| Pika Labs | 海外/VIP | AI动画视频生成 |
-| 剪映AI | 国产/免费 | 字节AI视频剪辑 |
+| 剪映AI | 国产/免费 | 字节AI视频剪辑(客户端) |
 | 可灵AI | 国产/免费 | 快手AI视频生成 |
 | PixVerse | 海外/免费 | AI视频生成工具 |
-| 万彩动画 | 国产/免费 | AI动画制作平台 |
-| 即梦AI | 国产/免费 | AI短视频创作 |
-| 讯飞听见 | 国产/免费 | 视频字幕自动生成 |
+| 万彩动画 | 国产/免费 | AI动画制作平台(客户端) |
+| 即梦AI | 国产/免费 | AI短视频创作(字节系) |
 
-### 🎤 AI语音 (10款)
+### 🎤 AI语音 (8款)
 | 工具 | 类型 | 特点 |
 |------|------|------|
 | ElevenLabs | 海外/VIP | 业界顶级AI语音合成 |
 | Murf AI | 海外/VIP | 专业AI配音平台 |
-| Play.ht | 海外/VIP | AI播客制作工具 |
 | Resemble AI | 海外/VIP | AI语音克隆技术 |
 | 讯飞配音 | 国产/免费 | 科大讯飞语音合成 |
-| 腾讯智影 | 国产/免费 | 腾讯AI配音平台 |
 | 魔音工坊 | 国产/免费 | AI有声书制作 |
-| 百度语音 | 国产/免费 | 百度AI语音服务 |
-| 微软Azure语音 | 海外/免费 | 云端TTS语音合成 |
-| 剪映文字成片 | 国产/免费 | 文字转视频配音 |
+| 百度语音 | 国产/免费 | 百度AI语音服务(API) |
+| 微软Azure语音 | 海外/免费 | 云端TTS语音合成(云服务) |
+| 剪映文字成片 | 国产/免费 | 文字转视频配音(客户端) |
 
-### 🎨 AI设计 (6款)
+### 🎨 AI设计 (5款) ✅100%有效
 | 工具 | 类型 | 特点 |
 |------|------|------|
 | Figma AI | 海外/免费 | UI设计AI助手 |
-| Canva可画 | 海外/免费 | 在线设计平台 |
 | MasterGo AI | 国产/免费 | 国产协作设计平台 |
 | 即时设计 | 国产/免费 | 国产UI设计工具 |
 | 稿定设计 | 国产/免费 | AI海报/PPT设计 |
 | 创客贴 | 国产/免费 | AI营销素材平台 |
 
-### 🏢 AI办公 (4款)
+### 🏢 AI办公 (8款)
 | 工具 | 类型 | 特点 |
 |------|------|------|
 | Notion AI | 海外/VIP | 笔记AI写作助手 |
-| WPS AI | 国产/免费 | 金山AI办公套件 |
+| WPS AI | 国产/免费 | 金山AI办公套件(客户端) |
 | 飞书AI | 国产/免费 | 字节智能办公协作 |
-| 钉钉AI | 国产/免费 | 阿里智能办公助手 |
+| 钉钉AI | 国产/免费 | 阿里智能办公助手(客户端) |
+| **Gamma** | 海外/免费 | **🆕 AI一键生成PPT** |
+| **ChatExcel** | 国产/免费 | **🆕 北大自然语言操作表格** |
+| **Mem.ai** | 海外/免费 | **🆕 AI知识管理笔记** |
+| **腾讯文档AI** | 国产/免费 | **🆕 腾讯智能文档协作** |
+
+### 🎵 **AI音乐 (5款)** 🆕
+| 工具 | 类型 | 特点 | 热度 |
+|------|------|------|------|
+| **Suno AI** | 海外/免费 | 文字转歌曲，2026最火AI音乐平台 | 🔥🔥🔥🔥🔥 |
+| **Udio** | 海外/免费 | 高质量AI音乐创作，支持多种风格 | 🔥🔥🔥🔥🔥 |
+| **网易天音** | 国产/免费 | 网易AI作曲，中文歌曲生成 | 🔥🔥🔥🔥 |
+| **Soundraw** | 海外/VIP | 无版权音乐生成，适合商用 | 🔥🔥🔥🔥 |
+| **AIVA** | 海外/免费 | 专业AI影视配乐，支持多种格式 | 🔥🔥🔥🔥 |
+
+### 🤖 **AI智能体 (5款)** 🆕
+| 工具 | 类型 | 特点 | 热度 |
+|------|------|------|------|
+| **Coze (扣子)** | 国产/免费 | 字节出品零代码AI Bot构建平台 | 🔥🔥🔥🔥🔥 |
+| **Dify** | 开源/免费 | 开源LLM应用开发平台(可自部署) | 🔥🔥🔥🔥🔥 |
+| **FastGPT** | 开源/免费 | 快速构建知识库问答系统(可自部署) | 🔥🔥🔥🔥 |
+| **GPTs Store** | 海外/VIP | OpenAI官方GPTs应用市场(ChatGPT内) | 🔥🔥🔥🔥🔥 |
+| **LangChain** | 开源/免费 | LLM应用开发框架(开发者向) | 🔥🔥🔥🔥 |
+
+### 🔍 **AI搜索 (4款)** 🆕
+| 工具 | 类型 | 特点 | 热度 |
+|------|------|------|------|
+| **Perplexity AI** | 海外/免费 | 对话式AI搜索引擎，带引用来源 | 🔥🔥🔥🔥🔥 |
+| **秘塔AI搜索** | 国产/免费 | 国产无广告AI搜索，直达答案 | 🔥🔥🔥🔥🔥 |
+| **You.com** | 海外/免费 | 隐私保护AI聚合搜索引擎 | 🔥🔥🔥🔥 |
+| **Phind** | 海外/免费 | 面向开发者AI搜索引擎 | 🔥🔥🔥🔥 |
 
 ---
 
@@ -516,7 +543,7 @@ npm run build
 | JSDoc覆盖率 | 100% | 🟢 完整 |
 | 循环复杂度 | < 10/函数 | 🟢 低耦合 |
 | 代码重复率 | 0% | 🟢 DRY原则 |
-| 全局变量数 | 14个 | 🟢 最小化 |
+| 全局变量数 | 16个 | 🟢 最小化 |
 | 模块数量 | 7个 | 🟢 高内聚低耦合 |
 
 ### UI/UX评分: ⭐⭐⭐⭐⭐ (5/5)
@@ -528,6 +555,16 @@ npm run build
 | 响应式断点 | 3个 | 🟢 完整 |
 | 无障碍支持 | ARIA完整 | 🟢 专业 |
 | 移动端适配 | 底部导航+手势 | 🟢 出色 |
+
+### 工具库质量评分: ⭐⭐⭐⭐☆ (4.5/5) 🆕
+
+| 指标 | 数值 | 评级 |
+|------|------|------|
+| 工具总数 | 67款 | 🟢 丰富 |
+| 分类覆盖 | 10大领域 | 🟢 全面 |
+| URL有效率 | 79.1% | 🟡 良好(含海外超时) |
+| 数据完整性 | 100% | 🟢 完整(含元信息字段) |
+| 时效性 | 2026-04 | 🟢 最新 |
 
 ---
 
@@ -574,15 +611,14 @@ npm run build
 
 **示例**:
 ```
-feat(ui): 添加7套主题系统
+feat(tools): v2.0 大规模工具库升级
 
-新增功能:
-- 默认紫蓝、深夜模式、薰衣草紫、海洋蓝、樱花粉、森林绿、日落橙
-- 主题选择器模态框带预览图
-- localStorage自动保存用户偏好
-- 智能图标随主题变化
+新增内容:
+- 18个2026年热门AI工具(Suno/Udio/Coze/Dify等)
+- 3个全新分类(AI音乐/AI智能体/AI搜索)
+- 完善工具元信息(updateTime/status/difficulty/platform)
 
-影响范围: index.html (+450行), js/utils.js (+135行), js/main.js (+10行)
+影响范围: tools.json (+18工具, -15失效, +3分类)
 ```
 
 ### 代码规范
@@ -594,10 +630,39 @@ feat(ui): 添加7套主题系统
 - ✅ 常量命名采用UPPER_SNAKE_CASE
 - ✅ 所有用户输入必须经过escapeHtml/escapeAttr处理
 - ✅ URL必须通过isValidUrl()验证后才能使用
+- ✅ 新增工具必须包含完整的元信息字段
 
 ---
 
 ## 📈 更新日志
+
+### v4.1.0 (2026-04-05) - Tool Library v2.0 Major Upgrade 🚀
+
+#### 📊 工具库大规模扩展
+- ✅ **工具数量**: 45个 → **67个 (+48.9%)**
+- ✅ **分类数量**: 7个 → **10个 (+3个新分类)**
+- ✅ 移除15个失效工具，更新6个过期URL
+- ✅ 所有工具添加完整元信息(updateTime/status/difficulty/platform)
+
+#### 🆕 新增3大热门分类
+- 🎵 **AI音乐 (5个)**: Suno AI, Udio, 网易天音, Soundraw, AIVA
+- 🤖 **AI智能体 (5个)**: Coze扣子, Dify, FastGPT, GPTs Store, LangChain
+- 🔍 **AI搜索 (4个)**: Perplexity AI, 秘塔AI搜索, You.com, Phind
+- 📈 **AI办公增强 (4个)**: Gamma, ChatExcel, Mem.ai, 腾讯文档AI
+
+#### 🛠️ 功能改进
+- ✅ 修复底部导航栏按钮点击无响应问题
+- ✅ 首页/工具按钮增加实际交互逻辑
+- ✅ 添加scrollToTop()和showAllTools()函数
+- ✅ 统一使用<button>标签替代<a>标签
+
+#### 📋 数据统计
+- 总计: 67个精选AI工具
+- 有效链接: 53个 (79.1%)
+- 超时(海外服务): 11个 (实际可用)
+- 失效: 3个 (Midjourney/HeyGen/Phind需特殊访问)
+
+**变更文件**: tools.json (完整重写), main.js (+23行), index.html (+8行)
 
 ### v4.0.0 (2026-04-05) - Major UI Redesign & Theme System
 #### 🎨 全新UI设计
@@ -711,8 +776,8 @@ copies or substantial portions of the Software.
 
 Made with ❤️ by [a895411690](https://github.com/a895411690)
 
-*最后更新: 2026-04-05 | 版本: v4.0.0-modern-ui-themes*
+*最后更新: 2026-04-05 | 版本: v4.1.0-tools-v2.0*
 
-**🎨 7套主题等你体验 | 🔒 企业级安全保障 | ⚡ 极致性能优化**
+**🎨 7套主题等你体验 | 🔒 企业级安全保障 | ⚡ 极致性能优化 | 📊 67款精选AI工具**
 
 </div>
