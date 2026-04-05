@@ -26,7 +26,8 @@ const state = {
     currentCategory: 'all', // Currently selected category filter
     searchHistory: safeJsonParse('ai-tool-hub-search-history', []),
     favorites: safeJsonParse('ai-tool-hub-favorites', []),
-    clickStats: safeJsonParse('ai-tool-hub-click-stats', {})  // Tool click statistics {toolId: count}
+    clickStats: safeJsonParse('ai-tool-hub-click-stats', {}),  // Tool click statistics {toolId: count}
+    ratings: safeJsonParse('ai-tool-hub-ratings', {})          // User ratings {toolId: rating (1-5)}
 };
 
 /**
@@ -144,6 +145,119 @@ function getPopularTools() {
     });
 }
 
+/**
+ * Set user rating for a tool (v4.4.0)
+ * @param {number} toolId - Tool ID to rate
+ * @param {number} rating - Rating value (1-5)
+ * @returns {number} The rating that was set
+ */
+function setToolRating(toolId, rating) {
+    // Validate rating is between 1 and 5
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+        console.warn('Invalid rating value:', rating);
+        rating = Math.max(1, Math.min(5, Math.round(rating)));
+    }
+
+    state.ratings[toolId] = rating;
+
+    // Debounce save to localStorage
+    clearTimeout(state._ratingSaveTimeout);
+    state._ratingSaveTimeout = setTimeout(() => {
+        localStorage.setItem('ai-tool-hub-ratings', JSON.stringify(state.ratings));
+    }, 500);
+
+    return rating;
+}
+
+/**
+ * Get user rating for a specific tool (v4.4.0)
+ * @param {number} toolId - Tool ID
+ * @returns {number} Rating (1-5) or 0 if not rated
+ */
+function getToolRating(toolId) {
+    return state.ratings[toolId] || 0;
+}
+
+/**
+ * Get average rating across all rated tools (v4.4.0)
+ * @returns {number} Average rating (1-5) or 0 if no ratings
+ */
+function getAverageRating() {
+    const values = Object.values(state.ratings);
+    if (values.length === 0) return 0;
+
+    const sum = values.reduce((acc, val) => acc + val, 0);
+    return (sum / values.length).toFixed(1);
+}
+
+/**
+ * Get total number of rated tools (v4.4.0)
+ * @returns {number} Count of tools with ratings
+ */
+function getRatedToolsCount() {
+    return Object.keys(state.ratings).length;
+}
+
+/**
+ * Export user data (favorites, ratings, stats) as JSON (v4.4.0)
+ * @returns {string} JSON string of all user data
+ */
+function exportUserData() {
+    const userData = {
+        version: '2.0',
+        exportDate: new Date().toISOString(),
+        favorites: state.favorites,
+        ratings: state.ratings,
+        clickStats: state.clickStats,
+        searchHistory: state.searchHistory
+    };
+
+    return JSON.stringify(userData, null, 2);
+}
+
+/**
+ * Import user data from JSON string (v4.4.0)
+ * @param {string} jsonString - JSON string to import
+ * @returns {Object} Import result with success status and message
+ */
+function importUserData(jsonString) {
+    try {
+        const data = JSON.parse(jsonString);
+
+        // Validate structure
+        if (!data.version || !Array.isArray(data.favorites)) {
+            throw new Error('无效的数据格式');
+        }
+
+        // Merge data (preserve existing + add imported)
+        if (Array.isArray(data.favorites)) {
+            state.favorites = [...new Set([...state.favorites, ...data.favorites])];
+            localStorage.setItem('ai-tool-hub-favorites', JSON.stringify(state.favorites));
+        }
+
+        if (data.ratings && typeof data.ratings === 'object') {
+            state.ratings = { ...state.ratings, ...data.ratings };
+            localStorage.setItem('ai-tool-hub-ratings', JSON.stringify(state.ratings));
+        }
+
+        if (data.clickStats && typeof data.clickStats === 'object') {
+            state.clickStats = { ...state.clickStats, ...data.clickStats };
+            localStorage.setItem('ai-tool-hub-click-stats', JSON.stringify(state.clickStats));
+        }
+
+        return {
+            success: true,
+            message: `成功导入数据：${data.favorites.length} 个收藏，${Object.keys(data.ratings || {}).length} 个评分`
+        };
+    } catch (error) {
+        console.error('Import failed:', error);
+        return {
+            success: false,
+            message: `导入失败：${error.message}`
+        };
+    }
+}
+
 // Export state object and management functions
 export default state;
 export {
@@ -156,5 +270,11 @@ export {
     recordToolClick,
     getToolClickCount,
     getPopularTools,
+    setToolRating,
+    getToolRating,
+    getAverageRating,
+    getRatedToolsCount,
+    exportUserData,
+    importUserData,
     safeJsonParse
 };

@@ -21,10 +21,12 @@ async function loadTools() {
         updateData(data.tools, data.categories);
         
         // Import render functions dynamically to avoid circular dependencies
-        const { renderCategories, renderTools } = await import('./ui.js');
-        
+        const { renderCategories, renderHotTools, renderStatisticsDashboard, renderTools } = await import('./ui.js');
+
         // Render UI using imported functions
         renderCategories();
+        renderHotTools();  // v4.3.0: Render hot tools section
+        renderStatisticsDashboard();  // v4.4.0: Render statistics dashboard
         renderTools(state.tools);
         
         // Hide loading state
