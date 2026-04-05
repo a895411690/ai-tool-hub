@@ -3,57 +3,51 @@
  * Entry point for the resume optimizer tool
  */
 
-// Initialize application when DOM is ready
+// 初始化应用
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 AI Resume Optimizer initialized');
-    
-    // Components are auto-initialized by their respective scripts
+
+    // 组件由各自的脚本自动初始化
     // - resumeForm
     // - resumePreview
-    // - store (with auto-load from localStorage)
-    
-    // Setup keyboard shortcuts
+    // - store（自动从 localStorage 加载）
+
     setupKeyboardShortcuts();
-    
-    // Setup auto-save indicator
     setupAutoSaveIndicator();
-    
-    // Welcome message for first-time users
     showWelcomeMessage();
 });
 
-// Keyboard shortcuts
+// 键盘快捷键
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
-        // Ctrl/Cmd + S to save
+        // Ctrl/Cmd + S 保存
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
             store.save();
             showNotification('已保存到本地', 'success');
         }
-        
-        // Ctrl/Cmd + P to preview PDF
+
+        // Ctrl/Cmd + P 预览 PDF
         if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
             e.preventDefault();
             pdfGenerator.preview();
         }
-        
-        // Esc to close AI panel
+
+        // Esc 关闭 AI 面板
         if (e.key === 'Escape') {
             aiOptimizer.closePanel();
         }
     });
 }
 
-// Auto-save indicator
+// 自动保存指示器
 function setupAutoSaveIndicator() {
     const indicator = document.createElement('div');
     indicator.id = 'autoSaveIndicator';
     indicator.className = 'fixed bottom-4 left-4 px-3 py-1.5 bg-gray-800 text-gray-400 text-xs rounded-lg opacity-0 transition-opacity';
     indicator.innerHTML = '<i class="fas fa-check-circle text-green-500 mr-1"></i> 已自动保存';
     document.body.appendChild(indicator);
-    
-    // Show indicator when state changes
+
     let saveTimeout;
     store.subscribe(() => {
         indicator.style.opacity = '1';
@@ -64,7 +58,7 @@ function setupAutoSaveIndicator() {
     });
 }
 
-// Welcome message
+// 欢迎消息
 function showWelcomeMessage() {
     const hasVisited = localStorage.getItem('resumeOptimizerVisited');
     if (!hasVisited) {
@@ -75,21 +69,31 @@ function showWelcomeMessage() {
     }
 }
 
-// Notification helper
+// 显示通知（使用 DOM API + textContent 防止 XSS）
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 fade-in ${
-        type === 'success' ? 'bg-green-500' : 
+        type === 'success' ? 'bg-green-500' :
         type === 'error' ? 'bg-red-500' : 'bg-indigo-500'
     } text-white`;
-    notification.innerHTML = `
-        <div class="flex items-center gap-2">
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-            <span>${message}</span>
-        </div>
-    `;
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'flex items-center gap-2';
+
+    const icon = document.createElement('i');
+    icon.className = `fas ${
+        type === 'success' ? 'fa-check-circle' :
+        type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'
+    }`;
+    wrapper.appendChild(icon);
+
+    const textSpan = document.createElement('span');
+    textSpan.textContent = message; // 安全：使用 textContent
+    wrapper.appendChild(textSpan);
+
+    notification.appendChild(wrapper);
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.style.opacity = '0';
         notification.style.transform = 'translateY(10px)';
@@ -97,5 +101,5 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Export for global access
+// 导出为全局访问
 window.showNotification = showNotification;

@@ -2,12 +2,28 @@
 import { showToast, escapeHtml, escapeAttr } from './utils.js';
 import { renderCategories, renderTools } from './ui.js';
 
+/**
+ * 安全解析 localStorage 中的 JSON 数据
+ * @param {string} key - localStorage 键名
+ * @param {*} defaultValue - 解析失败时的默认值
+ * @returns {*} 解析后的值或默认值
+ */
+function safeJsonParse(key, defaultValue) {
+    try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : defaultValue;
+    } catch (e) {
+        console.warn(`解析 localStorage key "${key}" 失败:`, e);
+        return defaultValue;
+    }
+}
+
 // Global State
 let allTools = [];
 let categories = [];
 let currentCategory = 'all';
-let searchHistory = JSON.parse(localStorage.getItem('ai-tool-hub-search-history') || '[]');
-let favorites = JSON.parse(localStorage.getItem('ai-tool-hub-favorites') || '[]');
+let searchHistory = safeJsonParse('ai-tool-hub-search-history', []);
+let favorites = safeJsonParse('ai-tool-hub-favorites', []);
 
 // Initialize
 // Note: loadTools is called from main.js

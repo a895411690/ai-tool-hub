@@ -22,7 +22,12 @@ window.closeUpdateModal = closeUpdateModal;
 
 // Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
-    loadTools();
+    try {
+        loadTools();
+    } catch (e) {
+        console.error('加载工具失败:', e);
+    }
+    // 这些应该始终执行
     setupSearch();
     setupKeyboardShortcuts();
     setupPullToRefresh();

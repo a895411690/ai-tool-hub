@@ -21,9 +21,12 @@ const SEARCH_DEBOUNCE_TIME = 300;
  */
 function escapeHtml(text) {
     if (typeof text !== 'string') return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 /**
@@ -47,15 +50,18 @@ function escapeAttr(text) {
  */
 function setupKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
+        const searchInput = document.getElementById('mainSearch');
+        const searchHistory = document.getElementById('searchHistory');
+        
         if (e.key === '/' || e.key === 's' || e.key === 'S') {
-            if (document.activeElement !== document.getElementById('mainSearch')) {
+            if (searchInput && document.activeElement !== searchInput) {
                 e.preventDefault();
-                document.getElementById('mainSearch').focus();
+                searchInput.focus();
             }
         }
         if (e.key === 'Escape') {
             clearSearch();
-            document.getElementById('searchHistory').classList.remove('show');
+            if (searchHistory) searchHistory.classList.remove('show');
             closeShareModal();
         }
     });
@@ -76,13 +82,15 @@ function setupPullToRefresh() {
     document.addEventListener('touchmove', (e) => {
         if (refreshing || window.scrollY > 0) return;
         const diff = e.touches[0].clientY - startY;
-        if (diff > 80) {
-            document.getElementById('pullRefresh').classList.add('visible');
+        const pullRefresh = document.getElementById('pullRefresh');
+        if (diff > 80 && pullRefresh) {
+            pullRefresh.classList.add('visible');
         }
     }, { passive: true });
     
     document.addEventListener('touchend', () => {
-        if (document.getElementById('pullRefresh').classList.contains('visible')) {
+        const pullRefresh = document.getElementById('pullRefresh');
+        if (pullRefresh && pullRefresh.classList.contains('visible')) {
             refreshing = true;
             setTimeout(() => {
                 location.reload();
@@ -98,7 +106,10 @@ function setupPullToRefresh() {
 function toggleTheme() {
     document.documentElement.classList.toggle('dark');
     const isDark = document.documentElement.classList.contains('dark');
-    document.getElementById('themeIcon').className = `fas fa-${isDark ? 'moon' : 'sun'} ${isDark ? 'text-primary' : 'text-yellow-400'}`;
+    const themeIcon = document.getElementById('themeIcon');
+    if (themeIcon) {
+        themeIcon.className = `fas fa-${isDark ? 'moon' : 'sun'} ${isDark ? 'text-primary' : 'text-yellow-400'}`;
+    }
 }
 
 /**
@@ -108,7 +119,9 @@ function toggleTheme() {
  */
 function showToast(msg) {
     const toast = document.getElementById('toast');
-    document.getElementById('toastMsg').textContent = msg;
+    const toastMsg = document.getElementById('toastMsg');
+    if (!toast || !toastMsg) return;
+    toastMsg.textContent = msg;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), TOAST_DISPLAY_TIME);
 }
@@ -120,8 +133,10 @@ function showToast(msg) {
 function loadAnnouncement() {
     const announcement = localStorage.getItem('ai-tool-hub-announcement');
     if (announcement && !localStorage.getItem('ai-tool-hub-announcement-closed')) {
-        document.getElementById('announcementText').textContent = announcement;
-        document.getElementById('announcementBar').style.display = 'block';
+        const textEl = document.getElementById('announcementText');
+        const bar = document.getElementById('announcementBar');
+        if (textEl) textEl.textContent = announcement;
+        if (bar) bar.style.display = 'block';
     }
 }
 
@@ -129,7 +144,8 @@ function loadAnnouncement() {
  * Close announcement bar and remember user's choice
  */
 function closeAnnouncement() {
-    document.getElementById('announcementBar').style.display = 'none';
+    const bar = document.getElementById('announcementBar');
+    if (bar) bar.style.display = 'none';
     localStorage.setItem('ai-tool-hub-announcement-closed', 'true');
 }
 
@@ -139,7 +155,8 @@ function closeAnnouncement() {
  */
 function checkForUpdate() {
     if (!localStorage.getItem('ai-tool-hub-v2-5-shown')) {
-        document.getElementById('updateModal').classList.add('active');
+        const modal = document.getElementById('updateModal');
+        if (modal) modal.classList.add('active');
         localStorage.setItem('ai-tool-hub-v2-5-shown', 'true');
     }
 }
@@ -148,7 +165,8 @@ function checkForUpdate() {
  * Close the update modal dialog
  */
 function closeUpdateModal() {
-    document.getElementById('updateModal').classList.remove('active');
+    const modal = document.getElementById('updateModal');
+    if (modal) modal.classList.remove('active');
 }
 
 /**

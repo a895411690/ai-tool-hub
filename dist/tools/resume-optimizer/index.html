@@ -6,8 +6,12 @@
     <title>AI 简历优化 - AI Tool Hub</title>
     <meta name="description" content="AI驱动的简历优化工具，支持实时预览和一键导出">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0"
+          crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+            integrity="sha384-Yv5O+t3uE3hunW8uyrbpPW3iw6/5/Y7HitWJBLgqfMoA36NogMmy+8wWZMpn3HWc"
+            crossorigin="anonymous"></script>
     <link rel="stylesheet" href="./src/styles/main.css">
 </head>
 <body class="bg-gray-900 text-gray-100 min-h-screen">
@@ -56,7 +60,7 @@
                                 <i class="fas fa-wand-magic-sparkles mr-2"></i>
                                 AI 优化
                             </button>
-                            <button onclick="pdfGenerator.download()" class="px-4 py-2 bg-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+                            <button onclick="pdfGenerator.download()" id="downloadPdfBtn" class="px-4 py-2 bg-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
                                 <i class="fas fa-download mr-2"></i>
                                 导出 PDF
                             </button>
@@ -85,6 +89,49 @@
                     </button>
                 </div>
                 <div class="flex-1 overflow-y-auto space-y-4">
+                    <!-- API 设置 -->
+                    <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="text-sm font-medium flex items-center gap-2">
+                                <i class="fas fa-key text-yellow-400"></i>
+                                百度千帆 API 设置
+                            </label>
+                            <button onclick="aiOptimizer.toggleApiSettings()" id="apiSettingsToggle" class="text-xs text-gray-400 hover:text-white transition-colors">
+                                <i class="fas fa-chevron-down"></i> 展开
+                            </button>
+                        </div>
+                        <div id="apiSettingsPanel" class="hidden space-y-3">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">API Key</label>
+                                <input type="password" id="qianfanApiKey" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-indigo-500 focus:outline-none" placeholder="输入百度千帆 API Key">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">模型</label>
+                                <select id="qianfanModel" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-indigo-500 focus:outline-none">
+                                    <option value="ernie-4.0-8k">ERNIE 4.0 8K（推荐）</option>
+                                    <option value="ernie-4.0-turbo-8k">ERNIE 4.0 Turbo 8K</option>
+                                    <option value="ernie-3.5-8k">ERNIE 3.5 8K（经济）</option>
+                                    <option value="ernie-speed-128k">ERNIE Speed 128K</option>
+                                    <option value="ernie-lite-8k">ERNIE Lite 8K（免费）</option>
+                                    <option value="deepseek-v3">DeepSeek V3</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="aiOptimizer.saveAndTestApi()" class="flex-1 py-2 bg-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+                                    <i class="fas fa-save mr-1"></i> 保存并测试
+                                </button>
+                                <button onclick="aiOptimizer.clearApiSettings()" class="px-3 py-2 bg-gray-700 rounded-lg text-sm hover:bg-gray-600 transition-colors">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div id="apiStatus" class="hidden text-xs"></div>
+                            <p class="text-xs text-gray-500">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                API Key 仅存储在本地浏览器中，不会上传到任何服务器。
+                                <a href="https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:underline">获取 API Key →</a>
+                            </p>
+                        </div>
+                    </div>
                     <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
                         <label class="block text-sm font-medium mb-2">职位描述</label>
                         <textarea id="jobDescription" rows="6" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm focus:border-indigo-500 focus:outline-none resize-none" placeholder="粘贴目标职位的职位描述，AI将据此优化您的简历..."></textarea>
@@ -101,12 +148,12 @@
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="./src/lib/store.js"></script>
-    <script src="./src/lib/pdfGenerator.js"></script>
-    <script src="./src/lib/aiOptimizer.js"></script>
-    <script src="./src/components/resumeForm.js"></script>
-    <script src="./src/components/resumePreview.js"></script>
-    <script src="./src/app.js"></script>
+    <!-- Scripts (defer 确保按顺序在 DOM 解析完成后执行) -->
+    <script src="./src/lib/store.js" defer></script>
+    <script src="./src/lib/pdfGenerator.js" defer></script>
+    <script src="./src/lib/aiOptimizer.js" defer></script>
+    <script src="./src/components/resumeForm.js" defer></script>
+    <script src="./src/components/resumePreview.js" defer></script>
+    <script src="./src/app.js" defer></script>
 </body>
 </html>

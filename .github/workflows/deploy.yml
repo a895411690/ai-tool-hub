@@ -6,9 +6,8 @@ on:
   pull_request:
     branches: [ main ]
 
-# 设置GITHUB_TOKEN的写入权限
+# 采用最小权限原则，仅授予必要的权限
 permissions:
-  contents: write
   pages: write
   id-token: write
 
@@ -34,7 +33,6 @@ jobs:
 
       - name: Install dependencies (if any)
         run: |
-          # 检查是否有package.json，如果有则安装依赖
           if [ -f "package.json" ]; then
             npm ci
           else
@@ -43,33 +41,28 @@ jobs:
 
       - name: Validate HTML
         run: |
-          # 安装html5validator进行HTML验证
           sudo apt-get update
           sudo apt-get install -y html5validator
-          # 验证所有HTML文件
-          html5validator --root . --match "*.html" --ignore "node_modules/*" || echo "HTML validation completed"
+          html5validator --root . --match "*.html" --ignore "node_modules/*"
 
       - name: Check JavaScript syntax
         run: |
-          # 检查所有JS文件的语法
           for js_file in $(find . -name "*.js" -not -path "./node_modules/*"); do
-            node -c "$js_file" || echo "Syntax check for $js_file"
+            node -c "$js_file"
           done
 
       - name: Run tests (if any)
         run: |
-          # 检查是否有测试脚本，有则运行
-          if [ -f "package.json" ]; then
-            npm test || echo "Tests completed"
+          if [ -f "package.json" ] && grep -q '"test"' package.json; then
+            npm test
           else
             echo "No tests found, skipping test execution"
           fi
 
       - name: Build (if needed)
         run: |
-          # 检查是否有构建脚本，有则运行
-          if [ -f "package.json" ]; then
-            npm run build || echo "Build completed"
+          if [ -f "package.json" ] && grep -q '"build"' package.json; then
+            npm run build
           else
             echo "No build script found, skipping build"
           fi

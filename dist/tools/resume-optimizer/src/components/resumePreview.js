@@ -3,14 +3,33 @@
  * Renders the resume preview in real-time
  */
 
+/**
+ * HTML 实体转义，防止 XSS 攻击
+ * @param {*} text - 待转义的文本
+ * @returns {string} 转义后的安全字符串
+ */
+function escapeHtml(text) {
+    if (typeof text !== 'string') return '';
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 class ResumePreview {
     constructor() {
         this.container = document.getElementById('resumePreview');
         this.render();
-        
-        // Subscribe to store changes
+
+        // 订阅 store 变更
         store.subscribe((state) => {
-            this.update(state);
+            try {
+                this.update(state);
+            } catch (error) {
+                console.error('简历预览更新出错:', error);
+            }
         });
     }
 
@@ -58,7 +77,7 @@ class ResumePreview {
     }
 
     update(state) {
-        // Update profile
+        // 更新 profile（使用 textContent，安全）
         const nameEl = document.getElementById('previewName');
         const titleEl = document.getElementById('previewTitle');
         const emailEl = document.getElementById('previewEmail');
@@ -77,7 +96,7 @@ class ResumePreview {
             summarySection.style.display = state.profile.summary ? 'block' : 'none';
         }
 
-        // Update experience
+        // 更新经历（使用 escapeHtml 转义）
         const experienceContainer = document.getElementById('previewExperience');
         const experienceSection = document.getElementById('previewExperienceSection');
         if (experienceContainer && experienceSection) {
@@ -86,14 +105,14 @@ class ResumePreview {
                     <div class="resume-item">
                         <div class="resume-item-header">
                             <div>
-                                <div class="resume-item-title">${exp.position || '职位'}</div>
-                                <div class="resume-item-subtitle">${exp.company || '公司'}</div>
+                                <div class="resume-item-title">${escapeHtml(exp.position || '职位')}</div>
+                                <div class="resume-item-subtitle">${escapeHtml(exp.company || '公司')}</div>
                             </div>
                             <div class="resume-item-date">
-                                ${exp.startDate || ''} - ${exp.endDate || '至今'}
+                                ${escapeHtml(exp.startDate || '')} - ${escapeHtml(exp.endDate || '至今')}
                             </div>
                         </div>
-                        ${exp.description ? `<p class="resume-item-description">${exp.description}</p>` : ''}
+                        ${exp.description ? `<p class="resume-item-description">${escapeHtml(exp.description)}</p>` : ''}
                     </div>
                 `).join('');
                 experienceSection.style.display = 'block';
@@ -102,7 +121,7 @@ class ResumePreview {
             }
         }
 
-        // Update education
+        // 更新教育（使用 escapeHtml 转义）
         const educationContainer = document.getElementById('previewEducation');
         const educationSection = document.getElementById('previewEducationSection');
         if (educationContainer && educationSection) {
@@ -111,10 +130,10 @@ class ResumePreview {
                     <div class="resume-item">
                         <div class="resume-item-header">
                             <div>
-                                <div class="resume-item-title">${edu.school || '学校'}</div>
-                                <div class="resume-item-subtitle">${edu.degree || ''}${edu.field ? ` · ${edu.field}` : ''}</div>
+                                <div class="resume-item-title">${escapeHtml(edu.school || '学校')}</div>
+                                <div class="resume-item-subtitle">${escapeHtml(edu.degree || '')}${edu.field ? ` · ${escapeHtml(edu.field)}` : ''}</div>
                             </div>
-                            <div class="resume-item-date">${edu.graduationDate || ''}</div>
+                            <div class="resume-item-date">${escapeHtml(edu.graduationDate || '')}</div>
                         </div>
                     </div>
                 `).join('');
@@ -124,13 +143,13 @@ class ResumePreview {
             }
         }
 
-        // Update skills
+        // 更新技能（使用 escapeHtml 转义）
         const skillsContainer = document.getElementById('previewSkills');
         const skillsSection = document.getElementById('previewSkillsSection');
         if (skillsContainer && skillsSection) {
             if (state.skills.length > 0) {
                 skillsContainer.innerHTML = state.skills.map(skill => `
-                    <span class="skill-tag">${skill}</span>
+                    <span class="skill-tag">${escapeHtml(skill)}</span>
                 `).join('');
                 skillsSection.style.display = 'block';
             } else {
@@ -140,5 +159,5 @@ class ResumePreview {
     }
 }
 
-// Create global instance
+// 创建全局实例
 const resumePreview = new ResumePreview();

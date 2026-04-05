@@ -4,14 +4,36 @@ import { renderTools } from './ui.js';
 import { showToast } from './utils.js';
 
 /**
+ * 验证 URL 安全性，仅允许 http 和 https 协议
+ * @param {string} url - 待验证的 URL
+ * @returns {string} 安全的 URL，不安全则返回 '#'
+ */
+function sanitizeUrl(url) {
+    if (typeof url !== 'string') return '#';
+    try {
+        const parsed = new URL(url);
+        if (['http:', 'https:'].includes(parsed.protocol)) return url;
+    } catch (e) {
+        // 相对路径视为安全
+        if (url.startsWith('/') || url.startsWith('./')) return url;
+    }
+    return '#';
+}
+
+/**
  * Open tool URL in new tab
  * @param {number} id - Tool ID
  * @param {string} url - Tool URL to open
  * @param {Event} event - Click event object
  */
 function openTool(id, url, event) {
-    event.stopPropagation();
-    window.open(url, '_blank');
+    if (event) event.stopPropagation();
+    const safeUrl = sanitizeUrl(url);
+    if (safeUrl === '#') {
+        showToast('无效的链接地址');
+        return;
+    }
+    window.open(safeUrl, '_blank', 'noopener,noreferrer');
 }
 
 /**
@@ -46,7 +68,10 @@ function toggleFavorite(id, event) {
 function showToolDetail(id) {
     const tool = allTools.find(t => t.id === id);
     if (tool) {
-        window.open(tool.url, '_blank');
+        const safeUrl = sanitizeUrl(tool.url);
+        if (safeUrl !== '#') {
+            window.open(safeUrl, '_blank', 'noopener,noreferrer');
+        }
     }
 }
 

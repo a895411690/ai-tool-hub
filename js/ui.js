@@ -136,7 +136,8 @@ function setupSearch() {
     
     searchInput.addEventListener('input', (e) => {
         const term = e.target.value.toLowerCase();
-        document.getElementById('clearSearchBtn').classList.toggle('hidden', !term);
+        const clearSearchBtn = document.getElementById('clearSearchBtn');
+        if (clearSearchBtn) clearSearchBtn.classList.toggle('hidden', !term);
         
         // Clear previous debounce timer
         if (searchDebounceTimeout) {
@@ -162,18 +163,22 @@ function setupSearch() {
 
     searchInput.addEventListener('focus', () => {
         if (searchHistory.length > 0) {
-            document.getElementById('searchHistory').innerHTML = searchHistory.map(h => 
-                `<div class="px-4 py-2 hover:bg-primary/20 cursor-pointer flex items-center gap-2" onclick="setSearch('${escapeAttr(h)}')">
-                    <i class="fas fa-history text-gray-500 text-sm"></i><span>${escapeHtml(h)}</span>
-                </div>`
-            ).join('');
-            document.getElementById('searchHistory').classList.add('show');
+            const searchHistoryEl = document.getElementById('searchHistory');
+            if (searchHistoryEl) {
+                searchHistoryEl.innerHTML = searchHistory.map(h => 
+                    `<div class="px-4 py-2 hover:bg-primary/20 cursor-pointer flex items-center gap-2" onclick="setSearch('${escapeAttr(h)}')">
+                        <i class="fas fa-history text-gray-500 text-sm"></i><span>${escapeHtml(h)}</span>
+                    </div>`
+                ).join('');
+                searchHistoryEl.classList.add('show');
+            }
         }
     });
 
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.search-history') && !e.target.closest('#mainSearch')) {
-            document.getElementById('searchHistory').classList.remove('show');
+            const searchHistoryEl = document.getElementById('searchHistory');
+            if (searchHistoryEl) searchHistoryEl.classList.remove('show');
         }
     });
 }
@@ -186,7 +191,8 @@ function setSearch(term) {
     const searchInput = document.getElementById('mainSearch');
     if (!searchInput) return;
     searchInput.value = term;
-    document.getElementById('searchHistory').classList.remove('show');
+    const searchHistoryEl = document.getElementById('searchHistory');
+    if (searchHistoryEl) searchHistoryEl.classList.remove('show');
     searchInput.dispatchEvent(new Event('input'));
 }
 
@@ -197,7 +203,8 @@ function clearSearch() {
     const searchInput = document.getElementById('mainSearch');
     if (!searchInput) return;
     searchInput.value = '';
-    document.getElementById('clearSearchBtn').classList.add('hidden');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
     renderTools(allTools);
 }
 

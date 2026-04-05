@@ -3,6 +3,31 @@
  * Handles all form inputs for resume editing
  */
 
+/**
+ * HTML 实体转义，防止 XSS 攻击
+ * @param {*} text - 待转义的文本
+ * @returns {string} 转义后的安全字符串
+ */
+function escapeHtml(text) {
+    if (typeof text !== 'string') return '';
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/**
+ * HTML 属性值转义
+ * @param {*} text - 待转义的属性值
+ * @returns {string} 转义后的安全字符串
+ */
+function escapeAttr(text) {
+    if (typeof text !== 'string') return '';
+    return text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 class ResumeForm {
     constructor() {
         this.container = document.getElementById('resumeForm');
@@ -115,23 +140,31 @@ class ResumeForm {
 
     loadFromStore() {
         const state = store.getState();
-        
-        // Load profile
-        document.getElementById('profileName').value = state.profile.name || '';
-        document.getElementById('profileTitle').value = state.profile.title || '';
-        document.getElementById('profileEmail').value = state.profile.email || '';
-        document.getElementById('profilePhone').value = state.profile.phone || '';
-        document.getElementById('profileLocation').value = state.profile.location || '';
-        document.getElementById('profileSummary').value = state.profile.summary || '';
 
-        // Load experience
+        // 加载 profile（添加空值检查）
+        const nameInput = document.getElementById('profileName');
+        const titleInput = document.getElementById('profileTitle');
+        const emailInput = document.getElementById('profileEmail');
+        const phoneInput = document.getElementById('profilePhone');
+        const locationInput = document.getElementById('profileLocation');
+        const summaryInput = document.getElementById('profileSummary');
+
+        if (nameInput) nameInput.value = state.profile.name || '';
+        if (titleInput) titleInput.value = state.profile.title || '';
+        if (emailInput) emailInput.value = state.profile.email || '';
+        if (phoneInput) phoneInput.value = state.profile.phone || '';
+        if (locationInput) locationInput.value = state.profile.location || '';
+        if (summaryInput) summaryInput.value = state.profile.summary || '';
+
+        // 加载经历
         this.renderExperienceList(state.experience);
 
-        // Load education
+        // 加载教育
         this.renderEducationList(state.education);
 
-        // Load skills
-        document.getElementById('skillsInput').value = state.skills.join(', ');
+        // 加载技能
+        const skillsInput = document.getElementById('skillsInput');
+        if (skillsInput) skillsInput.value = state.skills.join(', ');
         this.renderSkillsTags(state.skills);
     }
 
@@ -148,6 +181,7 @@ class ResumeForm {
 
     renderExperienceList(experiences) {
         const container = document.getElementById('experienceList');
+        if (!container) return;
         container.innerHTML = experiences.map((exp, index) => `
             <div class="p-4 bg-gray-900/50 rounded-lg mb-3 border border-gray-700">
                 <div class="flex justify-between items-start mb-3">
@@ -157,19 +191,19 @@ class ResumeForm {
                     </button>
                 </div>
                 <div class="grid grid-cols-2 gap-3 mb-3">
-                    <input type="text" class="form-input" placeholder="公司名称" 
-                           value="${exp.company}" onchange="resumeForm.updateExperience(${exp.id}, 'company', this.value)">
-                    <input type="text" class="form-input" placeholder="职位" 
-                           value="${exp.position}" onchange="resumeForm.updateExperience(${exp.id}, 'position', this.value)">
+                    <input type="text" class="form-input" placeholder="公司名称"
+                           value="${escapeAttr(exp.company)}" onchange="resumeForm.updateExperience(${exp.id}, 'company', this.value)">
+                    <input type="text" class="form-input" placeholder="职位"
+                           value="${escapeAttr(exp.position)}" onchange="resumeForm.updateExperience(${exp.id}, 'position', this.value)">
                 </div>
                 <div class="grid grid-cols-2 gap-3 mb-3">
-                    <input type="text" class="form-input" placeholder="开始时间（如：2020.01）" 
-                           value="${exp.startDate}" onchange="resumeForm.updateExperience(${exp.id}, 'startDate', this.value)">
-                    <input type="text" class="form-input" placeholder="结束时间（如：2023.12 或 至今）" 
-                           value="${exp.endDate}" onchange="resumeForm.updateExperience(${exp.id}, 'endDate', this.value)">
+                    <input type="text" class="form-input" placeholder="开始时间（如：2020.01）"
+                           value="${escapeAttr(exp.startDate)}" onchange="resumeForm.updateExperience(${exp.id}, 'startDate', this.value)">
+                    <input type="text" class="form-input" placeholder="结束时间（如：2023.12 或 至今）"
+                           value="${escapeAttr(exp.endDate)}" onchange="resumeForm.updateExperience(${exp.id}, 'endDate', this.value)">
                 </div>
-                <textarea class="form-textarea" rows="3" placeholder="工作描述..." 
-                          onchange="resumeForm.updateExperience(${exp.id}, 'description', this.value)">${exp.description}</textarea>
+                <textarea class="form-textarea" rows="3" placeholder="工作描述..."
+                          onchange="resumeForm.updateExperience(${exp.id}, 'description', this.value)">${escapeHtml(exp.description)}</textarea>
             </div>
         `).join('');
     }
@@ -195,6 +229,7 @@ class ResumeForm {
 
     renderEducationList(education) {
         const container = document.getElementById('educationList');
+        if (!container) return;
         container.innerHTML = education.map((edu, index) => `
             <div class="p-4 bg-gray-900/50 rounded-lg mb-3 border border-gray-700">
                 <div class="flex justify-between items-start mb-3">
@@ -204,16 +239,16 @@ class ResumeForm {
                     </button>
                 </div>
                 <div class="grid grid-cols-2 gap-3 mb-3">
-                    <input type="text" class="form-input" placeholder="学校名称" 
-                           value="${edu.school}" onchange="resumeForm.updateEducation(${edu.id}, 'school', this.value)">
-                    <input type="text" class="form-input" placeholder="毕业时间" 
-                           value="${edu.graduationDate}" onchange="resumeForm.updateEducation(${edu.id}, 'graduationDate', this.value)">
+                    <input type="text" class="form-input" placeholder="学校名称"
+                           value="${escapeAttr(edu.school)}" onchange="resumeForm.updateEducation(${edu.id}, 'school', this.value)">
+                    <input type="text" class="form-input" placeholder="毕业时间"
+                           value="${escapeAttr(edu.graduationDate)}" onchange="resumeForm.updateEducation(${edu.id}, 'graduationDate', this.value)">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
-                    <input type="text" class="form-input" placeholder="学位（如：本科）" 
-                           value="${edu.degree}" onchange="resumeForm.updateEducation(${edu.id}, 'degree', this.value)">
-                    <input type="text" class="form-input" placeholder="专业" 
-                           value="${edu.field}" onchange="resumeForm.updateEducation(${edu.id}, 'field', this.value)">
+                    <input type="text" class="form-input" placeholder="学位（如：本科）"
+                           value="${escapeAttr(edu.degree)}" onchange="resumeForm.updateEducation(${edu.id}, 'degree', this.value)">
+                    <input type="text" class="form-input" placeholder="专业"
+                           value="${escapeAttr(edu.field)}" onchange="resumeForm.updateEducation(${edu.id}, 'field', this.value)">
                 </div>
             </div>
         `).join('');
@@ -230,11 +265,12 @@ class ResumeForm {
 
     renderSkillsTags(skills) {
         const container = document.getElementById('skillsTags');
+        if (!container) return;
         container.innerHTML = skills.map(skill => `
-            <span class="skill-tag">${skill}</span>
+            <span class="skill-tag">${escapeHtml(skill)}</span>
         `).join('');
     }
 }
 
-// Create global instance
+// 创建全局实例
 const resumeForm = new ResumeForm();

@@ -13,8 +13,10 @@ function showShareModal() {
  * @param {Event} [event] - Click event (optional)
  */
 function closeShareModal(event) {
-    if (!event || event.target === document.getElementById('shareModal')) {
-        document.getElementById('shareModal').classList.remove('active');
+    const modal = document.getElementById('shareModal');
+    if (!modal) return;
+    if (!event || event.target === modal) {
+        modal.classList.remove('active');
     }
 }
 
@@ -30,7 +32,7 @@ function shareToWeChat() {
  */
 function shareToQQ() {
     const url = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(window.location.href)}&title=AI%20Tool%20Hub`;
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 /**
