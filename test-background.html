@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* 复制main.css中的body样式 */
+        body {
+            background: 
+                /* 扫描线效果 */
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(0, 255, 255, 0.03) 2px,
+                    rgba(0, 255, 255, 0.03) 4px
+                ),
+                /* 网格透视效果 */
+                linear-gradient(
+                    to bottom,
+                    transparent 0%,
+                    rgba(0, 255, 255, 0.05) 50%,
+                    rgba(255, 0, 255, 0.08) 100%
+                ),
+                /* 动态光点 */
+                radial-gradient(2px 2px at 40px 60px, rgba(0, 255, 255, 0.6), transparent),
+                radial-gradient(1px 1px at 120px 90px, rgba(255, 0, 255, 0.5), transparent),
+                radial-gradient(2px 2px at 200px 150px, rgba(255, 255, 0, 0.4), transparent),
+                radial-gradient(1px 1px at 300px 40px, rgba(0, 255, 255, 0.5), transparent),
+                radial-gradient(2px 2px at 400px 180px, rgba(255, 0, 255, 0.4), transparent),
+                radial-gradient(1px 1px at 500px 80px, rgba(0, 255, 255, 0.6), transparent),
+                radial-gradient(2px 2px at 600px 200px, rgba(255, 255, 0, 0.5), transparent),
+                /* 基础渐变 */
+                linear-gradient(180deg, 
+                    #0a0a0f 0%, 
+                    #0d0d12 30%, 
+                    #0a0a12 60%, 
+                    #050508 100%
+                );
+            background-attachment: fixed;
+            position: relative;
+            overflow-x: hidden;
+            color: white;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <h1>测试背景样式</h1>
+    <p>如果这个页面显示黑色赛博朋克背景，说明CSS样式正确</p>
+    <p>如果显示白色背景，说明有其他问题</p>
+</body>
+</html>

@@ -11,6 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.18.2/dist/index.js"></script>
+    <link rel="stylesheet" href="../css/main.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         * { font-family: 'Inter', -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -40,9 +41,22 @@
         /* Toast */
         .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(26, 26, 46, 0.95); color: white; padding: 12px 24px; border-radius: 50px; border: 1px solid rgba(99, 102, 241, 0.3); opacity: 0; transition: all 0.3s; z-index: 1000; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        
+        /* Modal */
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; display: none; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: linear-gradient(135deg, #1a1a2e, #0a0a0f); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 20px; max-width: 90%; max-height: 90%; overflow: auto; }
+        
+        /* Detail Page */
+        .detail-page { position: fixed; inset: 0; background: #0a0a0f; z-index: 150; transform: translateX(100%); transition: transform 0.3s ease; }
+        .detail-page.show { transform: translateX(0); }
+        
+        /* Toast */
+        .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(100px); background: rgba(26, 26, 46, 0.95); color: white; padding: 12px 24px; border-radius: 50px; border: 1px solid rgba(99, 102, 241, 0.3); opacity: 0; transition: all 0.3s; z-index: 1000; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
 </head>
-<body class="bg-dark-900 text-gray-100 min-h-screen">
+<body class="text-gray-100 min-h-screen tech-bg">
     <!-- Navigation -->
     <nav class="fixed top-0 left-0 right-0 z-50 glass">
         <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
