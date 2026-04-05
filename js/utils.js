@@ -100,15 +100,149 @@ function setupPullToRefresh() {
 }
 
 /**
- * Toggle between light and dark theme
- * Updates theme icon and stores preference in DOM
+ * Theme configuration with all available themes
+ */
+const THEMES = {
+    default: { name: '默认紫蓝', icon: 'fa-palette' },
+    midnight: { name: '深夜模式', icon: 'fa-moon' },
+    lavender: { name: '薰衣草紫', icon: 'fa-spa' },
+    ocean: { name: '海洋蓝', icon: 'fa-water' },
+    sakura: { name: '樱花粉', icon: 'fa-heart' },
+    forest: { name: '森林绿', icon: 'fa-leaf' },
+    sunset: { name: '日落橙', icon: 'fa-sun' }
+};
+
+let currentTheme = localStorage.getItem('ai-tool-hub-theme') || 'default';
+
+/**
+ * Toggle between light and dark themes (quick switch)
+ * Opens theme modal for full selection
  */
 function toggleTheme() {
-    document.documentElement.classList.toggle('dark');
-    const isDark = document.documentElement.classList.contains('dark');
-    const themeIcon = document.getElementById('themeIcon');
-    if (themeIcon) {
-        themeIcon.className = `fas fa-${isDark ? 'moon' : 'sun'} ${isDark ? 'text-primary' : 'text-yellow-400'}`;
+    showThemeModal();
+}
+
+/**
+ * Show the theme selector modal
+ */
+function showThemeModal() {
+    const modal = document.getElementById('themeModal');
+    if (modal) {
+        modal.classList.add('active');
+        updateThemeSelectionUI();
+    }
+}
+
+/**
+ * Close the theme selector modal
+ * @param {Event} [event] - Click event (optional)
+ */
+function closeThemeModal(event) {
+    if (!event || event.target === document.getElementById('themeModal')) {
+        const modal = document.getElementById('themeModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+}
+
+/**
+ * Set active theme and apply it to the document
+ * @param {string} themeName - Theme identifier (default, midnight, lavender, etc.)
+ */
+function setTheme(themeName) {
+    // Validate theme name
+    if (!THEMES[themeName]) {
+        console.warn(`Unknown theme: ${themeName}, falling back to default`);
+        themeName = 'default';
+    }
+
+    // Remove existing theme attribute
+    document.documentElement.removeAttribute('data-theme');
+
+    // Apply new theme (default theme doesn't need data-theme attribute)
+    if (themeName !== 'default') {
+        document.documentElement.setAttribute('data-theme', themeName);
+    }
+
+    // Update current theme state
+    currentTheme = themeName;
+
+    // Save to localStorage
+    localStorage.setItem('ai-tool-hub-theme', themeName);
+
+    // Update UI icons
+    updateThemeIcons(themeName);
+
+    // Update modal selection UI
+    updateThemeSelectionUI();
+
+    // Show toast notification
+    const themeInfo = THEMES[themeName];
+    showToast(`已切换到「${themeInfo.name}」主题`);
+
+    // Close modal after short delay
+    setTimeout(() => {
+        closeThemeModal();
+    }, 300);
+}
+
+/**
+ * Update theme icons (sun/moon/palette) based on current theme
+ * @param {string} themeName - Current theme name
+ */
+function updateThemeIcons(themeName) {
+    const icons = ['themeIcon', 'themeIconNav'];
+    
+    icons.forEach(iconId => {
+        const icon = document.getElementById(iconId);
+        if (icon) {
+            let iconClass, colorClass;
+            
+            if (themeName === 'midnight') {
+                iconClass = 'fas fa-sun';
+                colorClass = 'text-yellow-400';
+            } else if (['lavender', 'sakura'].includes(themeName)) {
+                iconClass = 'fas fa-heart';
+                colorClass = 'text-pink-400';
+            } else if (['ocean', 'forest'].includes(themeName)) {
+                iconClass = 'fas fa-leaf';
+                colorClass = 'text-green-400';
+            } else if (themeName === 'sunset') {
+                iconClass = 'fas fa-sun';
+                colorClass = 'text-orange-400';
+            } else {
+                iconClass = 'fas fa-moon';
+                colorClass = 'text-primary';
+            }
+            
+            icon.className = `${iconClass} ${colorClass}`;
+        }
+    });
+}
+
+/**
+ * Update the visual selection state in theme modal
+ */
+function updateThemeSelectionUI() {
+    const options = document.querySelectorAll('.theme-option');
+    options.forEach(option => {
+        const value = option.getAttribute('data-theme-value');
+        if (value === currentTheme) {
+            option.classList.add('active');
+        } else {
+            option.classList.remove('active');
+        }
+    });
+}
+
+/**
+ * Load saved theme on page initialization
+ */
+function loadSavedTheme() {
+    const savedTheme = localStorage.getItem('ai-tool-hub-theme') || 'default';
+    if (savedTheme && THEMES[savedTheme]) {
+        setTheme(savedTheme);
     }
 }
 
@@ -170,6 +304,22 @@ function closeUpdateModal() {
 }
 
 /**
+ * Validate URL security - only allow http/https protocols
+ * Prevents javascript: protocol injection attacks
+ * @param {string} url - URL to validate
+ * @returns {boolean} True if URL is safe (http or https)
+ */
+function isValidUrl(url) {
+    if (typeof url !== 'string') return false;
+    try {
+        const parsed = new URL(url);
+        return ['http:', 'https:'].includes(parsed.protocol);
+    } catch {
+        return false;
+    }
+}
+
+/**
  * Register Service Worker for PWA support
  * Enables offline caching and improved performance
  */
@@ -184,6 +334,10 @@ export {
     setupKeyboardShortcuts, 
     setupPullToRefresh, 
     toggleTheme, 
+    showThemeModal,
+    closeThemeModal,
+    setTheme,
+    loadSavedTheme,
     showToast, 
     loadAnnouncement, 
     closeAnnouncement, 
@@ -192,6 +346,7 @@ export {
     registerServiceWorker,
     escapeHtml,
     escapeAttr,
+    isValidUrl,
     MAX_SEARCH_HISTORY,
     TOAST_DISPLAY_TIME,
     SEARCH_DEBOUNCE_TIME

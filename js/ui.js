@@ -1,5 +1,5 @@
-// Import state and security utilities
-import { allTools, categories, currentCategory, searchHistory, favorites } from './app.js';
+// Import state from centralized state module (no circular dependency!)
+import state, { getCategoryName, isFavorite, addToSearchHistory } from './state.js';
 import { escapeHtml, escapeAttr, MAX_SEARCH_HISTORY, SEARCH_DEBOUNCE_TIME } from './utils.js';
 
 /**
@@ -13,7 +13,7 @@ function renderCategories() {
     container.setAttribute('role', 'navigation');
     container.setAttribute('aria-label', '工具分类');
     
-    const buttons = categories.map(cat => 
+    const buttons = state.categories.map(cat => 
         `<button class="category-btn px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="${escapeAttr(cat.id)}" onclick="filterCategory('${escapeAttr(cat.id)}')" aria-label="查看${escapeHtml(cat.name)}分类的工具" tabindex="0">${escapeHtml(cat.name)}</button>`
     ).join('');
     
@@ -21,36 +21,52 @@ function renderCategories() {
 }
 
 /**
- * Create a tool card element with XSS protection
+ * Create a tool card element with modern design
  * @param {Object} tool - Tool data object
  * @returns {string} HTML string for the tool card
  */
 function createToolCard(tool) {
-    const categoryName = categories.find(c => c.id === tool.category)?.name || '';
-    const isFavorite = favorites.includes(tool.id);
+    const categoryName = getCategoryName(tool.category);
+    const favorite = isFavorite(tool.id);
+    
+    // Generate tags HTML
+    let tagsHtml = '';
+    if (tool.tags) {
+        if (tool.tags.includes('free')) tagsHtml += '<span class="tag tag-free">免费</span>';
+        else if (tool.tags.includes('vip')) tagsHtml += '<span class="tag tag-vip">VIP</span>';
+        if (tool.tags.includes('new')) tagsHtml += '<span class="tag tag-new">NEW</span>';
+        if (tool.tags.includes('hot')) tagsHtml += '<span class="tag tag-hot">热门</span>';
+    }
+    
+    // Generate toolTags HTML (domestic/overseas)
+    if (tool.toolTags) {
+        if (tool.toolTags.includes('国产')) tagsHtml += '<span class="tag tag-domestic">国产</span>';
+        if (tool.toolTags.includes('海外')) tagsHtml += '<span class="tag tag-overseas">海外</span>';
+    }
     
     return `
-        <div class="glass-card rounded-2xl p-5 group cursor-pointer" onclick="showToolDetail(${tool.id})" role="gridcell" aria-label="${escapeHtml(tool.name)} - ${escapeHtml(tool.desc)}" tabindex="0">
-            <div class="flex items-start justify-between mb-3">
-                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
-                    <i class="fas ${escapeAttr(tool.icon)} text-xl text-primary" aria-hidden="true"></i>
+        <div class="tool-card" onclick="showToolDetail(${tool.id})">
+            <div class="card-header">
+                <div class="card-icon">
+                    <i class="fas ${escapeAttr(tool.icon)}"></i>
                 </div>
-                <div class="flex gap-2">
-                    ${tool.tags?.includes('new') ? '<span class="tag-new text-xs px-2 py-0.5 rounded-full" aria-label="新工具">NEW</span>' : ''}
-                    <button onclick="toggleFavorite(${tool.id}, event)" class="text-gray-500 hover:text-yellow-400 transition-all ${isFavorite ? 'text-yellow-400' : ''}" aria-label="${isFavorite ? '取消收藏' : '收藏'} ${escapeHtml(tool.name)}" tabindex="0">
-                        <i class="fas fa-star" aria-hidden="true"></i>
+                <div class="card-actions">
+                    ${tool.tags?.includes('new') ? '' : ''}
+                    <button onclick="toggleFavorite(${tool.id}, event)" class="favorite-btn ${favorite ? 'active' : ''}" aria-label="${favorite ? '取消收藏' : '收藏'} ${escapeHtml(tool.name)}">
+                        <i class="fas fa-star"></i>
                     </button>
                 </div>
             </div>
-            <h3 class="font-bold text-white mb-1">${escapeHtml(tool.name)}</h3>
-            <p class="text-gray-400 text-sm mb-3 line-clamp-2">${escapeHtml(tool.desc)}</p>
-            <div class="flex flex-wrap gap-1 mb-3">
-                ${tool.tags?.includes('free') ? '<span class="tag-stable text-xs px-2 py-0.5 rounded" aria-label="免费工具">免费</span>' : ''}
-                ${tool.tags?.includes('hot') ? '<span class="tag-recommended text-xs px-2 py-0.5 rounded" aria-label="热门工具">热门</span>' : ''}
+            <h3 class="card-title">${escapeHtml(tool.name)}</h3>
+            <p class="card-desc">${escapeHtml(tool.desc)}</p>
+            <div class="card-tags">
+                ${tagsHtml}
             </div>
-            <div class="flex items-center justify-between">
-                <span class="text-xs text-gray-500">${escapeHtml(categoryName)}</span>
-                <button onclick="openTool(${tool.id}, '${escapeAttr(tool.url)}', event)" class="px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-secondary text-white text-sm hover:shadow-lg transition-all" aria-label="使用${escapeHtml(tool.name)}" tabindex="0">使用</button>
+            <div class="card-footer">
+                <span class="card-category">${escapeHtml(categoryName)}</span>
+                <button onclick="openTool(${tool.id}, '${escapeAttr(tool.url)}', event)" class="card-action-btn">
+                    使用
+                </button>
             </div>
         </div>
     `;
@@ -85,7 +101,7 @@ function renderTools(tools) {
  * @param {string} category - Category ID to filter by ('all' for no filter)
  */
 function filterCategory(category) {
-    window.currentCategory = category;
+    state.currentCategory = category;
     localStorage.setItem('ai-tool-hub-filter-category', category);
     
     document.querySelectorAll('.category-btn').forEach(btn => {
@@ -93,7 +109,8 @@ function filterCategory(category) {
         if (btn.dataset.category === category) btn.classList.add('active');
     });
     
-    const filtered = category === 'all' ? allTools : allTools.filter(t => t.category === category);
+    // Use getTools function to filter
+    const filtered = category === 'all' ? state.tools : state.tools.filter(t => t.category === category);
     renderTools(filtered);
 }
 
@@ -105,24 +122,6 @@ function loadSavedFilters() {
     if (savedCategory && savedCategory !== 'all') {
         setTimeout(() => filterCategory(savedCategory), 500);
     }
-}
-
-// Debounce timer for localStorage writes
-let localStorageWriteTimeout = null;
-
-/**
- * Debounced localStorage write to optimize performance
- * @param {string} key - localStorage key
- * @param {string} value - Value to store
- */
-function debouncedLocalStorageWrite(key, value) {
-    if (localStorageWriteTimeout) {
-        clearTimeout(localStorageWriteTimeout);
-    }
-    localStorageWriteTimeout = setTimeout(() => {
-        localStorage.setItem(key, value);
-        localStorageWriteTimeout = null;
-    }, 100); // 100ms debounce for localStorage writes
 }
 
 /**
@@ -146,26 +145,24 @@ function setupSearch() {
         
         // Debounced search execution
         searchDebounceTimeout = setTimeout(() => {
-            const filtered = allTools.filter(tool => 
+            const filtered = state.tools.filter(tool => 
                 tool.name.toLowerCase().includes(term) || 
                 tool.desc.toLowerCase().includes(term)
             );
             renderTools(filtered);
             
-            // Save search history with debounce
-            if (term && !searchHistory.includes(term)) {
-                searchHistory.unshift(term);
-                searchHistory.splice(MAX_SEARCH_HISTORY);
-                debouncedLocalStorageWrite('ai-tool-hub-search-history', JSON.stringify(searchHistory));
+            // Save search history using state function
+            if (term) {
+                addToSearchHistory(term);
             }
         }, SEARCH_DEBOUNCE_TIME);
     });
 
     searchInput.addEventListener('focus', () => {
-        if (searchHistory.length > 0) {
+        if (state.searchHistory.length > 0) {
             const searchHistoryEl = document.getElementById('searchHistory');
             if (searchHistoryEl) {
-                searchHistoryEl.innerHTML = searchHistory.map(h => 
+                searchHistoryEl.innerHTML = state.searchHistory.map(h => 
                     `<div class="px-4 py-2 hover:bg-primary/20 cursor-pointer flex items-center gap-2" onclick="setSearch('${escapeAttr(h)}')">
                         <i class="fas fa-history text-gray-500 text-sm"></i><span>${escapeHtml(h)}</span>
                     </div>`
@@ -205,7 +202,7 @@ function clearSearch() {
     searchInput.value = '';
     const clearSearchBtn = document.getElementById('clearSearchBtn');
     if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
-    renderTools(allTools);
+    renderTools(state.tools);
 }
 
 // Export functions

@@ -1,33 +1,6 @@
 // Import functions
 import { showToast, escapeHtml, escapeAttr } from './utils.js';
-import { renderCategories, renderTools } from './ui.js';
-
-/**
- * 安全解析 localStorage 中的 JSON 数据
- * @param {string} key - localStorage 键名
- * @param {*} defaultValue - 解析失败时的默认值
- * @returns {*} 解析后的值或默认值
- */
-function safeJsonParse(key, defaultValue) {
-    try {
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : defaultValue;
-    } catch (e) {
-        console.warn(`解析 localStorage key "${key}" 失败:`, e);
-        return defaultValue;
-    }
-}
-
-// Global State
-let allTools = [];
-let categories = [];
-let currentCategory = 'all';
-let searchHistory = safeJsonParse('ai-tool-hub-search-history', []);
-let favorites = safeJsonParse('ai-tool-hub-favorites', []);
-
-// Initialize
-// Note: loadTools is called from main.js
-
+import state, { updateData } from './state.js';
 
 // Load Tools
 async function loadTools() {
@@ -44,14 +17,15 @@ async function loadTools() {
             throw new Error('工具数据结构不正确');
         }
         
-        allTools = data.tools;
-        categories = data.categories;
+        // Update global state
+        updateData(data.tools, data.categories);
         
-        // Render categories using ui.js function
+        // Import render functions dynamically to avoid circular dependencies
+        const { renderCategories, renderTools } = await import('./ui.js');
+        
+        // Render UI using imported functions
         renderCategories();
-        
-        // Render tools using ui.js function (with XSS protection)
-        renderTools(allTools);
+        renderTools(state.tools);
         
         // Hide loading state
         const loadingState = document.getElementById('loadingState');
@@ -79,5 +53,5 @@ async function loadTools() {
     }
 }
 
-// Export state and functions
-export { allTools, categories, currentCategory, searchHistory, favorites, loadTools };
+// Export functions
+export { loadTools };

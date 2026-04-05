@@ -1,64 +1,44 @@
 // Import state and functions
-import { allTools, favorites } from './app.js';
+import state, { toggleFavorite } from './state.js';
 import { renderTools } from './ui.js';
-import { showToast } from './utils.js';
+import { showToast, isValidUrl } from './utils.js';
 
 /**
- * 验证 URL 安全性，仅允许 http 和 https 协议
- * @param {string} url - 待验证的 URL
- * @returns {string} 安全的 URL，不安全则返回 '#'
- */
-function sanitizeUrl(url) {
-    if (typeof url !== 'string') return '#';
-    try {
-        const parsed = new URL(url);
-        if (['http:', 'https:'].includes(parsed.protocol)) return url;
-    } catch (e) {
-        // 相对路径视为安全
-        if (url.startsWith('/') || url.startsWith('./')) return url;
-    }
-    return '#';
-}
-
-/**
- * Open tool URL in new tab
+ * Open tool URL in new tab with security validation
  * @param {number} id - Tool ID
  * @param {string} url - Tool URL to open
  * @param {Event} event - Click event object
  */
 function openTool(id, url, event) {
-    if (event) event.stopPropagation();
-    const safeUrl = sanitizeUrl(url);
-    if (safeUrl === '#') {
-        showToast('无效的链接地址');
+    event.stopPropagation();
+    
+    // Security: Validate URL to prevent javascript: injection
+    if (!isValidUrl(url)) {
+        console.error('Invalid URL:', url);
+        showToast('无效的工具链接');
         return;
     }
-    window.open(safeUrl, '_blank', 'noopener,noreferrer');
+    
+    window.open(url, '_blank');
 }
 
 /**
- * Toggle tool favorite status
+ * Toggle tool favorite status (delegates to state module)
  * @param {number} id - Tool ID to toggle
  * @param {Event} event - Click event object
  */
-function toggleFavorite(id, event) {
+function handleToggleFavorite(id, event) {
     event.stopPropagation();
-    const index = favorites.indexOf(id);
-    if (index > -1) {
-        favorites.splice(index, 1);
-        showToast('已取消收藏');
-    } else {
-        favorites.push(id);
+    const isNowFavorite = toggleFavorite(id);
+    
+    if (isNowFavorite) {
         showToast('已收藏');
+    } else {
+        showToast('已取消收藏');
     }
     
-    // Save to localStorage immediately for critical user action
-    localStorage.setItem('ai-tool-hub-favorites', JSON.stringify(favorites));
-    
     // Re-render tools to update UI
-    const currentCategory = window.currentCategory || 'all';
-    const filtered = currentCategory === 'all' ? allTools : allTools.filter(t => t.category === currentCategory);
-    renderTools(filtered);
+    renderTools(state.tools);
 }
 
 /**
@@ -66,14 +46,11 @@ function toggleFavorite(id, event) {
  * @param {number} id - Tool ID to show details for
  */
 function showToolDetail(id) {
-    const tool = allTools.find(t => t.id === id);
-    if (tool) {
-        const safeUrl = sanitizeUrl(tool.url);
-        if (safeUrl !== '#') {
-            window.open(safeUrl, '_blank', 'noopener,noreferrer');
-        }
+    const tool = state.tools.find(t => t.id === id);
+    if (tool && isValidUrl(tool.url)) {
+        window.open(tool.url, '_blank');
     }
 }
 
 // Export functions
-export { openTool, toggleFavorite, showToolDetail };
+export { openTool, handleToggleFavorite as toggleFavorite, showToolDetail };
