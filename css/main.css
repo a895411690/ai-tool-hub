@@ -13,6 +13,9 @@ html {
 
 /* 主背景 - 深邃赛博黑 */
 body, .tech-bg {
+    /* 强制深色背景 */
+    background-color: #050508 !important;
+    
     background: 
         /* 扫描线效果 */
         repeating-linear-gradient(
@@ -43,10 +46,50 @@ body, .tech-bg {
             #0d0d12 30%, 
             #0a0a12 60%, 
             #050508 100%
-        );
-    background-attachment: fixed;
+        ) !important;
+    background-attachment: fixed !important;
     position: relative;
     overflow-x: hidden;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 确保所有内容区域也是深色 */
+main, section, div, article, header, footer {
+    background: transparent !important;
+}
+
+/* 强制所有页面元素深色背景 */
+* {
+    background-color: transparent !important;
+}
+
+/* 防止任何白色背景 */
+.bg-white, .bg-gray-50, .bg-gray-100, .bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-200 {
+    background-color: rgba(5, 5, 8, 0.95) !important;
+    background-image: none !important;
+}
+
+/* 特殊处理卡片和容器 */
+.glass, .glass-card, .modal-content, .user-menu, .compare-bar, .toast {
+    background: rgba(5, 5, 8, 0.95) !important;
+}
+
+/* 输入框和表单深色处理 */
+input, textarea, select {
+    background: rgba(10, 10, 15, 0.9) !important;
+    border-color: rgba(0, 255, 255, 0.3) !important;
+    color: #ffffff !important;
+}
+
+/* 确保滚动条也是深色 */
+::-webkit-scrollbar-track {
+    background: rgba(5, 5, 8, 0.9) !important;
+}
+
+/* 强制页面根元素深色 */
+html {
+    background: #050508 !important;
 }
 
 /* 赛博网格透视 */
@@ -595,11 +638,58 @@ nav.glass {
     text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
 }
 
+/* ========== 字体颜色优化 - 非纯白色 ========== */
+
+/* 主文本颜色 - 浅青色 */
+body {
+    color: #e0f7fa !important;
+}
+
+/* 标题颜色 */
+h1, h2, h3, h4, h5, h6 {
+    color: #00ffff !important;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+/* 次要文本颜色 */
+p, span, li, td, th {
+    color: #b0bec5 !important;
+}
+
+/* 链接颜色 */
+a {
+    color: #80deea !important;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #00ffff !important;
+    text-shadow: 0 0 8px rgba(0, 255, 255, 0.5);
+}
+
+/* 卡片内文本 */
+.glass, .glass-card {
+    color: #cfd8dc !important;
+}
+
+/* 灰色文本优化 */
+.text-gray-100, .text-gray-200, .text-gray-300 {
+    color: #b0bec5 !important;
+}
+
+.text-gray-400, .text-gray-500 {
+    color: #90a4ae !important;
+}
+
+.text-gray-600, .text-gray-700 {
+    color: #78909c !important;
+}
+
 /* 输入框赛博风格 */
 input, textarea, select {
     background: rgba(10, 10, 15, 0.8) !important;
     border: 1px solid rgba(0, 255, 255, 0.2) !important;
-    color: #00ffff !important;
+    color: #80deea !important;
     font-family: 'JetBrains Mono', monospace;
 }
 
@@ -612,5 +702,39 @@ input:focus, textarea:focus, select:focus {
 }
 
 input::placeholder, textarea::placeholder {
-    color: rgba(0, 255, 255, 0.4) !important;
+    color: rgba(128, 222, 234, 0.6) !important;
+}
+
+/* 按钮文字颜色 */
+button {
+    color: #e0f7fa !important;
+}
+
+.btn-cyber {
+    color: #00ffff !important;
+}
+
+/* 模态框文字 */
+.modal-content {
+    color: #cfd8dc !important;
+}
+
+/* 用户菜单文字 */
+.user-menu {
+    color: #b0bec5 !important;
+}
+
+/* 对比栏文字 */
+.compare-bar {
+    color: #80deea !important;
+}
+
+/* Toast文字 */
+.toast {
+    color: #00ffff !important;
+}
+
+/* 禁用纯白色 */
+.text-white {
+    color: #e0f7fa !important;
 }
