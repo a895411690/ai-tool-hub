@@ -1,26 +1,42 @@
 // Import functions
 import { showToast } from './utils.js';
 
-// Share Functions
+/**
+ * Display the share modal dialog
+ */
 function showShareModal() {
     document.getElementById('shareModal').classList.add('active');
 }
 
+/**
+ * Close the share modal dialog
+ * @param {Event} [event] - Click event (optional)
+ */
 function closeShareModal(event) {
     if (!event || event.target === document.getElementById('shareModal')) {
         document.getElementById('shareModal').classList.remove('active');
     }
 }
 
+/**
+ * Share to WeChat (shows prompt to screenshot)
+ */
 function shareToWeChat() {
     showToast('请截图分享到微信');
 }
 
+/**
+ * Share to QQ using QQ share API
+ */
 function shareToQQ() {
     const url = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(window.location.href)}&title=AI%20Tool%20Hub`;
     window.open(url, '_blank');
 }
 
+/**
+ * Copy current page URL to clipboard
+ * Uses Clipboard API with fallback error handling
+ */
 function copyShareLink() {
     navigator.clipboard.writeText(window.location.href)
         .then(() => showToast('链接已复制'))
@@ -30,6 +46,11 @@ function copyShareLink() {
         });
 }
 
+/**
+ * Generate a shareable image of the tool hub card
+ * Uses html2canvas library to capture DOM element as image
+ * @async
+ */
 async function generateShareImage() {
     const shareCard = document.createElement('div');
     shareCard.innerHTML = `
