@@ -21,14 +21,22 @@ function renderCategories() {
 }
 
 /**
- * Create a tool card element with modern design
+ * Create a tool card element with modern design and enhanced features
  * @param {Object} tool - Tool data object
  * @returns {string} HTML string for the tool card
  */
 function createToolCard(tool) {
     const categoryName = getCategoryName(tool.category);
     const favorite = isFavorite(tool.id);
-    
+
+    // Generate status badge (hot/stable/new)
+    let statusBadge = '';
+    if (tool.status === 'hot') {
+        statusBadge = '<span class="status-badge status-hot"><i class="fas fa-fire"></i> 热门</span>';
+    } else if (tool.status === 'stable') {
+        statusBadge = '<span class="status-badge status-stable"><i class="fas fa-check-circle"></i> 稳定</span>';
+    }
+
     // Generate tags HTML
     let tagsHtml = '';
     if (tool.tags) {
@@ -37,35 +45,67 @@ function createToolCard(tool) {
         if (tool.tags.includes('new')) tagsHtml += '<span class="tag tag-new">NEW</span>';
         if (tool.tags.includes('hot')) tagsHtml += '<span class="tag tag-hot">热门</span>';
     }
-    
+
     // Generate toolTags HTML (domestic/overseas)
     if (tool.toolTags) {
         if (tool.toolTags.includes('国产')) tagsHtml += '<span class="tag tag-domestic">国产</span>';
         if (tool.toolTags.includes('海外')) tagsHtml += '<span class="tag tag-overseas">海外</span>';
+        if (tool.toolTags.includes('开源')) tagsHtml += '<span class="tag tag-open-source">开源</span>';
+        if (tool.toolTags.includes('无需登录')) tagsHtml += '<span class="tag tag-no-login">无需登录</span>';
     }
-    
+
+    // Generate difficulty indicator
+    let difficultyLabel = '';
+    if (tool.difficulty) {
+        const difficultyConfig = {
+            beginner: { label: '入门', icon: 'fa-seedling', color: 'difficulty-beginner' },
+            intermediate: { label: '进阶', icon: 'fa-leaf', color: 'difficulty-intermediate' },
+            advanced: { label: '高级', icon: 'fa-tree', color: 'difficulty-advanced' }
+        };
+        const diff = difficultyConfig[tool.difficulty] || difficultyConfig.beginner;
+        difficultyLabel = `<span class="difficulty-badge ${diff.color}"><i class="fas ${diff.icon}"></i> ${diff.label}</span>`;
+    }
+
+    // Generate platform badges
+    let platformBadges = '';
+    if (tool.platform && Array.isArray(tool.platform)) {
+        const platformIcons = { web: 'fa-globe', local: 'fa-server', mobile: 'fa-mobile-alt', desktop: 'fa-desktop' };
+        platformBadges = `<div class="platform-badges">${tool.platform.map(p => `<i class="fas ${platformIcons[p] || 'fa-cog'}" title="${p}"></i>`).join('')}</div>`;
+    }
+
+    // Generate update time display
+    let updateTimeDisplay = '';
+    if (tool.updateTime) {
+        updateTimeDisplay = `<span class="update-time"><i class="fas fa-clock"></i> ${escapeHtml(tool.updateTime)}</span>`;
+    }
+
     return `
         <div class="tool-card" onclick="showToolDetail(${tool.id})">
             <div class="card-header">
                 <div class="card-icon">
                     <i class="fas ${escapeAttr(tool.icon)}"></i>
                 </div>
-                <div class="card-actions">
-                    ${tool.tags?.includes('new') ? '' : ''}
-                    <button onclick="toggleFavorite(${tool.id}, event)" class="favorite-btn ${favorite ? 'active' : ''}" aria-label="${favorite ? '取消收藏' : '收藏'} ${escapeHtml(tool.name)}">
-                        <i class="fas fa-star"></i>
-                    </button>
+                <div class="card-badges">
+                    ${statusBadge}
+                    ${difficultyLabel}
                 </div>
+                <button onclick="toggleFavorite(${tool.id}, event)" class="favorite-btn ${favorite ? 'active' : ''}" aria-label="${favorite ? '取消收藏' : '收藏'} ${escapeHtml(tool.name)}">
+                    <i class="fas fa-star"></i>
+                </button>
             </div>
             <h3 class="card-title">${escapeHtml(tool.name)}</h3>
             <p class="card-desc">${escapeHtml(tool.desc)}</p>
+            <div class="card-meta">
+                ${updateTimeDisplay}
+                ${platformBadges}
+            </div>
             <div class="card-tags">
                 ${tagsHtml}
             </div>
             <div class="card-footer">
                 <span class="card-category">${escapeHtml(categoryName)}</span>
                 <button onclick="openTool(${tool.id}, '${escapeAttr(tool.url)}', event)" class="card-action-btn">
-                    使用
+                    <i class="fas fa-external-link-alt"></i> 使用
                 </button>
             </div>
         </div>
@@ -103,14 +143,67 @@ function renderTools(tools) {
 function filterCategory(category) {
     state.currentCategory = category;
     localStorage.setItem('ai-tool-hub-filter-category', category);
-    
+
     document.querySelectorAll('.category-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.dataset.category === category) btn.classList.add('active');
     });
-    
-    // Use getTools function to filter
-    const filtered = category === 'all' ? state.tools : state.tools.filter(t => t.category === category);
+
+    // Apply current sort and filter
+    applyFiltersAndSort();
+}
+
+let currentSort = 'default';
+
+function sortTools(tools, sortBy) {
+    currentSort = sortBy;
+
+    const sorted = [...tools];
+    switch (sortBy) {
+        case 'name-asc':
+            return sorted.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+        case 'name-desc':
+            return sorted.sort((a, b) => b.name.localeCompare(a.name, 'zh-CN'));
+        case 'hot':
+            return sorted.sort((a, b) => {
+                if (a.status === 'hot' && b.status !== 'hot') return -1;
+                if (b.status === 'hot' && a.status !== 'hot') return 1;
+                return 0;
+            });
+        case 'free-first':
+            return sorted.sort((a, b) => {
+                const aFree = a.tags?.includes('free') ? 0 : 1;
+                const bFree = b.tags?.includes('free') ? 0 : 1;
+                return aFree - bFree;
+            });
+        case 'domestic':
+            return sorted.sort((a, b) => {
+                const aDomestic = a.toolTags?.includes('国产') ? 0 : 1;
+                const bDomestic = b.toolTags?.includes('国产') ? 0 : 1;
+                return aDomestic - bDomestic;
+            });
+        default:
+            return tools;
+    }
+}
+
+function applyFiltersAndSort() {
+    let filtered = state.currentCategory === 'all'
+        ? [...state.tools]
+        : state.tools.filter(t => t.category === state.currentCategory);
+
+    // Apply search if active
+    const searchTerm = document.getElementById('mainSearch')?.value.toLowerCase() || '';
+    if (searchTerm) {
+        filtered = filtered.filter(tool =>
+            tool.name.toLowerCase().includes(searchTerm) ||
+            tool.desc.toLowerCase().includes(searchTerm)
+        );
+    }
+
+    // Apply sorting
+    filtered = sortTools(filtered, currentSort);
+
     renderTools(filtered);
 }
 
@@ -145,12 +238,8 @@ function setupSearch() {
         
         // Debounced search execution
         searchDebounceTimeout = setTimeout(() => {
-            const filtered = state.tools.filter(tool => 
-                tool.name.toLowerCase().includes(term) || 
-                tool.desc.toLowerCase().includes(term)
-            );
-            renderTools(filtered);
-            
+            applyFiltersAndSort();
+
             // Save search history using state function
             if (term) {
                 addToSearchHistory(term);
@@ -202,8 +291,8 @@ function clearSearch() {
     searchInput.value = '';
     const clearSearchBtn = document.getElementById('clearSearchBtn');
     if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
-    renderTools(state.tools);
+    applyFiltersAndSort();
 }
 
 // Export functions
-export { renderCategories, renderTools, filterCategory, loadSavedFilters, setSearch, clearSearch, setupSearch };
+export { renderCategories, renderTools, filterCategory, loadSavedFilters, setSearch, clearSearch, setupSearch, sortTools, applyFiltersAndSort };

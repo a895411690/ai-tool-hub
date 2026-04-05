@@ -25,7 +25,8 @@ const state = {
     categories: [],      // Category definitions
     currentCategory: 'all', // Currently selected category filter
     searchHistory: safeJsonParse('ai-tool-hub-search-history', []),
-    favorites: safeJsonParse('ai-tool-hub-favorites', [])
+    favorites: safeJsonParse('ai-tool-hub-favorites', []),
+    clickStats: safeJsonParse('ai-tool-hub-click-stats', {})  // Tool click statistics {toolId: count}
 };
 
 /**
@@ -102,6 +103,47 @@ function addToSearchHistory(term) {
     }
 }
 
+/**
+ * Record a tool click for statistics
+ * @param {number} toolId - Tool ID that was clicked
+ */
+function recordToolClick(toolId) {
+    if (!state.clickStats[toolId]) {
+        state.clickStats[toolId] = 0;
+    }
+    state.clickStats[toolId]++;
+
+    // Debounce save to localStorage (save every 5 clicks or use setTimeout)
+    if (state.clickStats[toolId] % 5 === 0) {
+        localStorage.setItem('ai-tool-hub-click-stats', JSON.stringify(state.clickStats));
+    } else {
+        // Use debounced save for better performance
+        clearTimeout(state._clickSaveTimeout);
+        state._clickSaveTimeout = setTimeout(() => {
+            localStorage.setItem('ai-tool-hub-click-stats', JSON.stringify(state.clickStats));
+        }, 2000);
+    }
+}
+
+/**
+ * Get click count for a specific tool
+ * @param {number} toolId - Tool ID
+ * @returns {number} Click count
+ */
+function getToolClickCount(toolId) {
+    return state.clickStats[toolId] || 0;
+}
+
+/**
+ * Get tools sorted by popularity (most clicked first)
+ * @returns {Array} Tools sorted by click count descending
+ */
+function getPopularTools() {
+    return [...state.tools].sort((a, b) => {
+        return (state.clickStats[b.id] || 0) - (state.clickStats[a.id] || 0);
+    });
+}
+
 // Export state object and management functions
 export default state;
 export {
@@ -111,5 +153,8 @@ export {
     isFavorite,
     toggleFavorite,
     addToSearchHistory,
+    recordToolClick,
+    getToolClickCount,
+    getPopularTools,
     safeJsonParse
 };

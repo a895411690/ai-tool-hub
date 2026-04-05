@@ -1,5 +1,5 @@
 // Import state and functions
-import state, { toggleFavorite } from './state.js';
+import state, { toggleFavorite, recordToolClick } from './state.js';
 import { renderTools } from './ui.js';
 import { showToast, isValidUrl } from './utils.js';
 
@@ -11,14 +11,17 @@ import { showToast, isValidUrl } from './utils.js';
  */
 function openTool(id, url, event) {
     event.stopPropagation();
-    
+
     // Security: Validate URL to prevent javascript: injection
     if (!isValidUrl(url)) {
         console.error('Invalid URL:', url);
         showToast('无效的工具链接');
         return;
     }
-    
+
+    // Record click statistics
+    recordToolClick(id);
+
     window.open(url, '_blank');
 }
 
@@ -30,13 +33,13 @@ function openTool(id, url, event) {
 function handleToggleFavorite(id, event) {
     event.stopPropagation();
     const isNowFavorite = toggleFavorite(id);
-    
+
     if (isNowFavorite) {
         showToast('已收藏');
     } else {
         showToast('已取消收藏');
     }
-    
+
     // Re-render tools to update UI
     renderTools(state.tools);
 }
@@ -48,6 +51,8 @@ function handleToggleFavorite(id, event) {
 function showToolDetail(id) {
     const tool = state.tools.find(t => t.id === id);
     if (tool && isValidUrl(tool.url)) {
+        // Record click statistics
+        recordToolClick(id);
         window.open(tool.url, '_blank');
     }
 }

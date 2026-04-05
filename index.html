@@ -710,6 +710,55 @@
             justify-content: center;
         }
 
+        .sort-options {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding: 12px 20px;
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--card-shadow);
+            animation: fadeInUp 0.6s ease 0.5s both;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .sort-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .sort-btn {
+            padding: 6px 14px;
+            background: transparent;
+            border: 1.5px solid var(--card-border);
+            border-radius: var(--radius-full);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+        }
+
+        .sort-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .sort-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent-pink));
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+        }
+
         .category-btn {
             padding: 10px 22px;
             background: white;
@@ -841,6 +890,100 @@
         .card-actions {
             display: flex;
             gap: 8px;
+        }
+
+        .card-badges {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .status-badge {
+            padding: 3px 10px;
+            border-radius: var(--radius-full);
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        .status-hot {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(245, 158, 11, 0.15));
+            color: #dc2626;
+            animation: pulse 2s infinite;
+        }
+
+        .status-stable {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .difficulty-badge {
+            padding: 3px 8px;
+            border-radius: var(--radius-full);
+            font-size: 10px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .difficulty-beginner {
+            background: rgba(16, 185, 129, 0.1);
+            color: #059669;
+        }
+
+        .difficulty-intermediate {
+            background: rgba(245, 158, 11, 0.1);
+            color: #d97706;
+        }
+
+        .difficulty-advanced {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary-dark);
+        }
+
+        .tag-open-source {
+            background: rgba(139, 92, 246, 0.1);
+            color: #7c3aed;
+        }
+
+        .tag-no-login {
+            background: rgba(6, 182, 212, 0.1);
+            color: #0891b2;
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding: 8px 0;
+            border-top: 1px solid var(--card-border);
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .update-time {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .platform-badges {
+            display: flex;
+            gap: 6px;
+            color: var(--text-muted);
+            font-size: 13px;
         }
 
         .favorite-btn {
@@ -1402,6 +1545,21 @@
                 flex-shrink: 0;
             }
 
+            .sort-options {
+                padding: 10px 16px;
+                margin-bottom: 20px;
+                gap: 6px;
+            }
+
+            .sort-label {
+                font-size: 12px;
+            }
+
+            .sort-btn {
+                padding: 5px 12px;
+                font-size: 11px;
+            }
+
             .tool-card {
                 padding: 20px;
             }
@@ -1573,6 +1731,16 @@
             <!-- Categories -->
             <div class="categories">
                 <div id="categoryFilter"></div>
+            </div>
+
+            <!-- Sort Options -->
+            <div class="sort-options">
+                <span class="sort-label"><i class="fas fa-sort"></i> 排序:</span>
+                <button class="sort-btn active" data-sort="default" onclick="changeSort('default')">默认</button>
+                <button class="sort-btn" data-sort="hot" onclick="changeSort('hot')">🔥 热门</button>
+                <button class="sort-btn" data-sort="free-first" onclick="changeSort('free-first')">免费优先</button>
+                <button class="sort-btn" data-sort="domestic" onclick="changeSort('domestic')">国产优先</button>
+                <button class="sort-btn" data-sort="name-asc" onclick="changeSort('name-asc')">A-Z</button>
             </div>
 
             <!-- Loading State -->
