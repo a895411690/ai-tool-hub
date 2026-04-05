@@ -14,8 +14,16 @@ export async function loadTools() {
     gridEl.classList.add('hidden');
     
     try {
-        const response = await fetch('./tools.json');
-        if (!response.ok) throw new Error('Network response was not ok');
+        // 尝试不同的路径
+        let response;
+        try {
+            response = await fetch('./tools.json');
+        } catch (e) {
+            // 尝试另一个路径
+            response = await fetch('/ai-tool-hub/tools.json');
+        }
+        
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         state.allTools = data.tools.map(t => ({...t, rating: state.ratings[t.id] || 0}));
         state.categories = data.categories;
@@ -28,6 +36,7 @@ export async function loadTools() {
         console.error('Failed to load tools:', error);
         loadingEl.classList.add('hidden');
         errorEl.classList.remove('hidden');
+        errorEl.textContent = `加载工具失败: ${error.message}`;
     }
 }
 
