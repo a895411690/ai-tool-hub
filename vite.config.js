@@ -2,14 +2,15 @@ import { defineConfig } from 'vite'
 import { resolve } from 'path'
 import { copyFileSync, mkdirSync, readdirSync, statSync, cpSync } from 'fs'
 
-// Plugin to copy tools directory to dist
+// Plugin to copy tools directory and tools.json to dist
 function copyToolsPlugin() {
   return {
     name: 'copy-tools',
     closeBundle() {
       try {
         cpSync('tools', 'dist/tools', { recursive: true, force: true })
-        console.log('✓ Tools directory copied to dist/')
+        cpSync('src/tools.json', 'dist/tools.json', { force: true })
+        console.log('✓ Tools directory and tools.json copied to dist/')
       } catch (err) {
         console.error('Failed to copy tools:', err)
       }
