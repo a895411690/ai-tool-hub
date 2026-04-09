@@ -253,14 +253,42 @@ JavaScript, React, Node.js, Python`;
             projects: []  // 新增项目经验
         };
 
-        // 中文简历常见分段标识
+        // 增强版中文简历分段标识
         const sectionKeywords = {
-            personal: ['个人信息', '个人资料', '基本资料', '个人简历', 'contact', 'profile'],
-            experience: ['工作经历', '工作背景', '工作经验', '职业经历', 'experience', 'work'],
-            education: ['教育经历', '教育背景', '学历背景', 'education', 'academic'],
-            skills: ['专业技能', '技术技能', '能力特长', 'skills', 'competencies'],
-            projects: ['项目经验', '项目经历', '项目背景', 'projects', 'portfolio'],
-            summary: ['个人总结', '自我评价', '职业目标', 'summary', 'objective']
+            personal: [
+                '个人信息', '个人资料', '基本资料', '个人简历', '个人简介',
+                '姓名', '电话', '手机', '邮箱', '电子邮箱', 'email',
+                '地址', '住址', 'location', '地址', 'address',
+                '性别', 'gender', '男', '女',
+                '工作经验', '工作年限', 'experience years', '年经验',
+                '求职意向', '应聘职位', '期望职位', 'objective', '求职目标'
+            ],
+            experience: [
+                '工作经历', '工作经验', '工作背景', '职业经历', 'employment history',
+                '工作履历', '职业背景', '工作历史', 'experience', 'work experience',
+                '实习经历', '实习经验', '实习工作', 'internship'
+            ],
+            education: [
+                '教育经历', '教育背景', '学历背景', 'education', 'academic',
+                '教育履历', '学历', '学位', '学校', '大学', '学院',
+                '学习经历', '学习背景', 'academic history'
+            ],
+            skills: [
+                '专业技能', '技术技能', '能力特长', 'skills', 'competencies',
+                '技术能力', '核心技能', 'skill set', 'technical skills',
+                '语言能力', '外语能力', 'language skills',
+                '工具技能', '软件技能', 'software skills'
+            ],
+            projects: [
+                '项目经验', '项目经历', '项目背景', 'projects', 'portfolio',
+                '项目履历', '项目历史', 'project history',
+                '项目成果', '项目作品', 'project achievements'
+            ],
+            summary: [
+                '个人总结', '自我评价', '职业目标', 'summary', 'objective',
+                '个人优势', '核心优势', 'strengths', '个人特点',
+                '职业规划', 'career goal', '职业愿景'
+            ]
         };
 
         let currentSection = '';
@@ -313,8 +341,193 @@ JavaScript, React, Node.js, Python`;
 
         // 如果没有明确找到姓名，尝试从第一行或常见位置提取
         this.fallbackExtractPersonalInfo(lines, result);
+        
+        // 应用智能解析增强
+        this.applySmartParsingEnhancement(lines, result);
 
         return result;
+    }
+
+    /**
+     * 应用智能解析增强
+     */
+    applySmartParsingEnhancement(lines, result) {
+        const fullText = lines.join('\n');
+        
+        // 1. 智能提取工作经历
+        this.smartExtractExperience(fullText, result);
+        
+        // 2. 智能提取教育经历
+        this.smartExtractEducation(fullText, result);
+        
+        // 3. 智能提取技能
+        this.smartExtractSkills(fullText, result);
+        
+        // 4. 智能提取个人信息（增强版）
+        this.smartExtractPersonalInfo(fullText, result);
+    }
+
+    /**
+     * 智能提取工作经历
+     */
+    smartExtractExperience(fullText, result) {
+        // 工作经历关键词模式
+        const experiencePatterns = [
+            /(\d{4}\.\d{2}\s*-\s*\d{4}\.\d{2})\s*([^\n]+)/g,  // 2023.02-2025.01 公司
+            /(\d{4}\s*-\s*\d{4})\s*([^\n]+)/g,                 // 2020-2023 公司
+            /(\d{4}年\d{1,2}月\s*-\s*\d{4}年\d{1,2}月)\s*([^\n]+)/g,  // 2023年2月-2025年1月 公司
+            /([^\n]+)\s*高级测试工程师\s*(\d{4}\.\d{2}\s*-\s*\d{4}\.\d{2})/g  // 公司 高级测试工程师 2023.02-2025.01
+        ];
+        
+        // 常见公司名称
+        const commonCompanies = [
+            '腾讯', '阿里', '百度', '字节', '华为', '美团', '京东',
+            '交通银行', '广发银行', '招商银行', '建设银行',
+            '神州数码', '联想', '小米', 'OPPO', 'VIVO'
+        ];
+        
+        experiencePatterns.forEach(pattern => {
+            let match;
+            while ((match = pattern.exec(fullText)) !== null) {
+                const period = match[1].trim();
+                const content = match[2]?.trim() || match[0].trim();
+                
+                // 提取公司名称
+                let company = '知名公司';
+                for (const comp of commonCompanies) {
+                    if (content.includes(comp)) {
+                        company = comp + (content.includes('公司') ? '' : '公司');
+                        break;
+                    }
+                }
+                
+                // 提取职位
+                let position = '工程师';
+                const positions = ['工程师', '测试', '开发', '产品', '设计', '经理', '组长', '总监'];
+                for (const pos of positions) {
+                    if (content.includes(pos)) {
+                        position = pos;
+                        break;
+                    }
+                }
+                
+                result.experience.push({
+                    company: company,
+                    position: position,
+                    period: period,
+                    description: content
+                });
+            }
+        });
+    }
+
+    /**
+     * 智能提取教育经历
+     */
+    smartExtractEducation(fullText, result) {
+        // 教育经历关键词模式
+        const educationPatterns = [
+            /([\u4e00-\u9fa5]+大学|[\u4e00-\u9fa5]+学院)\s*([\u4e00-\u9fa5]+)\s*(学士|硕士|博士|本科)/g,
+            /(\d{4}\.\d{2}\s*-\s*\d{4}\.\d{2})\s*([\u4e00-\u9fa5]+大学|[\u4e00-\u9fa5]+学院)/g
+        ];
+        
+        // 常见学校名称
+        const commonSchools = [
+            '清华大学', '北京大学', '复旦大学', '上海交通大学',
+            '浙江大学', '南京大学', '中山大学', '武汉大学'
+        ];
+        
+        educationPatterns.forEach(pattern => {
+            let match;
+            while ((match = pattern.exec(fullText)) !== null) {
+                const school = match[1].trim();
+                const major = match[2]?.trim() || '专业';
+                const degree = match[3]?.trim() || '学士';
+                
+                result.education.push({
+                    school: school,
+                    degree: degree,
+                    major: major,
+                    period: match[1].includes('大学') ? '' : match[1],
+                    description: `${school} ${major} ${degree}`
+                });
+            }
+        });
+    }
+
+    /**
+     * 智能提取技能
+     */
+    smartExtractSkills(fullText, result) {
+        // 技能关键词
+        const skillKeywords = [
+            'React', 'Vue', 'TypeScript', 'JavaScript', 'HTML5', 'CSS3',
+            'Node.js', 'Python', 'Java', 'Go', 'C++',
+            'MySQL', 'Redis', 'MongoDB', 'PostgreSQL',
+            'Git', 'Docker', 'Jenkins', 'Kubernetes',
+            'Postman', 'Jmeter', 'Fiddler', 'Selenium',
+            'Linux', 'Shell', 'Bash', '运维', '测试', '开发'
+        ];
+        
+        skillKeywords.forEach(skill => {
+            if (fullText.includes(skill)) {
+                result.skills.push(skill);
+            }
+        });
+    }
+
+    /**
+     * 智能提取个人信息（增强版）
+     */
+    smartExtractPersonalInfo(fullText, result) {
+        // 姓名提取
+        const namePatterns = [
+            /姓名[：:]\s*([\u4e00-\u9fa5]{2,4})/,
+            /Name[：:]\s*([\u4e00-\u9fa5]{2,4})/,
+            /^([\u4e00-\u9fa5]{2,4})的个人简历/
+        ];
+        
+        namePatterns.forEach(pattern => {
+            const match = fullText.match(pattern);
+            if (match && match[1] && !result.profile.name) {
+                result.profile.name = match[1];
+            }
+        });
+        
+        // 电话提取
+        const phonePattern = /(1[3-9]\d{9})/;
+        const phoneMatch = fullText.match(phonePattern);
+        if (phoneMatch && !result.profile.phone) {
+            result.profile.phone = phoneMatch[1];
+        }
+        
+        // 邮箱提取
+        const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
+        const emailMatch = fullText.match(emailPattern);
+        if (emailMatch && !result.profile.email) {
+            result.profile.email = emailMatch[0];
+        }
+        
+        // 工作经验年限提取
+        const yearsPattern = /(\d+)\s*年[以]?[上]?[以]?[上]?[工]?[作]?[经]?[验]?/;
+        const yearsMatch = fullText.match(yearsPattern);
+        if (yearsMatch && !result.profile.experience_years) {
+            result.profile.experience_years = yearsMatch[1];
+        }
+        
+        // 性别提取
+        if (fullText.includes('男') && !result.profile.gender) {
+            result.profile.gender = '男';
+        } else if (fullText.includes('女') && !result.profile.gender) {
+            result.profile.gender = '女';
+        }
+        
+        // 求职意向提取
+        const objectivePattern = /求职意向[：:]\s*([^\n]+)/;
+        const objectiveMatch = fullText.match(objectivePattern);
+        if (objectiveMatch && !result.profile.title) {
+            result.profile.title = objectiveMatch[1];
+        }
     }
 
     /**
