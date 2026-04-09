@@ -222,9 +222,12 @@ JavaScript, React, Node.js, Python`;
     }
 
     /**
-     * 解析文本内容
+     * 解析文本内容 - 增强版，支持中文简历
      */
     parseTextContent(text) {
+        // 清理文本：移除多余空格、统一标点符号
+        text = this.cleanText(text);
+        
         const lines = text.split('\n').filter(line => line.trim());
         
         const result = {
@@ -234,63 +237,230 @@ JavaScript, React, Node.js, Python`;
                 email: '',
                 phone: '',
                 location: '',
-                summary: ''
+                summary: '',
+                gender: '',
+                experience_years: ''
             },
             experience: [],
             education: [],
-            skills: []
+            skills: [],
+            projects: []  // 新增项目经验
         };
 
-        // 简单关键词匹配解析
-        lines.forEach(line => {
-            const lowerLine = line.toLowerCase();
+        // 中文简历常见分段标识
+        const sectionKeywords = {
+            personal: ['个人信息', '个人资料', '基本资料', '个人简历', 'contact', 'profile'],
+            experience: ['工作经历', '工作背景', '工作经验', '职业经历', 'experience', 'work'],
+            education: ['教育经历', '教育背景', '学历背景', 'education', 'academic'],
+            skills: ['专业技能', '技术技能', '能力特长', 'skills', 'competencies'],
+            projects: ['项目经验', '项目经历', '项目背景', 'projects', 'portfolio'],
+            summary: ['个人总结', '自我评价', '职业目标', 'summary', 'objective']
+        };
+
+        let currentSection = '';
+        let sectionContent = '';
+
+        // 分段解析
+        lines.forEach((line, index) => {
+            const lineLower = line.toLowerCase();
+            const lineTrimmed = line.trim();
             
-            // 提取姓名
-            if (lowerLine.includes('姓名') || lowerLine.includes('name')) {
-                result.profile.name = line.split(/[:：]/)[1]?.trim() || '';
+            // 检测分段
+            for (const [section, keywords] of Object.entries(sectionKeywords)) {
+                for (const keyword of keywords) {
+                    if (lineLower.includes(keyword.toLowerCase()) || lineTrimmed.includes(keyword)) {
+                        if (currentSection && sectionContent) {
+                            this.parseSectionContent(currentSection, sectionContent, result);
+                        }
+                        currentSection = section;
+                        sectionContent = '';
+                        break;
+                    }
+                }
             }
-            
-            // 提取电话
-            if (lowerLine.includes('电话') || lowerLine.includes('手机') || lowerLine.includes('phone') || lowerLine.includes('tel')) {
-                result.profile.phone = this.extractPhone(line);
+
+            // 如果不在任何分段中，尝试根据内容推断
+            if (!currentSection) {
+                // 推断个人信息分段
+                if (this.isPersonalInfoLine(lineTrimmed)) {
+                    currentSection = 'personal';
+                }
+                // 推断工作经历分段
+                else if (this.isExperienceLine(lineTrimmed)) {
+                    currentSection = 'experience';
+                }
             }
-            
-            // 提取邮箱
-            if (lowerLine.includes('邮箱') || lowerLine.includes('email') || lowerLine.includes('@')) {
-                result.profile.email = this.extractEmail(line);
-            }
-            
-            // 提取地址
-            if (lowerLine.includes('地址') || lowerLine.includes('location') || lowerLine.includes('address')) {
-                result.profile.location = line.split(/[:：]/)[1]?.trim() || '';
-            }
-            
-            // 识别教育经历
-            if (lowerLine.includes('教育') || lowerLine.includes('education')) {
-                result.education.push(this.parseEducationLine(line));
-            }
-            
-            // 识别工作经历
-            if (lowerLine.includes('工作') || lowerLine.includes('experience') || lowerLine.includes('腾讯') || lowerLine.includes('阿里')) {
-                result.experience.push(this.parseExperienceLine(line));
-            }
-            
-            // 识别技能
-            if (lowerLine.includes('技能') || lowerLine.includes('skill') || line.includes('JavaScript') || line.includes('Python')) {
-                const skills = this.extractSkills(line);
-                result.skills.push(...skills);
+
+            // 收集分段内容
+            if (currentSection) {
+                sectionContent += line + '\n';
+            } else {
+                // 提取个人信息（可能在任意位置）
+                this.extractPersonalInfo(lineTrimmed, result);
             }
         });
 
-        // 如果没有明确找到姓名，尝试从第一行提取
-        if (!result.profile.name && lines.length > 0) {
-            const firstLine = lines[0].trim();
-            if (firstLine && !firstLine.includes('@') && !this.isPhoneNumber(firstLine)) {
-                result.profile.name = firstLine;
-            }
+        // 处理最后一个分段
+        if (currentSection && sectionContent) {
+            this.parseSectionContent(currentSection, sectionContent, result);
         }
 
+        // 如果没有明确找到姓名，尝试从第一行或常见位置提取
+        this.fallbackExtractPersonalInfo(lines, result);
+
         return result;
+    }
+
+    /**
+     * 清理文本
+     */
+    cleanText(text) {
+        // 移除多余空格
+        text = text.replace(/\s+/g, ' ');
+        // 统一标点符号
+        text = text.replace(/[：:]/g, ':');
+        text = text.replace(/[，,]/g, ',');
+        text = text.replace(/[；;]/g, ';');
+        // 移除特殊字符
+        text = text.replace(/[\u200b-\u200f\u202a-\u202e]/g, '');
+        return text;
+    }
+
+    /**
+     * 解析分段内容
+     */
+    parseSectionContent(section, content, result) {
+        const lines = content.split('\n').filter(line => line.trim());
+        
+        switch (section) {
+            case 'personal':
+                this.parsePersonalSection(lines, result);
+                break;
+            case 'experience':
+                this.parseExperienceSection(lines, result);
+                break;
+            case 'education':
+                this.parseEducationSection(lines, result);
+                break;
+            case 'skills':
+                this.parseSkillsSection(lines, result);
+                break;
+            case 'projects':
+                this.parseProjectsSection(lines, result);
+                break;
+            case 'summary':
+                this.parseSummarySection(lines, result);
+                break;
+        }
+    }
+
+    /**
+     * 解析个人信息分段
+     */
+    parsePersonalSection(lines, result) {
+        lines.forEach(line => {
+            this.extractPersonalInfo(line, result);
+        });
+    }
+
+    /**
+     * 解析工作经历分段
+     */
+    parseExperienceSection(lines, result) {
+        let currentExperience = null;
+        
+        lines.forEach(line => {
+            // 检测新工作经历开始
+            if (this.isExperienceStartLine(line)) {
+                if (currentExperience) {
+                    result.experience.push(currentExperience);
+                }
+                currentExperience = this.parseExperienceLine(line);
+            } else if (currentExperience) {
+                // 添加到描述中
+                if (currentExperience.description) {
+                    currentExperience.description += '\n' + line.trim();
+                } else {
+                    currentExperience.description = line.trim();
+                }
+            }
+        });
+        
+        if (currentExperience) {
+            result.experience.push(currentExperience);
+        }
+    }
+
+    /**
+     * 解析教育经历分段
+     */
+    parseEducationSection(lines, result) {
+        let currentEducation = null;
+        
+        lines.forEach(line => {
+            if (this.isEducationStartLine(line)) {
+                if (currentEducation) {
+                    result.education.push(currentEducation);
+                }
+                currentEducation = this.parseEducationLine(line);
+            } else if (currentEducation) {
+                if (currentEducation.description) {
+                    currentEducation.description += '\n' + line.trim();
+                } else {
+                    currentEducation.description = line.trim();
+                }
+            }
+        });
+        
+        if (currentEducation) {
+            result.education.push(currentEducation);
+        }
+    }
+
+    /**
+     * 解析技能分段
+     */
+    parseSkillsSection(lines, result) {
+        lines.forEach(line => {
+            const skills = this.extractSkills(line);
+            result.skills.push(...skills);
+        });
+    }
+
+    /**
+     * 解析项目经验分段
+     */
+    parseProjectsSection(lines, result) {
+        let currentProject = null;
+        
+        lines.forEach(line => {
+            if (this.isProjectStartLine(line)) {
+                if (currentProject) {
+                    result.projects.push(currentProject);
+                }
+                currentProject = this.parseProjectLine(line);
+            } else if (currentProject) {
+                if (currentProject.description) {
+                    currentProject.description += '\n' + line.trim();
+                } else {
+                    currentProject.description = line.trim();
+                }
+            }
+        });
+        
+        if (currentProject) {
+            result.projects.push(currentProject);
+        }
+    }
+
+    /**
+     * 解析个人总结分段
+     */
+    parseSummarySection(lines, result) {
+        const summary = lines.join(' ').trim();
+        if (summary) {
+            result.profile.summary = summary;
+        }
     }
 
     /**
