@@ -8,6 +8,12 @@ class ImportUtils {
         this.supportedFormats = ['.pdf', '.docx', '.doc', '.txt', '.html', '.htm'];
         this.maxFileSize = 10 * 1024 * 1024; // 10MB
         this.isProcessing = false;
+        
+        // 绑定关键方法到this，确保ES6类方法正确绑定
+        this.parseTextContent = this.parseTextContent.bind(this);
+        this.fallbackExtractPersonalInfo = this.fallbackExtractPersonalInfo.bind(this);
+        this.extractPersonalInfo = this.extractPersonalInfo.bind(this);
+        this.parseSectionContent = this.parseSectionContent.bind(this);
     }
 
     /**
