@@ -312,6 +312,177 @@ JavaScript, React, Node.js, Python`;
     }
 
     /**
+     * 个人信息行检测
+     */
+    isPersonalInfoLine(line) {
+        const personalKeywords = [
+            '姓名', 'name', '电话', '手机', 'phone', 'tel',
+            '邮箱', 'email', '地址', 'location', 'address',
+            '性别', 'gender', '年龄', 'age', '出生', 'birth',
+            '工作经验', 'experience years', '工作年限'
+        ];
+        
+        const lowerLine = line.toLowerCase();
+        return personalKeywords.some(keyword => lowerLine.includes(keyword.toLowerCase()));
+    }
+
+    /**
+     * 工作经历行检测
+     */
+    isExperienceLine(line) {
+        const experienceKeywords = [
+            '公司', 'company', '职位', 'position', '工作', 'work',
+            '项目', 'project', '职责', 'responsibility', '成就', 'achievement'
+        ];
+        
+        const lowerLine = line.toLowerCase();
+        return experienceKeywords.some(keyword => lowerLine.includes(keyword.toLowerCase()));
+    }
+
+    /**
+     * 工作经历开始行检测
+     */
+    isExperienceStartLine(line) {
+        const experiencePatterns = [
+            /\d{4}\.\d{2}-\d{4}\.\d{2}/,  // 2023.02-2025.01
+            /\d{4}-\d{4}/,                 // 2020-2023
+            /\d{4}年\d{1,2}月/             // 2023年2月
+        ];
+        
+        return experiencePatterns.some(pattern => pattern.test(line)) ||
+               line.includes('项目') || line.includes('公司');
+    }
+
+    /**
+     * 教育经历开始行检测
+     */
+    isEducationStartLine(line) {
+        const educationKeywords = ['大学', '学院', '学校', '学历', '学位'];
+        const lowerLine = line.toLowerCase();
+        return educationKeywords.some(keyword => lowerLine.includes(keyword));
+    }
+
+    /**
+     * 项目经验开始行检测
+     */
+    isProjectStartLine(line) {
+        return line.includes('项目') && 
+               (line.includes('描述') || line.includes('职责') || /\d{4}/.test(line));
+    }
+
+    /**
+     * 提取个人信息
+     */
+    extractPersonalInfo(line, result) {
+        const lowerLine = line.toLowerCase();
+        
+        // 提取姓名
+        if (lowerLine.includes('姓名') || lowerLine.includes('name')) {
+            const nameMatch = line.match(/[姓名name\s]*[:：]?\s*([\u4e00-\u9fa5]{2,4})/);
+            if (nameMatch && nameMatch[1]) {
+                result.profile.name = nameMatch[1];
+            }
+        }
+        
+        // 提取电话
+        if (lowerLine.includes('电话') || lowerLine.includes('手机') || lowerLine.includes('phone') || lowerLine.includes('tel')) {
+            const phoneMatch = line.match(/(1[3-9]\d{9})|(\d{3,4}-\d{7,8})/);
+            if (phoneMatch && phoneMatch[0]) {
+                result.profile.phone = phoneMatch[0];
+            }
+        }
+        
+        // 提取邮箱
+        if (lowerLine.includes('邮箱') || lowerLine.includes('email') || lowerLine.includes('@')) {
+            const emailMatch = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+            if (emailMatch && emailMatch[0]) {
+                result.profile.email = emailMatch[0];
+            }
+        }
+        
+        // 提取性别
+        if (lowerLine.includes('性别') || lowerLine.includes('gender')) {
+            if (line.includes('男')) result.profile.gender = '男';
+            if (line.includes('女')) result.profile.gender = '女';
+        }
+        
+        // 提取工作经验年限
+        if (lowerLine.includes('工作经验') || lowerLine.includes('工作年限')) {
+            const yearsMatch = line.match(/\d+/);
+            if (yearsMatch && yearsMatch[0]) {
+                result.profile.experience_years = yearsMatch[0];
+            }
+        }
+    }
+
+    /**
+     * 后备提取个人信息
+     */
+    fallbackExtractPersonalInfo(lines, result) {
+        // 如果还没有找到姓名，尝试从第一行提取
+        if (!result.profile.name && lines.length > 0) {
+            const firstLine = lines[0].trim();
+            // 第一行可能是姓名（不包含特殊字符，长度2-4个中文字符）
+            const nameRegex = /^[\u4e00-\u9fa5]{2,4}$/;
+            if (nameRegex.test(firstLine)) {
+                result.profile.name = firstLine;
+            }
+        }
+        
+        // 尝试从所有行中提取电话和邮箱
+        lines.forEach(line => {
+            if (!result.profile.phone) {
+                const phoneMatch = line.match(/(1[3-9]\d{9})/);
+                if (phoneMatch) result.profile.phone = phoneMatch[0];
+            }
+            
+            if (!result.profile.email) {
+                const emailMatch = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+                if (emailMatch) result.profile.email = emailMatch[0];
+            }
+        });
+        
+        // 如果还没有找到电话，尝试从简历内容中查找
+        if (!result.profile.phone) {
+            const fullText = lines.join(' ');
+            const phoneMatch = fullText.match(/(1[3-9]\d{9})/);
+            if (phoneMatch) result.profile.phone = phoneMatch[0];
+        }
+    }
+
+    /**
+     * 解析项目经验行
+     */
+    parseProjectLine(line) {
+        return {
+            name: this.extractProjectName(line),
+            period: this.extractPeriod(line),
+            role: this.extractProjectRole(line),
+            description: line.trim()
+        };
+    }
+
+    /**
+     * 提取项目名称
+     */
+    extractProjectName(line) {
+        // 尝试提取项目名称（通常在行首）
+        const projectMatch = line.match(/^([^\d\s]{4,})/);
+        return projectMatch ? projectMatch[1] : '未命名项目';
+    }
+
+    /**
+     * 提取项目角色
+     */
+    extractProjectRole(line) {
+        const roles = ['工程师', '测试', '开发', '产品', '设计', '经理', '组长'];
+        for (const role of roles) {
+            if (line.includes(role)) return role;
+        }
+        return '项目成员';
+    }
+
+    /**
      * 清理文本
      */
     cleanText(text) {
