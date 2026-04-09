@@ -172,7 +172,5 @@
     <script src="comprehensive_fix.js" defer></script>
     
     <script type="module" src="./src/app.js" defer></script>
-    <!-- 快速修复脚本 -->
-    <script src="quick_fix.js"></script>
 </body>
 </html>
