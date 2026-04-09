@@ -27,7 +27,12 @@
                 <span class="font-semibold">AI 简历优化</span>
                 <span class="text-xs bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded">Beta</span>
             </div>
-            <div class="w-24"></div>
+            <div class="flex items-center gap-2">
+                <button id="importResumeBtn" class="flex items-center gap-2 px-3 py-1.5 bg-green-600/20 text-green-400 hover:bg-green-600/30 rounded-lg text-sm transition-colors border border-green-500/30">
+                    <i class="fas fa-file-import"></i>
+                    导入简历
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -148,11 +153,16 @@
         </div>
     </div>
 
+    <!-- 简历导入容器 -->
+    <div id="importResumeContainer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4"></div>
+
     <!-- Scripts (defer 确保按顺序在 DOM 解析完成后执行) -->
     <script src="./src/lib/store.js" defer></script>
     <script src="./src/lib/pdfGenerator.js" defer></script>
     <script src="./src/lib/aiOptimizer.js" defer></script>
     <script type="module" src="./src/lib/shareUtils.js" defer></script>
+    <script type="module" src="./src/lib/importUtils.js" defer></script>
+    <script type="module" src="./src/components/importResume.js" defer></script>
     <script src="./src/components/resumeForm.js" defer></script>
     <script src="./src/components/resumePreview.js" defer></script>
     <script type="module" src="./src/app.js" defer></script>
