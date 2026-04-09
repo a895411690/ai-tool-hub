@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 简历优化 - AI Tool Hub</title>
     <meta name="description" content="AI驱动的简历优化工具，支持实时预览和一键导出">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 生产环境Tailwind CSS - 使用构建版本避免CDN警告 -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.0/dist/tailwind.min.css" rel="stylesheet">
+    <!-- 备用：本地Tailwind CSS -->
+    <!-- <link href="styles/tailwind.css" rel="stylesheet"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0"
           crossorigin="anonymous">
@@ -165,6 +168,9 @@
     <script type="module" src="./src/components/importResume.js" defer></script>
     <script src="./src/components/resumeForm.js" defer></script>
     <script src="./src/components/resumePreview.js" defer></script>
+    <!-- 综合修复脚本 -->
+    <script src="comprehensive_fix.js" defer></script>
+    
     <script type="module" src="./src/app.js" defer></script>
 </body>
 </html>
