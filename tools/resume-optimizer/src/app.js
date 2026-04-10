@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // - resumePreview
     // - store（自动从 localStorage 加载）
 
+    setupErrorHandling();
     setupKeyboardShortcuts();
     setupAutoSaveIndicator();
     showWelcomeMessage();
@@ -244,6 +245,29 @@ function addEducationItem(education) {
     } catch (error) {
         console.error('添加教育经历失败:', error);
     }
+}
+
+// 设置错误处理
+function setupErrorHandling() {
+    // 捕获未处理的 Promise 错误
+    window.addEventListener('unhandledrejection', event => {
+        console.warn('⚠️ 未处理的 Promise 错误:', event.reason);
+        event.preventDefault(); // 防止控制台默认错误
+    });
+    
+    // 捕获全局 JavaScript 错误
+    window.addEventListener('error', event => {
+        // 过滤已知的浏览器扩展错误
+        if (event.message && event.message.includes('chrome-extension')) {
+            event.preventDefault();
+            return;
+        }
+        
+        console.warn('⚠️ 全局 JavaScript 错误:', event.error);
+        event.preventDefault();
+    });
+    
+    console.log('✅ 错误处理已设置');
 }
 
 // 显示通知（使用 DOM API + textContent 防止 XSS）

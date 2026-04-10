@@ -34,6 +34,15 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event
 self.addEventListener('fetch', (event) => {
+  // 过滤不支持的 URL scheme (chrome-extension, file, blob, data)
+  const url = new URL(event.request.url);
+  const unsupportedSchemes = ['chrome-extension:', 'file:', 'blob:', 'data:'];
+  
+  if (unsupportedSchemes.includes(url.protocol)) {
+    // 跳过这些请求，不缓存
+    return;
+  }
+  
   event.respondWith(
     caches.match(event.request).then((response) => {
       if (response) {
