@@ -42,8 +42,7 @@ function shareToQQ() {
 function copyShareLink() {
     navigator.clipboard.writeText(window.location.href)
         .then(() => showToast('链接已复制'))
-        .catch((error) => {
-            console.error('复制链接失败:', error);
+        .catch(() => {
             showToast('复制链接失败，请手动复制');
         });
 }
@@ -103,7 +102,6 @@ async function generateShareImage() {
         
         showToast('分享图片已生成');
     } catch (error) {
-        console.error('生成图片失败:', error);
         showToast(`生成图片失败: ${error.message}`);
     } finally {
         document.body.removeChild(shareCard);

@@ -14,7 +14,6 @@ function openTool(id, url, event) {
 
     // Security: Validate URL to prevent javascript: injection
     if (!isValidUrl(url)) {
-        console.error('Invalid URL:', url);
         showToast('无效的工具链接');
         return;
     }

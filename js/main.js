@@ -59,7 +59,7 @@ window.setTheme = setTheme;
 window.scrollToTop = scrollToTop;
 window.showAllTools = showAllTools;
 window.changeSort = changeSort;
-window.toggleAdvancedFilters = toggleAdvancedFunctions;
+window.toggleAdvancedFilters = toggleAdvancedFilters;
 window.toggleAdvancedFilter = toggleAdvancedFilter;
 window.clearAllFilters = clearAllFilters;
 
