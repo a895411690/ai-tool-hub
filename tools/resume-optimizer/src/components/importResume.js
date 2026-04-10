@@ -57,9 +57,9 @@ class ImportResume {
                             <p class="text-lg font-medium">拖放简历文件到此处</p>
                             <p class="text-sm text-gray-400 mt-1">或点击选择文件</p>
                         </div>
-                        <input type="file" id="fileInput" class="hidden" accept=".pdf,.docx,.doc,.txt,.html,.htm">
+                        <input type="file" id="fileInput" class="hidden" accept=".pdf,.docx,.doc,.txt,.html,.htm,.md,.markdown">
                         <p class="text-xs text-gray-500 mt-4">
-                            支持格式: PDF, DOCX, TXT, HTML (最大10MB)
+                            支持格式: PDF, DOCX, TXT, HTML, Markdown (最大10MB)
                         </p>
                     </div>
 

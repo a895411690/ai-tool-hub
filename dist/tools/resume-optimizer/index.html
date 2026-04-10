@@ -5,7 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 简历优化 - AI Tool Hub</title>
     <meta name="description" content="AI驱动的简历优化工具，支持实时预览和一键导出">
-    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- DNS 预解析 -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://qianfan.baidubce.com" crossorigin>
+    
+    <!-- 预加载关键资源 -->
+    <link rel="preload" href="./src/app.js" as="script" crossorigin>
+    <link rel="preload" href="./src/styles/main.css" as="style" crossorigin>
+    <!-- 生产环境Tailwind CSS - 预编译最小化版本（14KB vs CDN 3MB）-->
+    <link rel="stylesheet" href="./src/styles/tailwind.min.css">
+    <!-- 备用：本地Tailwind CSS -->
+    <!-- <link href="styles/tailwind.css" rel="stylesheet"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0"
           crossorigin="anonymous">
@@ -27,7 +39,12 @@
                 <span class="font-semibold">AI 简历优化</span>
                 <span class="text-xs bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded">Beta</span>
             </div>
-            <div class="w-24"></div>
+            <div class="flex items-center gap-2">
+                <button id="importResumeBtn" class="flex items-center gap-2 px-3 py-1.5 bg-green-600/20 text-green-400 hover:bg-green-600/30 rounded-lg text-sm transition-colors border border-green-500/30">
+                    <i class="fas fa-file-import"></i>
+                    导入简历
+                </button>
+            </div>
         </div>
     </nav>
 
@@ -148,12 +165,19 @@
         </div>
     </div>
 
+    <!-- 简历导入容器 -->
+    <div id="importResumeContainer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4"></div>
+
     <!-- Scripts (defer 确保按顺序在 DOM 解析完成后执行) -->
     <script src="./src/lib/store.js" defer></script>
     <script src="./src/lib/pdfGenerator.js" defer></script>
     <script src="./src/lib/aiOptimizer.js" defer></script>
+    <script type="module" src="./src/lib/shareUtils.js" defer></script>
+    <script type="module" src="./src/lib/importUtils.js" defer></script>
+    <script type="module" src="./src/components/importResume.js" defer></script>
     <script src="./src/components/resumeForm.js" defer></script>
     <script src="./src/components/resumePreview.js" defer></script>
-    <script src="./src/app.js" defer></script>
+    
+    <script type="module" src="./src/app.js" defer></script>
 </body>
 </html>
