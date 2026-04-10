@@ -4,6 +4,7 @@
  */
 
 import { importUtils } from '../lib/importUtils.js';
+import { escapeHtml } from '../lib/utils.js';
 
 class ImportResume {
     constructor() {
@@ -860,11 +861,11 @@ class ImportResume {
                 const expHtml = `
                     <div class="data-item">
                         <div class="data-item-header">
-                            <span class="data-item-title">${exp.position || '职位'}</span>
-                            <span class="data-item-period">${exp.period || '时间'}</span>
+                            <span class="data-item-title">${escapeHtml(exp.position || '职位')}</span>
+                            <span class="data-item-period">${escapeHtml(exp.period || '时间')}</span>
                         </div>
-                        <div class="data-item-company">${exp.company || '公司'}</div>
-                        <div class="data-item-desc">${exp.description || '工作描述'}</div>
+                        <div class="data-item-company">${escapeHtml(exp.company || '公司')}</div>
+                        <div class="data-item-desc">${escapeHtml(exp.description || '工作描述')}</div>
                     </div>
                 `;
                 experiencePreview.insertAdjacentHTML('beforeend', expHtml);
@@ -881,11 +882,11 @@ class ImportResume {
                 const eduHtml = `
                     <div class="data-item">
                         <div class="data-item-header">
-                            <span class="data-item-title">${edu.degree || '学位'}</span>
-                            <span class="data-item-period">${edu.period || '时间'}</span>
+                            <span class="data-item-title">${escapeHtml(edu.degree || '学位')}</span>
+                            <span class="data-item-period">${escapeHtml(edu.period || '时间')}</span>
                         </div>
-                        <div class="data-item-school">${edu.school || '学校'}</div>
-                        <div class="data-item-degree">${edu.description || '教育描述'}</div>
+                        <div class="data-item-school">${escapeHtml(edu.school || '学校')}</div>
+                        <div class="data-item-degree">${escapeHtml(edu.description || '教育描述')}</div>
                     </div>
                 `;
                 educationPreview.insertAdjacentHTML('beforeend', eduHtml);

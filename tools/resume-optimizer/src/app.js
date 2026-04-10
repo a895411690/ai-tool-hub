@@ -3,9 +3,10 @@
  * Entry point for the resume optimizer tool
  */
 
+import { showNotification } from './lib/utils.js';
+
 // 初始化应用
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 AI Resume Optimizer initialized');
 
     // 组件由各自的脚本自动初始化
     // - resumeForm
@@ -89,7 +90,6 @@ function setupResumeImport() {
             openResumeImport();
         });
 
-        console.log('✅ 简历导入功能初始化完成');
     }, 500);
 }
 
@@ -115,7 +115,6 @@ function openResumeImport() {
 function handleResumeImportComplete(event) {
     const importedData = event.detail;
     
-    console.log('📥 简历数据已导入:', importedData);
     
     // 更新简历表单数据
     updateResumeFormWithImportedData(importedData);
@@ -198,7 +197,6 @@ function updateResumeFormWithImportedData(data) {
             }
         }, 100);
 
-        console.log('✅ 简历表单已更新');
     } catch (error) {
         console.error('更新简历表单失败:', error);
         showNotification('导入数据更新表单时出错', 'error');
@@ -267,40 +265,4 @@ function setupErrorHandling() {
         event.preventDefault();
     });
     
-    console.log('✅ 错误处理已设置');
 }
-
-// 显示通知（使用 DOM API + textContent 防止 XSS）
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 fade-in ${
-        type === 'success' ? 'bg-green-500' :
-        type === 'error' ? 'bg-red-500' : 'bg-indigo-500'
-    } text-white`;
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'flex items-center gap-2';
-
-    const icon = document.createElement('i');
-    icon.className = `fas ${
-        type === 'success' ? 'fa-check-circle' :
-        type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'
-    }`;
-    wrapper.appendChild(icon);
-
-    const textSpan = document.createElement('span');
-    textSpan.textContent = message; // 安全：使用 textContent
-    wrapper.appendChild(textSpan);
-
-    notification.appendChild(wrapper);
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateY(10px)';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-// 导出为全局访问
-window.showNotification = showNotification;

@@ -289,7 +289,6 @@ class ImportUtils {
      * 解析文本内容 - 增强版，支持中文简历
      */
     parseTextContent(text) {
-        console.log('📄 parseTextContent收到的原始文本:', text.substring(0, 500));
         
         // 清理文本：保留换行，但清理每行的多余空格
         text = this.cleanTextPreserveNewlines(text);
@@ -413,139 +412,44 @@ class ImportUtils {
      */
     applySmartParsingEnhancement(lines, result) {
         const fullText = lines.join('\n');
-        
+
         // 1. 智能提取工作经历
         this.smartExtractExperience(fullText, result);
-        
+
         // 2. 智能提取教育经历
         this.smartExtractEducation(fullText, result);
-        
+
         // 3. 智能提取技能
         this.smartExtractSkills(fullText, result);
-        
+
         // 4. 智能提取个人信息（增强版）
         this.smartExtractPersonalInfo(fullText, result);
-        
-        // 5. 专用解析：针对特定简历格式
-        this.specializedParsingForWeijiahao(fullText, result);
-    }
 
-    /**
-     * 专用解析：针对卫家豪简历格式（超级增强版）
-     */
-    specializedParsingForWeijiahao(fullText, result) {
-        console.log('🔍 开始卫家豪简历专用解析，文本长度:', fullText.length);
-        console.log('📄 完整文本预览:', fullText.substring(0, 1000));
-        
-        // 1. 智能检测是否为卫家豪简历
-        const isWeijiahaoResume = this.detectWeijiahaoResume(fullText);
-        console.log('📋 检测结果:', isWeijiahaoResume ? '确认是卫家豪简历' : '可能不是卫家豪简历');
-        
-        if (isWeijiahaoResume) {
-            console.log('🔍 执行卫家豪简历超级增强解析...');
-            
-            // 2. 从原始文本中尽可能提取信息
-            this.aggressiveExtractFromText(fullText, result);
-            
-            // 3. 强制设置所有关键信息（确保100%识别）
-            result.profile.name = '卫家豪';
-            console.log('✅ 强制设置姓名: 卫家豪');
-            
-            result.profile.phone = '13311667685';
-            console.log('✅ 强制设置电话: 13311667685');
-            
-            result.profile.email = '895411690@qq.com';
-            console.log('✅ 强制设置邮箱: 895411690@qq.com');
-            
-            result.profile.gender = '男';
-            console.log('✅ 强制设置性别: 男');
-            
-            result.profile.location = '上海';
-            console.log('✅ 强制设置位置: 上海');
-            
-            result.profile.experience_years = '8';
-            console.log('✅ 强制设置工作经验: 8年');
-            
-            result.profile.title = '测试工程师（资深/管理）';
-            console.log('✅ 强制设置求职意向: 测试工程师（资深/管理）');
-            
-            // 4. 强制设置工作经历（确保包含两个工作经历）
-            console.log('⚠️  强制设置工作经历...');
-            result.experience = [
-                {
-                    company: '交通银行',
-                    position: '高级测试工程师',
-                    period: '2023.02-2025.01',
-                    description: '零售信贷核心重构及企业级架构项目，负责测试规划和执行，管理测试团队，制定测试策略，执行回归测试和性能测试'
-                },
-                {
-                    company: '广发银行',
-                    position: '测试组长',
-                    period: '2022.10-2023.01',
-                    description: '负责测试团队管理和项目测试工作，制定测试计划，执行功能测试，协调开发和测试团队'
-                }
-            ];
-            console.log('✅ 工作经历设置完成，共', result.experience.length, '个项目');
-            result.experience.forEach((exp, i) => {
-                console.log(`  ${i+1}. ${exp.company} - ${exp.position} (${exp.period})`);
-            });
-            
-            // 5. 强制设置教育经历（确保100%识别）
-            console.log('✅ 强制设置教育经历...');
-            result.education = [
-                {
-                    school: '上海交通大学',
-                    degree: '本科',
-                    major: '计算机科学与技术',
-                    period: '2014.09-2018.06',
-                    description: '上海交通大学计算机科学与技术专业本科'
-                }
-            ];
-        } else {
-            // 非卫家豪简历，使用智能解析
-            console.log('🔍 执行通用智能解析...');
-            this.aggressiveExtractFromText(fullText, result);
-            this.smartExtractPersonalInfo(fullText, result);
-            this.smartExtractExperience(fullText, result);
-            this.smartExtractEducation(fullText, result);
-            this.smartExtractSkills(fullText, result);
-        }
-        
-        // 6. 增强版工作经历提取（如果需要）
-        // 注意：卫家豪简历已经强制设置了工作经历，不需要再提取
-        
-        // 7. 增强版技能提取 - 完整技能库
+        // 5. 增强版技能提取 - 完整技能库
         this.enhanceSkillsExtraction(fullText, result);
-        
-        // 8. 其他个人信息增强提取
+
+        // 6. 其他个人信息增强提取
         this.enhancePersonalInfoExtraction(fullText, result);
-        
-        // 9. 最终验证和默认值补充
+
+        // 7. 最终验证和默认值补充
         this.ensureRequiredFields(result);
-        
-        // 10. 详细日志输出
-        this.logParsingResults(result);
     }
     
     /**
      * 激进提取：从文本中尽可能提取所有信息
      */
     aggressiveExtractFromText(fullText, result) {
-        console.log('🔥 开始激进提取模式...');
         
         const lines = fullText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
-        console.log('📋 共', lines.length, '行待处理');
         
         // 逐行扫描提取
         lines.forEach((line, index) => {
-            console.log(`  🔍 处理第${index + 1}行:`, line.substring(0, 100));
             
             // 提取电话
             if (!result.profile.phone) {
                 const phoneMatch = line.match(/1[3-9]\d{9}/);
                 if (phoneMatch) {
                     result.profile.phone = phoneMatch[0];
-                    console.log('    ✅ 从行中提取到电话:', result.profile.phone);
                 }
             }
             
@@ -554,14 +458,15 @@ class ImportUtils {
                 const emailMatch = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
                 if (emailMatch) {
                     result.profile.email = emailMatch[0];
-                    console.log('    ✅ 从行中提取到邮箱:', result.profile.email);
                 }
             }
             
-            // 提取姓名（如果包含卫家豪）
-            if (!result.profile.name && line.includes('卫家豪')) {
-                result.profile.name = '卫家豪';
-                console.log('    ✅ 从行中提取到姓名: 卫家豪');
+            // 提取姓名（从第一行或常见位置提取）
+            if (!result.profile.name) {
+                const nameMatch = line.match(/^[\u4e00-\u9fa5]{2,4}$/);
+                if (nameMatch) {
+                    result.profile.name = nameMatch[0];
+                }
             }
             
             // 提取位置（城市）
@@ -570,7 +475,6 @@ class ImportUtils {
                 for (const city of cities) {
                     if (line.includes(city)) {
                         result.profile.location = city;
-                        console.log('    ✅ 从行中提取到位置:', city);
                         break;
                     }
                 }
@@ -581,7 +485,6 @@ class ImportUtils {
                 const yearsMatch = line.match(/(\d+)\s*年[以]?[上]?/);
                 if (yearsMatch) {
                     result.profile.experience_years = yearsMatch[1];
-                    console.log('    ✅ 从行中提取到工作经验:', yearsMatch[1], '年');
                 }
             }
             
@@ -591,7 +494,6 @@ class ImportUtils {
             }
         });
         
-        console.log('🔥 激进提取完成');
     }
     
     /**
@@ -639,7 +541,6 @@ class ImportUtils {
                     period: period || '',
                     description: line
                 });
-                console.log('    💼 从行中添加工作经历:', company, position, period);
             }
         }
     }
@@ -734,8 +635,6 @@ class ImportUtils {
      * 清理PDF提取的文本
      */
     cleanPDFText(text) {
-        console.log('📄 原始PDF文本长度:', text.length);
-        console.log('📄 原始PDF文本片段:', text.substring(0, 500));
         
         // 移除特殊字符
         text = text.replace(/[\u200b-\u200f\u202a-\u202e]/g, '');
@@ -747,8 +646,6 @@ class ImportUtils {
         // 修复断行单词（在单行内）
         text = text.replace(/([a-zA-Z])(\s+)([a-zA-Z])/g, '$1$3');
         
-        console.log('📄 清理后PDF文本长度:', text.length);
-        console.log('📄 清理后PDF文本片段:', text.substring(0, 500));
         
         return text;
     }
@@ -853,89 +750,16 @@ class ImportUtils {
     }
     
     /**
-     * 检测是否为卫家豪简历
-     */
-    detectWeijiahaoResume(fullText) {
-        const weijiahaoKeywords = [
-            '卫家豪', 'Wei Jiahao', '13311667685', '895411690@qq.com',
-            '交通银行', '广发银行', '高级测试工程师', '测试组长',
-            '零售信贷核心重构', '信用卡新核心项目'
-        ];
-        
-        let matchCount = 0;
-        weijiahaoKeywords.forEach(keyword => {
-            if (fullText.includes(keyword)) {
-                matchCount++;
-            }
-        });
-        
-        // 匹配3个以上关键词认为是卫家豪简历
-        return matchCount >= 3;
-    }
-    
-    /**
-     * 提取卫家豪工作经历
-     */
-    extractWeijiahaoExperience(fullText, result) {
-        result.experience = [];
-        
-        // 交通银行项目
-        const bankPatterns = [
-            /零售信贷核心重构及企业级架构项目.*高级测试工程师.*2023\.02-2025\.01/,  // 完整匹配
-            /交通银行.*高级测试工程师.*2023[.-]02.*2025[.-]01/,                       // 日期变体
-            /交通银行.*高级测试工程师/,                                              // 简化匹配
-            /高级测试工程师.*交通银行/,                                              // 反向匹配
-            /Bank of Communications.*Senior Test Engineer/                          // 英文匹配
-        ];
-        
-        for (const pattern of bankPatterns) {
-            if (pattern.test(fullText)) {
-                result.experience.push({
-                    company: '交通银行',
-                    position: '高级测试工程师',
-                    period: '2023.02-2025.01',
-                    description: '零售信贷核心重构及企业级架构项目，负责测试规划和执行'
-                });
-                console.log('✅ 交通银行工作经历识别成功');
-                break;
-            }
-        }
-        
-        // 广发银行项目
-        const gdbPatterns = [
-            /广发银行.*测试组长.*2022\.10-2023\.01/,                                // 完整匹配
-            /广发银行.*测试组长.*2022[.-]10.*2023[.-]01/,                           // 日期变体
-            /广发银行.*测试组长/,                                                    // 简化匹配
-            /测试组长.*广发银行/,                                                    // 反向匹配
-            /Guangfa Bank.*Test Lead/                                               // 英文匹配
-        ];
-        
-        for (const pattern of gdbPatterns) {
-            if (pattern.test(fullText)) {
-                result.experience.push({
-                    company: '广发银行',
-                    position: '测试组长',
-                    period: '2022.10-2023.01',
-                    description: '负责测试团队管理和项目测试工作'
-                });
-                console.log('✅ 广发银行工作经历识别成功');
-                break;
-            }
-        }
-    }
-    
-    /**
      * 增强技能提取
      */
     enhanceSkillsExtraction(fullText, result) {
-        console.log('🔍 开始增强技能提取...');
         
         // 确保skills数组存在
         if (!result.skills) {
             result.skills = [];
         }
         
-        // 卫家豪简历技能关键词库
+        // 通用技能关键词库
         const skillKeywords = [
             // 前端技术
             'React', 'Vue', 'TypeScript', 'HTML5', 'CSS3', 'JavaScript', 'ES6',
@@ -958,21 +782,18 @@ class ImportUtils {
             if (fullText.includes(skill) && !existingSkills.has(skill)) {
                 result.skills.push(skill);
                 existingSkills.add(skill);
-                console.log(`✅ 识别到技能: ${skill}`);
             }
         });
         
-        // 如果没有找到技能，添加卫家豪相关的默认技能
+        // 如果没有找到技能，添加通用默认技能
         if (result.skills.length === 0) {
             result.skills = [
                 '自动化测试', '性能测试', '功能测试', '回归测试', '测试策略',
                 '测试计划', 'Git', 'Docker', 'Linux', 'Java',
                 'MySQL', '团队协作', '项目管理', '问题解决', '沟通能力'
             ];
-            console.log('⚠️  补充卫家豪简历默认技能');
         }
         
-        console.log('📝 技能识别结果:', result.skills.length, '个技能:', result.skills.slice(0, 10).join(', '));
     }
     
     /**
@@ -993,7 +814,6 @@ class ImportUtils {
                     const match = fullText.match(/性别[：:].*?(男|女)/);
                     if (match && match[1]) {
                         result.profile.gender = match[1];
-                        console.log('✅ 性别识别成功:', match[1]);
                         break;
                     }
                 }
@@ -1022,7 +842,6 @@ class ImportUtils {
                 const match = fullText.match(pattern);
                 if (match && match[1]) {
                     result.profile.experience_years = match[1];
-                    console.log('✅ 工作经验识别成功:', match[1], '年');
                     break;
                 }
             }
@@ -1041,7 +860,6 @@ class ImportUtils {
                 const match = fullText.match(pattern);
                 if (match && match[1]) {
                     result.profile.title = match[1].trim();
-                    console.log('✅ 求职意向识别成功:', result.profile.title);
                     break;
                 }
             }
@@ -1052,25 +870,13 @@ class ImportUtils {
      * 记录解析结果
      */
     logParsingResults(result) {
-        console.log('🎉 简历增强解析完成');
-        console.log('📋 最终解析结果统计:');
-        console.log('   • 姓名:', result.profile.name || '未识别');
-        console.log('   • 电话:', result.profile.phone || '未识别');
-        console.log('   • 邮箱:', result.profile.email || '未识别');
-        console.log('   • 性别:', result.profile.gender || '未识别');
-        console.log('   • 工作经验:', result.profile.experience_years || '未识别');
-        console.log('   • 求职意向:', result.profile.title || '未识别');
-        console.log('   • 工作经历:', result.experience.length, '个项目');
-        console.log('   • 技能:', result.skills.length, '个技能');
         
         if (result.experience.length > 0) {
             result.experience.forEach((exp, i) => {
-                console.log(`      ${i+1}. ${exp.company} - ${exp.position} (${exp.period})`);
             });
         }
         
         if (result.skills.length > 0) {
-            console.log(`      技能: ${result.skills.slice(0, 8).join(', ')}${result.skills.length > 8 ? '...' : ''}`);
         }
     }
 
@@ -1081,9 +887,13 @@ class ImportUtils {
         // 如果还没有姓名，尝试从第一行提取
         if (!result.profile.name) {
             const firstLine = fullText.split('\n')[0];
-            if (firstLine && firstLine.includes('卫家豪')) {
-                result.profile.name = '卫家豪';
+            if (firstLine) {
+                const nameMatch = firstLine.match(/^[\u4e00-\u9fa5]{2,4}$/);
+                if (nameMatch) {
+                    result.profile.name = nameMatch[0];
+                }
             }
+        }
         }
         
         // 如果还没有电话，全文本搜索电话
@@ -1136,7 +946,6 @@ class ImportUtils {
      * 智能提取工作经历
      */
     smartExtractExperience(fullText, result) {
-        console.log('🔍 开始智能提取工作经历...');
         
         // 工作经历关键词模式 - 增强版
         const experiencePatterns = [
@@ -1185,7 +994,6 @@ class ImportUtils {
                 for (const comp of commonCompanies) {
                     if (description.includes(comp)) {
                         company = comp;
-                        console.log(`🏢 识别到公司: ${company}`);
                         break;
                     }
                 }
@@ -1194,7 +1002,6 @@ class ImportUtils {
                 for (const pos of positions) {
                     if (description.includes(pos)) {
                         position = pos;
-                        console.log(`👤 识别到职位: ${position}`);
                         break;
                     }
                 }
@@ -1211,19 +1018,16 @@ class ImportUtils {
                         description: description
                     });
                     existingExp.add(expKey);
-                    console.log('✅ 添加工作经历:', company, position, period);
                 }
             }
         });
         
-        console.log('📋 智能提取工作经历完成，共找到:', result.experience.length, '个');
     }
 
     /**
      * 智能提取教育经历
      */
     smartExtractEducation(fullText, result) {
-        console.log('🎓 开始智能提取教育经历...');
         
         // 教育经历关键词模式 - 增强版
         const educationPatterns = [
@@ -1275,7 +1079,6 @@ class ImportUtils {
                 for (const sch of commonSchools) {
                     if (description.includes(sch)) {
                         school = sch;
-                        console.log(`🏫 识别到学校: ${school}`);
                         break;
                     }
                 }
@@ -1284,7 +1087,6 @@ class ImportUtils {
                 for (const maj of commonMajors) {
                     if (description.includes(maj)) {
                         major = maj;
-                        console.log(`📚 识别到专业: ${major}`);
                         break;
                     }
                 }
@@ -1293,7 +1095,6 @@ class ImportUtils {
                 for (const deg of degrees) {
                     if (description.includes(deg)) {
                         degree = deg;
-                        console.log(`🎓 识别到学位: ${degree}`);
                         break;
                     }
                 }
@@ -1319,7 +1120,6 @@ class ImportUtils {
                         const timeMatch = description.match(pattern);
                         if (timeMatch) {
                             period = timeMatch[0];
-                            console.log(`⏰ 识别到时间: ${period}`);
                             break;
                         }
                     }
@@ -1338,12 +1138,10 @@ class ImportUtils {
                         description: description
                     });
                     existingEdu.add(eduKey);
-                    console.log('✅ 添加教育经历:', school, major, degree, period);
                 }
             }
         });
         
-        console.log('📋 智能提取教育经历完成，共找到:', result.education.length, '个');
     }
 
     /**
@@ -1371,7 +1169,6 @@ class ImportUtils {
      * 智能提取个人信息（增强版）
      */
     smartExtractPersonalInfo(fullText, result) {
-        console.log('👤 开始智能提取个人信息...');
         
         // 姓名提取
         const namePatterns = [
@@ -1385,7 +1182,6 @@ class ImportUtils {
             const match = fullText.match(pattern);
             if (match && match[1] && !result.profile.name) {
                 result.profile.name = match[1];
-                console.log('✅ 姓名识别成功:', result.profile.name);
             }
         });
         
@@ -1394,7 +1190,6 @@ class ImportUtils {
         const phoneMatch = fullText.match(phonePattern);
         if (phoneMatch && !result.profile.phone) {
             result.profile.phone = phoneMatch[1];
-            console.log('✅ 电话识别成功:', result.profile.phone);
         }
         
         // 邮箱提取
@@ -1402,7 +1197,6 @@ class ImportUtils {
         const emailMatch = fullText.match(emailPattern);
         if (emailMatch && !result.profile.email) {
             result.profile.email = emailMatch[0];
-            console.log('✅ 邮箱识别成功:', result.profile.email);
         }
         
         // 位置信息提取
@@ -1419,7 +1213,6 @@ class ImportUtils {
                 const match = fullText.match(pattern);
                 if (match) {
                     result.profile.location = match[1] || match[0];
-                    console.log('✅ 位置识别成功:', result.profile.location);
                     break;
                 }
             }
@@ -1438,7 +1231,6 @@ class ImportUtils {
             const match = fullText.match(pattern);
             if (match && match[1] && !result.profile.experience_years) {
                 result.profile.experience_years = match[1];
-                console.log('✅ 工作经验识别成功:', result.profile.experience_years, '年');
                 break;
             }
         }
@@ -1457,7 +1249,6 @@ class ImportUtils {
             for (const { pattern, gender } of genderPatterns) {
                 if (pattern.test(fullText)) {
                     result.profile.gender = gender;
-                    console.log('✅ 性别识别成功:', result.profile.gender);
                     break;
                 }
             }
@@ -1486,13 +1277,11 @@ class ImportUtils {
                 const match = fullText.match(pattern);
                 if (match && match[1]) {
                     result.profile.title = match[1].trim();
-                    console.log('✅ 求职意向识别成功:', result.profile.title);
                     break;
                 }
             }
         }
         
-        console.log('📋 个人信息提取完成:', {
             name: result.profile.name,
             phone: result.profile.phone,
             email: result.profile.email,
@@ -1693,7 +1482,6 @@ class ImportUtils {
      * 清理文本，但保留换行符
      */
     cleanTextPreserveNewlines(text) {
-        console.log('📄 cleanTextPreserveNewlines开始处理文本');
         
         // 按行处理，保留换行符
         const lines = text.split('\n');
@@ -1719,8 +1507,6 @@ class ImportUtils {
         // 重新组合，保留换行符
         const result = cleanedLines.join('\n');
         
-        console.log('📄 cleanTextPreserveNewlines处理完成，保留了', cleanedLines.filter(l => l.length > 0).length, '行');
-        console.log('📄 处理后的文本片段:', result.substring(0, 500));
         
         return result;
     }
@@ -2015,108 +1801,24 @@ class ImportUtils {
 
         return '请检查文件格式是否正确，或联系技术支持';
     }
-    
+
     /**
-     * 确保必要字段有值（卫家豪简历专用）
+     * 验证必要字段完整性
+     * @param {Object} result - 解析结果对象
+     * @returns {Object} 包含 success 和 missingFields 的验证结果
      */
     ensureRequiredFields(result) {
-        console.log('🔧 开始验证和补充必要字段...');
-        
-        // 卫家豪简历默认值
-        const weijiahaoDefaults = {
-            name: '卫家豪',
-            phone: '13311667685',
-            email: '895411690@qq.com',
-            gender: '男',
-            experience_years: '8',
-            job_target: '测试工程师（资深/管理）',
-            location: '上海',
-            education: '本科',
-            major: '计算机科学与技术'
-        };
-        
-        // 补充缺失的个人信息字段
-        Object.keys(weijiahaoDefaults).forEach(key => {
-            if (!result.profile[key] || result.profile[key].trim() === '') {
-                result.profile[key] = weijiahaoDefaults[key];
-                console.log(`   ✅ 补充 ${key}: ${weijiahaoDefaults[key]}`);
-            }
-        });
-        
-        // 确保有工作经历
-        if (!result.experience || result.experience.length === 0) {
-            result.experience = [
-                {
-                    company: '交通银行',
-                    position: '高级测试工程师',
-                    period: '2023.02-2025.01',
-                    description: '零售信贷核心重构及企业级架构项目，负责测试规划和执行'
-                },
-                {
-                    company: '广发银行',
-                    position: '测试组长',
-                    period: '2022.10-2023.01',
-                    description: '负责测试团队管理和项目测试工作'
-                }
-            ];
-            console.log('   ✅ 补充默认工作经历 (2个项目)');
-        }
-        
-        // 确保有技能
-        if (!result.skills || result.skills.length === 0) {
-            result.skills = [
-                'React', 'Vue', 'TypeScript', 'HTML5', 'CSS3',
-                'Node.js', 'Python', 'Java', 'MySQL', 'Redis',
-                'Git', 'Docker', 'Jenkins', '自动化测试', '性能测试'
-            ];
-            console.log('   ✅ 补充默认技能 (15个技能)');
-        }
-        
-        // 确保有教育背景
-        if (!result.education || result.education.length === 0) {
-            result.education = [
-                {
-                    school: '上海交通大学',
-                    degree: '本科',
-                    major: '计算机科学与技术',
-                    period: '2014.09-2018.06'
-                }
-            ];
-            console.log('   ✅ 补充默认教育背景');
-        }
-        
-        // 确保有项目经验（如果简历中没有）
-        if (!result.projects || result.projects.length === 0) {
-            result.projects = [
-                {
-                    name: '零售信贷核心系统重构',
-                    role: '测试负责人',
-                    period: '2023.02-2024.12',
-                    description: '负责交通银行零售信贷核心系统的测试工作'
-                }
-            ];
-            console.log('   ✅ 补充默认项目经验');
-        }
-        
-        console.log('🎯 必要字段验证完成，确保数据完整性');
-        
-        // 最终验证：确保至少有基本信息
         const requiredFields = ['name', 'phone', 'email'];
         const missingFields = requiredFields.filter(field => !result.profile[field]);
-        
-        if (missingFields.length === 0) {
-            console.log('✅ 所有必要字段完整');
-        } else {
-            console.log(`⚠️  缺失必要字段: ${missingFields.join(', ')}`);
-            // 强制补充缺失字段
-            missingFields.forEach(field => {
-                if (weijiahaoDefaults[field]) {
-                    result.profile[field] = weijiahaoDefaults[field];
-                }
-            });
+
+        if (missingFields.length > 0) {
+            console.warn(`⚠️  简历缺少必要字段: ${missingFields.join(', ')}`);
         }
-        
-        return result;
+
+        return {
+            success: missingFields.length === 0,
+            missingFields
+        };
     }
 }
 

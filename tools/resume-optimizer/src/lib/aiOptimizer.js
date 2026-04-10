@@ -4,25 +4,7 @@
  * Supports OpenAI-compatible chat completions endpoint
  */
 
-/**
- * HTML 实体转义，防止 XSS 攻击
- * @param {*} text - 待转义的文本
- * @returns {string} 转义后的安全字符串
- */
-function escapeHtml(text) {
-    if (typeof text !== 'string') return '';
-    return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-
-// 属性转义函数
-function escapeAttr(text) {
-    return text.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-}
+import { escapeHtml, escapeAttr, showNotification } from './utils.js';
 
 class AIOptimizer {
     constructor() {
@@ -200,7 +182,7 @@ class AIOptimizer {
 
             this.saveApiSettings(apiKey, model);
             this._updateApiStatus('connected', `API 连接成功！模型: ${model}`);
-            this.showNotification('API 配置保存成功', 'success');
+            showNotification('API 配置保存成功', 'success');
         } catch (error) {
             this.apiKey = prevKey;
             this.model = prevModel;
@@ -225,7 +207,7 @@ class AIOptimizer {
         if (modelSelect) modelSelect.value = AIOptimizer.DEFAULT_MODEL;
 
         this._updateApiStatus('disconnected', '已清除 API 设置，将使用演示模式');
-        this.showNotification('API 设置已清除', 'info');
+        showNotification('API 设置已清除', 'info');
     }
 
     // 选择职位类型
@@ -233,7 +215,7 @@ class AIOptimizer {
         const jobDescription = document.getElementById('jobDescription');
         if (jobDescription) {
             jobDescription.value = `应聘职位：${jobType}\n\n职责要求：\n1. 负责相关领域的专业工作\n2. 具备相关技能和经验\n3. 良好的团队协作能力\n4. 较强的学习能力和解决问题的能力`;
-            this.showNotification(`已选择职位：${jobType}`, 'success');
+            showNotification(`已选择职位：${jobType}`, 'success');
         }
     }
 
@@ -252,7 +234,7 @@ class AIOptimizer {
             hr: 'HR希望的我'
         };
         
-        this.showNotification(`已切换到：${viewNames[view]}`, 'info');
+        showNotification(`已切换到：${viewNames[view]}`, 'info');
     }
 
     // 更新简历视角显示
@@ -857,7 +839,7 @@ ${JSON.stringify(resumeData, null, 2)}
             } else {
                 // 移除 console.warn 语句
                 await this.simulateOptimization(resumeData, jobDescription);
-                this.showNotification('当前为演示模式，配置千帆 API Key 后可使用真实 AI 优化', 'info');
+                showNotification('当前为演示模式，配置千帆 API Key 后可使用真实 AI 优化', 'info');
             }
         } catch (error) {
             // 移除 console.error 语句
@@ -1053,7 +1035,7 @@ ${JSON.stringify(resumeData, null, 2)}
 
     // 应用建议
     applySuggestion() {
-        this.showNotification('建议已应用', 'success');
+        showNotification('建议已应用', 'success');
     }
 
     // 显示加载状态
@@ -1076,39 +1058,7 @@ ${JSON.stringify(resumeData, null, 2)}
 
     // 显示错误
     showError(message) {
-        this.showNotification(message, 'error');
-    }
-
-    // 显示通知（使用 textContent 防止 XSS）
-    showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 fade-in ${
-            type === 'success' ? 'bg-green-500' :
-                type === 'error' ? 'bg-red-500' : 'bg-indigo-500'
-        } text-white`;
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'flex items-center gap-2';
-
-        const icon = document.createElement('i');
-        icon.className = `fas ${
-            type === 'success' ? 'fa-check-circle' :
-                type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'
-        }`;
-        wrapper.appendChild(icon);
-
-        const textSpan = document.createElement('span');
-        textSpan.textContent = message; // 安全：使用 textContent
-        wrapper.appendChild(textSpan);
-
-        notification.appendChild(wrapper);
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            notification.style.transform = 'translateY(10px)';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
+        showNotification(message, 'error');
     }
 }
 
