@@ -11,7 +11,118 @@ class AIOptimizer {
         this.apiKey = localStorage.getItem(AIOptimizer.STORAGE_KEY_API) || '';
         this.model = localStorage.getItem(AIOptimizer.STORAGE_KEY_MODEL) || AIOptimizer.DEFAULT_MODEL;
         this.isOptimizing = false;
-        this.currentView = 'original'; // original, optimized, ideal, hr
+        this.currentView = 'original';
+        
+        // 3档优化级别配置（借鉴求职方舟）
+        this.optimizationLevels = {
+            light: {
+                name: '轻度优化',
+                description: '润色语言，修正语法，保持原意',
+                icon: 'fa-wand-magic-sparkles',
+                color: 'blue',
+                promptTemplate: `你是一位专业的简历编辑。请对以下简历内容进行轻度优化：
+- 修正语法错误和错别字
+- 优化语言表达，使其更专业流畅
+- 保持原有内容和结构不变
+- 不添加新的信息或夸大描述
+
+原始内容：
+{content}
+
+请输出优化后的内容，只返回优化后的文本：`
+            },
+            medium: {
+                name: '中度优化',
+                description: '增强关键词，量化成果，提升匹配度',
+                icon: 'fa-arrow-trend-up',
+                color: 'purple',
+                promptTemplate: `你是一位资深的求职顾问和简历专家。请对以下简历进行中度优化：
+
+目标职位要求：
+{jobDescription}
+
+原始简历内容：
+{content}
+
+优化要求：
+1. **关键词对齐**：从职位描述中提取核心关键词（技能、工具、行业术语），自然融入简历
+2. **成果量化**：将模糊描述改为具体数字（如"提升了效率"→"提升了30%效率"）
+3. **行为动词强化**：使用强有力的动作词汇（主导、推动、建立、优化、实现等）
+4. **结构优化**：使用STAR法则重组工作经历（情境-任务-行动-结果）
+5. **ATS友好**：确保格式规范，便于ATS系统解析
+
+请输出优化后的完整内容，并标注修改说明（用【修改】标记）：`
+            },
+            deep: {
+                name: '深度优化',
+                description: '全面重构，量身定制，最大化通过率',
+                icon: 'fa-fire',
+                color: 'orange',
+                promptTemplate: `你是一位拥有15年经验的顶级简历架构师和职业规划师，曾帮助5000+求职者获得大厂Offer。请对该简历进行深度优化重构：
+
+【目标职位JD】
+{jobDescription}
+
+【原始简历】
+{content}
+
+【深度优化策略】
+
+第一步：职位匹配度分析
+- 提取JD中的硬性要求（必须技能、经验年限、学历）
+- 提取软性素质（领导力、沟通能力、学习能力）
+- 计算当前匹配度，找出差距
+
+第二步：个人品牌重塑
+- 根据目标职位重新定位个人标签
+- 打造独特的价值主张（UVP）
+- 设计吸引眼球的个人简介（3句话版本）
+
+第三步：经历深度重构
+- 每段经历使用"背景-挑战-行动-结果-影响"五步法
+- 融入行业黑话和专业术语
+- 添加可量化的业务影响力指标
+- 突出与目标岗位高度相关的项目经验
+
+第四步：技能矩阵优化
+- 将技能分为"精通/熟练/了解"三级
+- 补充JD要求但简历中缺失的关键技能
+- 添加相关证书和资质
+
+第五步：ATS终极优化
+- 移除所有可能导致ATS解析失败的特殊字符
+- 使用标准化的日期格式（2023.02-2025.01）
+- 确保关键词密度适中（2-3%）
+
+第六步：差异化亮点
+- 添加1-2个独特成就或特色项目
+- 突出跨领域能力或复合型背景
+- 展示持续学习和成长轨迹
+
+【输出格式】
+请按以下JSON格式输出完整优化结果（确保是合法JSON）：
+{
+  "optimizedSummary": "优化后的个人简介",
+  "optimizedExperience": [
+    {
+      "original": "原始描述",
+      "optimized": "优化后描述",
+      "highlights": ["亮点1", "亮点2"],
+      "metrics": ["指标1", "指标2"]
+    }
+  ],
+  "optimizedSkills": ["技能1", "技能2", ...],
+  "atsKeywords": ["关键词1", "关键词2", ...],
+  "matchScore": 95,
+  "improvementSuggestions": ["建议1", "建议2"]
+}
+
+如果无法输出JSON，请直接输出优化后的完整简历文本：`
+            }
+        };
+        
+        // 当前选择的优化级别
+        this.currentLevel = 'medium'; // 默认中度优化 // original, optimized, ideal, hr
     }
 
     // 打开 AI 面板
@@ -223,18 +334,178 @@ class AIOptimizer {
     switchView(view) {
         this.currentView = view;
         this._renderViewToggle();
-        
+
         // 根据视角更新简历显示
         this.updateResumeView(view);
-        
+
         const viewNames = {
             original: '原始的我',
             optimized: '优化后的我',
             ideal: '我幻想的我',
             hr: 'HR希望的我'
         };
-        
+
         showNotification(`已切换到：${viewNames[view]}`, 'info');
+    }
+
+    // 选择优化级别（借鉴求职方舟3档优化）
+    selectOptimizationLevel(level) {
+        if (!this.optimizationLevels[level]) {
+            console.error('无效的优化级别:', level);
+            return;
+        }
+
+        this.currentLevel = level;
+        const levelInfo = this.optimizationLevels[level];
+
+        // 更新UI显示
+        this._renderLevelSelector();
+
+        showNotification(`已选择：${levelInfo.name} - ${levelInfo.description}`, 'success');
+
+        // 保存用户偏好
+        localStorage.setItem('optimization_level', level);
+    }
+
+    // 渲染优化级别选择器
+    _renderLevelSelector() {
+        const container = document.getElementById('optimizationLevelSelector');
+        if (!container) return;
+
+        const levels = ['light', 'medium', 'deep'];
+        container.innerHTML = levels.map(level => {
+            const info = this.optimizationLevels[level];
+            const isActive = this.currentLevel === level;
+            return `
+                <button 
+                    class="level-btn ${isActive ? `active-${info.color}` : ''}"
+                    onclick="aiOptimizer.selectOptimizationLevel('${level}')"
+                    title="${info.description}"
+                >
+                    <i class="fas ${info.icon}"></i>
+                    <span class="level-name">${info.name}</span>
+                    <span class="level-desc">${info.description}</span>
+                </button>
+            `;
+        }).join('');
+    }
+
+    // 量化成就提取器（自动识别数字、百分比等）
+    extractQuantifiableAchievements(text) {
+        if (!text) return [];
+
+        const achievements = [];
+
+        // 匹配百分比提升/降低
+        const percentPatterns = [
+            /(?:提升|提高|增长|增加|优化|改进|降低|减少|节省|缩减)\s*(?:了|约|近)?\s*(\d+(?:\.\d+)?)\s*%/g,
+            /(\d+(?:\.\d+)?)\s*%(?:的?(?:提升|提高|增长|改善|效率))/g,
+            /(\d+(?:\.\d+)?)\s*倍/g  // 倍数提升
+        ];
+
+        percentPatterns.forEach(pattern => {
+            let match;
+            while ((match = pattern.exec(text)) !== null) {
+                if (match[1]) {
+                    achievements.push({
+                        type: 'percentage',
+                        value: match[1] + '%',
+                        context: text.substring(Math.max(0, match.index - 20), match.index + match[0].length + 20)
+                    });
+                }
+            }
+        });
+
+        // 匹配具体数字（金额、人数、时间等）
+        const numberPatterns = [
+            /(?:节省|节约|降低成本|创收|带来收入|管理预算|处理)\s*(?:了|约|近)?\s*¥?\s*(\d+(?:,\d{3})*(?:\.\d+)?)\s*(?:万?元|元|万)/g,
+            /(?:带领|领导|管理|负责|协调|组织)\s*(?:了|约|近)?\s*(\d+)\s*(?:人|名团队成员|个成员)/g,
+            /(?:缩短|减少|提前|加速)\s*(?:了|约|近)?\s*(\d+(?:\.\d+)?)\s*(?:%|天|周|月|小时)/g,
+            /(?:完成|开发|设计|交付|发布|上线)\s*(?:了|约|近)?\s*(\d+)\s*(?:个项目|个产品|个模块|个功能|个页面)/g
+        ];
+
+        numberPatterns.forEach(pattern => {
+            let match;
+            while ((match = pattern.exec(text)) !== null) {
+                if (match[1]) {
+                    achievements.push({
+                        type: 'number',
+                        value: match[1],
+                        context: text.substring(Math.max(0, match.index - 15), match.index + match[0].length + 15)
+                    });
+                }
+            }
+        });
+
+        // 去重
+        const uniqueAchievements = [];
+        const seenContexts = new Set();
+        achievements.forEach(ach => {
+            const key = ach.context;
+            if (!seenContexts.has(key)) {
+                seenContexts.add(key);
+                uniqueAchievements.push(ach);
+            }
+        });
+
+        return uniqueAchievements.slice(0, 10); // 最多返回10条
+    }
+
+    // ATS关键词对齐系统（从JD中提取关键技能词）
+    alignATSKeywords(jobDescription, resumeContent) {
+        if (!jobDescription) return { matched: [], missing: [], score: 0 };
+
+        // 技术技能关键词库
+        const techSkills = [
+            'JavaScript', 'TypeScript', 'Python', 'Java', 'Go', 'Rust', 'C++', 'PHP',
+            'React', 'Vue', 'Angular', 'Node.js', 'Express', 'Spring Boot', 'Django',
+            'MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'Elasticsearch',
+            'Docker', 'Kubernetes', 'AWS', 'Azure', 'GCP',
+            'Git', 'Linux', 'Nginx', 'Jenkins', 'CI/CD'
+        ];
+
+        // 通用能力关键词库
+        const softSkills = [
+            '团队协作', '沟通能力', '项目管理', '问题解决', '领导力',
+            '学习能力', '创新思维', '时间管理', '抗压能力', '跨部门协作',
+            '数据分析', '产品思维', '用户体验', '敏捷开发', 'Scrum'
+        ];
+
+        // 行业特定关键词
+        const industryKeywords = [
+            '全栈开发', '前端开发', '后端开发', '移动开发', 'DevOps',
+            '机器学习', '深度学习', '人工智能', '大数据', '云计算',
+            '微服务架构', '分布式系统', '高并发', '性能优化', '安全'
+        ];
+
+        const allKeywords = [...techSkills, ...softSkills, ...industryKeywords];
+
+        // 从JD中匹配到的关键词
+        const matchedKeywords = allKeywords.filter(keyword =>
+            jobDescription.toLowerCase().includes(keyword.toLowerCase())
+        );
+
+        // 简历中已有的关键词
+        const resumeKeywords = allKeywords.filter(keyword =>
+            resumeContent.toLowerCase().includes(keyword.toLowerCase())
+        );
+
+        // 缺失的关键词（在JD中有但简历中没有）
+        const missingKeywords = matchedKeywords.filter(kw => !resumeKeywords.includes(kw));
+
+        // 计算匹配分数
+        const matchScore = matchedKeywords.length > 0 ?
+            Math.round((resumeKeywords.length / matchedKeywords.length) * 100) : 0;
+
+        return {
+            matched: resumeKeywords,
+            missing: missingKeywords,
+            jdKeywords: matchedKeywords,
+            score: Math.min(matchScore, 100),
+            suggestion: missingKeywords.length > 0 ?
+                `建议添加以下关键词以提升ATS通过率：${missingKeywords.slice(0, 5).join('、')}` :
+                '简历关键词与职位描述高度匹配！'
+        };
     }
 
     // 更新简历视角显示

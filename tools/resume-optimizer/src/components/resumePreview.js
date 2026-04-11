@@ -4,6 +4,7 @@
  */
 
 import { escapeHtml } from '../lib/utils.js';
+import { store } from '../lib/store.js';
 
 class ResumePreview {
     constructor() {

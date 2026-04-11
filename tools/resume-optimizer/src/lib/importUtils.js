@@ -894,8 +894,7 @@ class ImportUtils {
                 }
             }
         }
-        }
-        
+
         // 如果还没有电话，全文本搜索电话
         if (!result.profile.phone) {
             const phoneMatch = fullText.match(/1[3-9]\d{9}/);
@@ -946,143 +945,260 @@ class ImportUtils {
      * 智能提取工作经历
      */
     smartExtractExperience(fullText, result) {
-        
-        // 工作经历关键词模式 - 增强版
+
+        // 工作经历关键词模式 - 超强版（支持多种日期格式）
         const experiencePatterns = [
-            /(\d{4}\.\d{2})\s*[至\-~]\s*(\d{4}\.\d{2}|至今)?\s*([^\n]*)/g,  // 2023.02-2025.01 公司
-            /(\d{4}年\d{1,2}月)\s*[至\-~]\s*(\d{4}年\d{1,2}月|至今)?\s*([^\n]*)/g,  // 2023年2月-2025年1月 公司
-            /([^\n]*?(?:银行|公司|集团|科技|网络|软件|数据|信息|数码))\s*([^\n]*?(?:工程师|测试|组长|经理|总监|主管|专员))/g,  // 公司+职位
-            /(高级测试工程师|测试组长|测试经理|资深测试工程师|测试工程师)\s*([^\n]*)/g  // 职位优先
+            // 格式1: 2023.02-2025.01 或 2023/02-2025/01
+            /(\d{4}[.\-/]\d{1,2})\s*[至\-~–到]\s*(\d{4}[.\-/]\d{1,2}|至今|现在)/gi,
+            // 格式2: 2023年02月-2025年01月
+            /(\d{4}年\d{1,2}月)\s*[至\-~–到]\s*(\d{4}年\d{1,2}月|至今|现在)/gi,
+            // 格式3: 02/2023 - 01/2025 (英文格式)
+            /(\d{1,2}\/\d{4})\s*[\-–]\s*(\d{1,2}\/\d{4}|Present|Now)/gi,
+            // 格式4: Feb 2023 - Jan 2025 (英文月份)
+            /(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s\.]+\d{4}\s*[\-–]\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s\.]+\d{4}/gi
         ];
-        
-        // 常见公司名称 - 扩展
-        const commonCompanies = [
-            '腾讯', '阿里', '百度', '字节', '华为', '美团', '京东',
-            '交通银行', '广发银行', '招商银行', '建设银行', '工商银行', '农业银行', '中国银行',
-            '神州数码', '联想', '小米', 'OPPO', 'VIVO', '中兴', '华为',
-            '阿里巴巴', '腾讯科技', '百度在线', '字节跳动', '美团点评',
-            '零售信贷核心重构', '信用卡新核心', '企业级架构'
+
+        // 常见公司名称后缀 - 扩展（用于识别公司名）
+        const companySuffixes = [
+            '银行', '公司', '集团', '科技', '网络', '软件', '数据', '信息', '数码',
+            '技术', '有限', '股份', '控股', '投资', '金融', '保险', '证券',
+            '互联网', '电子商务', '通信', '电子', '半导体', '医药', '教育'
         ];
-        
-        // 常见职位 - 扩展
-        const positions = [
-            '高级测试工程师', '测试组长', '测试经理', '测试总监', '测试主管',
-            '资深测试工程师', '测试工程师', '功能测试工程师', '自动化测试工程师',
-            '性能测试工程师', '安全测试工程师', '软件测试工程师',
-            '工程师', '测试', '开发', '产品', '设计', '经理', '组长', '总监', '主管'
+
+        // 常见职位关键词 - 扩展
+        const positionKeywords = [
+            '工程师', '开发', '测试', '产品', '设计', '经理', '总监', '主管',
+            '专员', '分析师', '架构师', '程序员', '设计师', '运营', '市场',
+            '销售', '人事', '财务', '会计', '顾问', '专家', '组长', '负责人'
         ];
-        
+
         // 避免重复添加
         const existingExp = new Set(result.experience.map(e => `${e.company}-${e.position}-${e.period}`));
-        
+
+        // 使用所有模式匹配
         experiencePatterns.forEach(pattern => {
             let match;
+            // 重置正则表达式的 lastIndex
+            pattern.lastIndex = 0;
+
             while ((match = pattern.exec(fullText)) !== null) {
-                let company = '知名公司';
-                let position = '工程师';
+                const matchedText = match[0].trim();
                 let period = '';
-                let description = match[0].trim();
-                
-                // 处理不同模式
-                if (match.length >= 4) {
-                    // 模式1-2: 时间模式
-                    period = match[1] && match[2] ? `${match[1]}-${match[2]}` : match[1] || '';
-                    description = match[3]?.trim() || description;
+                let company = '';
+                let position = '';
+                let description = matchedText;
+
+                // 提取时间段
+                if (match[1] && match[2]) {
+                    period = `${match[1]}-${match[2]}`;
+                    description = fullText.substring(match.index + match[0].length, match.index + match[0].length + 200).split('\n')[0];
                 }
-                
-                // 提取公司名称
-                for (const comp of commonCompanies) {
-                    if (description.includes(comp)) {
-                        company = comp;
+
+                // 从描述中提取公司和职位
+                // 尝试匹配 "公司名 + 职位" 的模式
+                const companyPositionPatterns = [
+                    // 模式1: XX公司 + XX职位
+                    /([\u4e00-\u9fa5]+(?:有限)?(?:股份)?(?:公司|集团|科技|银行))\s*[-·]?\s*([\u4e00-\u9fa5]+)/,
+                    // 模式2: 在XX公司担任XX职位
+                    /在\s*([\u4e00-\u9fa5]+)\s*(?:担任|任职|为)?\s*([\u4e00-\u9fa5]+)/,
+                    // 模式3: XX职位 @ XX公司
+                    /([\u4e00-\u9fa5]+)\s*[@@]\s*([\u4e00-\u9fa5]+)/
+                ];
+
+                for (const cpPattern of companyPositionPatterns) {
+                    const cpMatch = description.match(cpPattern);
+                    if (cpMatch) {
+                        if (!company && cpMatch[1]) {
+                            // 验证是否像公司名（包含公司相关后缀）
+                            const potentialCompany = cpMatch[1];
+                            if (companySuffixes.some(suffix => potentialCompany.includes(suffix)) ||
+                                potentialCompany.length >= 4) {
+                                company = potentialCompany;
+                            }
+                        }
+                        if (!position && cpMatch[2]) {
+                            position = cpMatch[2];
+                        }
                         break;
                     }
                 }
-                
-                // 提取职位
-                for (const pos of positions) {
-                    if (description.includes(pos)) {
-                        position = pos;
-                        break;
+
+                // 如果还没找到公司名，尝试从常见公司列表匹配
+                if (!company) {
+                    const commonCompanies = [
+                        '腾讯', '阿里', '百度', '字节', '华为', '美团', '京东',
+                        '交通银行', '广发银行', '招商银行', '建设银行', '工商银行', '农业银行', '中国银行',
+                        '神州数码', '联想', '小米', 'OPPO', 'VIVO', '中兴',
+                        '阿里巴巴', '腾讯科技', '百度在线', '字节跳动', '美团点评',
+                        '谷歌', '微软', '苹果', '亚马逊', 'Facebook', 'Google', 'Microsoft', 'Apple'
+                    ];
+                    for (const comp of commonCompanies) {
+                        if (description.includes(comp)) {
+                            company = comp;
+                            break;
+                        }
                     }
                 }
-                
+
+                // 如果还没找到职位，尝试从常见职位列表匹配
+                if (!position) {
+                    for (const pos of positionKeywords) {
+                        if (description.includes(pos)) {
+                            position = pos;
+                            break;
+                        }
+                    }
+                }
+
+                // 设置默认值
+                if (!company) company = '某公司';
+                if (!position) position = '职员';
+
                 // 构建唯一标识
                 const expKey = `${company}-${position}-${period}`;
-                
-                // 避免重复添加
-                if (!existingExp.has(expKey) && (company !== '知名公司' || position !== '工程师' || period)) {
+
+                // 避免重复添加，且必须有有效的时间段或公司名
+                if (!existingExp.has(expKey) && (period || company !== '某公司')) {
                     result.experience.push({
                         company: company,
                         position: position,
-                        period: period,
-                        description: description
+                        period: period || '时间待确认',
+                        description: description.substring(0, 150) // 截取前150字符作为描述
                     });
                     existingExp.add(expKey);
                 }
             }
         });
-        
+
+        // 如果没有通过日期模式找到任何经历，尝试使用关键词提取
+        if (result.experience.length === 0) {
+            this.extractExperienceByKeywords(fullText, result);
+        }
+    }
+
+    /**
+     * 通过关键词提取工作经历（备用方案）
+     */
+    extractExperienceByKeywords(fullText, result) {
+        const lines = fullText.split('\n');
+        let currentExp = null;
+
+        lines.forEach(line => {
+            const trimmedLine = line.trim();
+
+            // 检测工作经历开始（包含公司特征词）
+            if (/[\u4e00-\u9fa5]*(?:公司|集团|银行|科技|有限)[\u4e00-\u9fa5]*/.test(trimmedLine) &&
+                !trimmedLine.includes('教育') && !trimmedLine.includes('学校')) {
+                if (currentExp && currentExp.company) {
+                    result.experience.push(currentExp);
+                }
+                currentExp = {
+                    company: trimmedLine.replace(/[·\-–—]/g, '').substring(0, 50),
+                    position: '',
+                    period: '',
+                    description: ''
+                };
+            }
+            // 检测职位信息
+            else if (currentExp && !currentExp.position &&
+                     /(?:工程师|开发|测试|产品|设计|经理|总监|主管|专员|分析师)/.test(trimmedLine)) {
+                currentExp.position = trimmedLine.substring(0, 30);
+            }
+            // 收集描述信息
+            else if (currentExp && trimmedLine.length > 10) {
+                currentExp.description += (currentExp.description ? '\n' : '') + trimmedLine;
+            }
+        });
+
+        // 添加最后一个经历
+        if (currentExp && currentExp.company) {
+            result.experience.push(currentExp);
+        }
     }
 
     /**
      * 智能提取教育经历
      */
     smartExtractEducation(fullText, result) {
-        
-        // 教育经历关键词模式 - 增强版
+
+        // 教育经历关键词模式 - 超强版（支持多种格式）
         const educationPatterns = [
-            /([\u4e00-\u9fa5]+(?:大学|学院|学校))\s*([\u4e00-\u9fa5]+(?:专业|系|学院))?\s*(学士|硕士|博士|本科|研究生|专科)?/g,
-            /(\d{4}\.\d{2})\s*[至\-~]\s*(\d{4}\.\d{2}|至今)?\s*([\u4e00-\u9fa5]+(?:大学|学院|学校))/g,
-            /([\u4e00-\u9fa5]+(?:大学|学院|学校))\s*(\d{4}\.\d{2})\s*[至\-~]\s*(\d{4}\.\d{2}|至今)?/g,
-            /(计算机科学与技术|软件工程|信息管理|电子工程|自动化|机械工程|土木工程)\s*([\u4e00-\u9fa5]+(?:大学|学院|学校))?/g
+            // 格式1: XX大学 + XX专业 + 学位（最常见）
+            /([\u4e00-\u9fa5]{2,}(?:大学|学院|学校))\s*[-·]?\s*([\u4e00-\u9fa5]{2,}(?:专业|系)?)?\s*(学士|硕士|博士|本科|研究生|专科)?/gi,
+            // 格式2: 时间段 + 学校名
+            /(\d{4}[.\-/]\d{1,2}|\d{4}年\d{1,2}月)\s*[至\-~–到]\s*(\d{4}[.\-/]\d{1,2}|\d{4}年\d{1,2}月|至今|现在)?\s*([^\n]*(?:大学|学院|学校))/gi,
+            // 格式3: 学校名 + 时间段
+            /([\u4e00-\u9fa5]{2,}(?:大学|学院|学校))\s*(\d{4}[.\-/]\d{1,2}|\d{4}年\d{1,2}月)\s*[至\-~–到]\s*(\d{4}[.\-/]\d{1,2}|\d{4}年\d{1,2}月|至今|现在)?/gi,
+            // 格式4: 专业名 + 学校名
+            /(计算机科学与技术|软件工程|信息管理|电子工程|自动化|机械工程|土木工程|数学|物理|化学|生物|医学|法学|经济学|金融学|会计学|市场营销|工商管理)[\u4e00-\u9fa5]*\s*[:：]?\s*([\u4e00-\u9fa5]{2,}(?:大学|学院|学校))?/gi,
+            // 格式5: 学历描述（本科、硕士等）+ 学校
+            /(?:就读|毕业于|毕业院校)[:：]?\s*([\u4e00-\u9fa5]{2,}(?:大学|学院|学校))/gi
         ];
-        
-        // 常见学校名称 - 扩展
+
+        // 常见学校名称 - 超大列表
         const commonSchools = [
             '清华大学', '北京大学', '复旦大学', '上海交通大学',
             '浙江大学', '南京大学', '中山大学', '武汉大学',
-            '上海交通大学', '同济大学', '华东师范大学', '华东理工大学',
+            '同济大学', '华东师范大学', '华东理工大学',
             '上海大学', '上海财经大学', '上海外国语大学',
             '西安交通大学', '哈尔滨工业大学', '华中科技大学',
             '中国科学技术大学', '中国人民大学', '东南大学',
             '北京航空航天大学', '北京理工大学', '天津大学',
             '华南理工大学', '西北工业大学', '大连理工大学',
             '电子科技大学', '中南大学', '湖南大学',
-            '吉林大学', '山东大学', '四川大学', '重庆大学'
+            '吉林大学', '山东大学', '四川大学', '重庆大学',
+            '北京师范大学', '南开大学', '厦门大学',
+            '山东大学', '青岛大学', '郑州大学',
+            '苏州大学', '南京航空航天大学', '南京理工大学',
+            '北京邮电大学', '西安电子科技大学', '杭州电子科技大学'
         ];
-        
+
         // 常见专业 - 扩展
         const commonMajors = [
             '计算机科学与技术', '软件工程', '信息管理与信息系统',
             '电子信息工程', '自动化', '机械工程', '土木工程',
             '电气工程', '通信工程', '网络工程', '信息安全',
-            '数据科学与大数据技术', '人工智能', '金融学',
-            '会计学', '市场营销', '工商管理', '国际经济与贸易'
+            '数据科学与大数据技术', '人工智能', '机器学习',
+            '金融学', '会计学', '市场营销', '工商管理', '国际经济与贸易',
+            '数学与应用数学', '统计学', '物理学', '化学',
+            '法学', '英语', '日语', '新闻学', '广告学',
+            '临床医学', '护理学', '药学', '生物医学工程',
+            '环境工程', '材料科学与工程', '工业设计'
         ];
-        
+
         // 常见学位
-        const degrees = ['博士', '硕士', '学士', '本科', '研究生', '专科', '大专'];
-        
+        const degrees = ['博士', '硕士', '学士', '本科', '研究生', '专科', '大专', '专升本'];
+
         // 避免重复添加
         const existingEdu = new Set(result.education.map(e => `${e.school}-${e.major}-${e.degree}`));
-        
+
         educationPatterns.forEach(pattern => {
             let match;
+            pattern.lastIndex = 0; // 重置正则索引
+
             while ((match = pattern.exec(fullText)) !== null) {
-                let school = '未知学校';
-                let major = '未知专业';
-                let degree = '学士';
+                let school = '';
+                let major = '';
+                let degree = '本科';
                 let period = '';
                 let description = match[0].trim();
-                
-                // 提取学校
+
+                // 提取学校名称
                 for (const sch of commonSchools) {
                     if (description.includes(sch)) {
                         school = sch;
                         break;
                     }
                 }
-                
+
+                // 如果还没找到学校，尝试从匹配结果中提取
+                if (!school && match[1]) {
+                    const potentialSchool = match[1].trim();
+                    if (potentialSchool.match(/大学|学院|学校/) && potentialSchool.length >= 4) {
+                        school = potentialSchool;
+                    }
+                }
+
                 // 提取专业
                 for (const maj of commonMajors) {
                     if (description.includes(maj)) {
@@ -1090,7 +1206,15 @@ class ImportUtils {
                         break;
                     }
                 }
-                
+
+                // 如果还没找到专业，尝试从匹配结果中提取
+                if (!major && match[2]) {
+                    const potentialMajor = match[2].trim().replace(/专业|系|学院/g, '');
+                    if (potentialMajor.length >= 2) {
+                        major = potentialMajor;
+                    }
+                }
+
                 // 提取学位
                 for (const deg of degrees) {
                     if (description.includes(deg)) {
@@ -1098,50 +1222,125 @@ class ImportUtils {
                         break;
                     }
                 }
-                
-                // 尝试从模式匹配中提取
-                if (match.length >= 3) {
-                    if (match[1]?.match(/大学|学院|学校/)) school = match[1];
-                    if (match[2]?.match(/专业|系|学院/)) major = match[2];
-                    if (match[3]?.match(/学士|硕士|博士|本科/)) degree = match[3];
+
+                // 提取时间段
+                const timePatterns = [
+                    /(\d{4}[.\-/]\d{1,2}|\d{4}年\d{1,2}月)\s*[至\-~–到]\s*(\d{4}[.\-/]\d{1,2}|\d{4}年\d{1,2}月|至今|现在)/,
+                    /(\d{4})\s*[至\-~–到]\s*(\d{4}|至今|现在)/,
+                    /20(1[5-9]|2[0-5])/  // 匹配2015-2025年份
+                ];
+
+                for (const timePattern of timePatterns) {
+                    const timeMatch = description.match(timePattern);
+                    if (timeMatch) {
+                        period = timeMatch[0];
+                        break;
+                    }
                 }
-                
-                // 提取时间 - 增强版
-                if (!period) {
-                    const timePatterns = [
-                        /(\d{4}\.\d{2})\s*[至\-~]\s*(\d{4}\.\d{2}|至今)?/,
-                        /(\d{4}年\d{1,2}月)\s*[至\-~]\s*(\d{4}年\d{1,2}月|至今)?/,
-                        /(\d{4})\s*[至\-~]\s*(\d{4}|至今)?/,
-                        /201[4-9]/,  // 2014-2019
-                        /202[0-5]/   // 2020-2025
-                    ];
-                    
-                    for (const pattern of timePatterns) {
-                        const timeMatch = description.match(pattern);
+
+                // 如果没有找到学位但找到了时间段，推断学位（根据时长）
+                if (!period || period === degree) {
+                    // 尝试从周围文本找时间
+                    const surroundingText = fullText.substring(
+                        Math.max(0, match.index - 50),
+                        Math.min(fullText.length, match.index + match[0].length + 100)
+                    );
+                    for (const timePattern of timePatterns) {
+                        const timeMatch = surroundingText.match(timePattern);
                         if (timeMatch) {
                             period = timeMatch[0];
                             break;
                         }
                     }
                 }
-                
+
+                // 设置默认值
+                if (!school) school = '某高校';
+                if (!major) major = '未明确专业';
+                if (!degree) degree = '本科';
+
                 // 构建唯一标识
-                const eduKey = `${school}-${major}-${degree}-${period}`;
-                
-                // 避免重复添加，即使学校是未知也要添加（如果有其他信息）
-                if (!existingEdu.has(eduKey) && (school !== '未知学校' || major !== '未知专业' || period)) {
+                const eduKey = `${school}-${major}-${degree}`;
+
+                // 避免重复添加，且必须有有效信息
+                if (!existingEdu.has(eduKey) && school !== '某高校' || major !== '未明确专业') {
                     result.education.push({
                         school: school,
                         degree: degree,
                         major: major,
-                        period: period || '时间未知',
-                        description: description
+                        period: period || '时间待确认',
+                        description: description.substring(0, 150)
                     });
                     existingEdu.add(eduKey);
                 }
             }
         });
-        
+
+        // 如果没有通过模式匹配找到任何教育经历，使用备用方案
+        if (result.education.length === 0) {
+            this.extractEducationByKeywords(fullText, result);
+        }
+    }
+
+    /**
+     * 通过关键词提取教育经历（备用方案）
+     */
+    extractEducationByKeywords(fullText, result) {
+        const lines = fullText.split('\n');
+        let currentEdu = null;
+
+        lines.forEach(line => {
+            const trimmedLine = line.trim();
+
+            // 检测教育经历开始（包含学校特征词）
+            if (/[\u4e00-\u9fa5]*(?:大学|学院|学校)[\u4e00-\u9fa5]*/.test(trimmedLine) &&
+                !trimmedLine.includes('公司') && !trimmedLine.includes('工作')) {
+                if (currentEdu && currentEdu.school) {
+                    result.education.push(currentEdu);
+                }
+                currentEdu = {
+                    school: trimmedLine.replace(/[·\-–—]/g, '').substring(0, 50),
+                    degree: '',
+                    major: '',
+                    period: '',
+                    description: ''
+                };
+            }
+            // 检测专业信息
+            else if (currentEdu && !currentEdu.major &&
+                     /(?:专业|系|方向)[:：]?\s*[\u4e00-\u9fa5]+/.test(trimmedLine)) {
+                const majorMatch = trimmedLine.match(/(?:专业|系|方向)[:：]?\s*([\u4e00-\u9fa5]+)/);
+                if (majorMatch) {
+                    currentEdu.major = majorMatch[1];
+                }
+            }
+            // 检测学历信息
+            else if (currentEdu && !currentEdu.degree &&
+                     /(本科|硕士|博士|专科|大专|研究生|学士)/.test(trimmedLine)) {
+                const degreeMatch = trimmedLine.match(/(本科|硕士|博士|专科|大专|研究生|学士)/);
+                if (degreeMatch) {
+                    currentEdu.degree = degreeMatch[1];
+                }
+            }
+            // 收集时间信息
+            else if (currentEdu && /\d{4}/.test(trimmedLine) && !currentEdu.period) {
+                const yearMatch = trimmedLine.match(/\d{4}/);
+                if (yearMatch) {
+                    currentEdu.period = trimmedLine.substring(0, 30);
+                }
+            }
+            // 收集描述信息
+            else if (currentEdu && trimmedLine.length > 10) {
+                currentEdu.description += (currentEdu.description ? '\n' : '') + trimmedLine;
+            }
+        });
+
+        // 添加最后一个教育经历
+        if (currentEdu && currentEdu.school) {
+            if (!currentEdu.degree) currentEdu.degree = '本科';
+            if (!currentEdu.major) currentEdu.major = '未明确';
+            result.education.push(currentEdu);
+        }
     }
 
     /**
@@ -1281,15 +1480,6 @@ class ImportUtils {
                 }
             }
         }
-        
-            name: result.profile.name,
-            phone: result.profile.phone,
-            email: result.profile.email,
-            location: result.profile.location,
-            gender: result.profile.gender,
-            experience_years: result.profile.experience_years,
-            title: result.profile.title
-        });
     }
 
     /**
@@ -1356,42 +1546,72 @@ class ImportUtils {
      */
     extractPersonalInfo(line, result) {
         const lowerLine = line.toLowerCase();
-        
-        // 提取姓名
-        if (lowerLine.includes('姓名') || lowerLine.includes('name')) {
-            const nameMatch = line.match(/[姓名name\s]*[:：]?\s*([\u4e00-\u9fa5]{2,4})/);
-            if (nameMatch && nameMatch[1]) {
-                result.profile.name = nameMatch[1];
+
+        // 提取姓名 - 增强版（支持多种格式）
+        if (!result.profile.name) {
+            // 格式1: "姓名：xxx" / "name: xxx"
+            const nameMatch1 = line.match(/[姓名name\s]*[:：]?\s*([\u4e00-\u9fa5]{2,4})/);
+            if (nameMatch1 && nameMatch1[1]) {
+                result.profile.name = nameMatch1[1];
+            }
+            // 格式2: 独立的中文姓名（2-4个汉字，前后无其他中文）
+            else if (/^[\u4e00-\u9fa5]{2,4}$/.test(line.trim())) {
+                // 排除常见非姓名词汇
+                const nonNameWords = ['个人', '简历', '信息', '经验', '教育', '技能', '项目', '总结', '评价'];
+                if (!nonNameWords.includes(line.trim())) {
+                    result.profile.name = line.trim();
+                }
+            }
+            // 格式3: "XXX 的简历" 或 "XXX resume"
+            const nameMatch3 = line.match(/^([\u4e00-\u9fa5]{2,4})\s*(的|之)?\s*(简历|resume|CV)/i);
+            if (nameMatch3 && nameMatch3[1]) {
+                result.profile.name = nameMatch3[1];
             }
         }
-        
-        // 提取电话
-        if (lowerLine.includes('电话') || lowerLine.includes('手机') || lowerLine.includes('phone') || lowerLine.includes('tel')) {
+
+        // 提取电话 - 增强版
+        if (!result.profile.phone) {
             const phoneMatch = line.match(/(1[3-9]\d{9})|(\d{3,4}-\d{7,8})/);
             if (phoneMatch && phoneMatch[0]) {
                 result.profile.phone = phoneMatch[0];
             }
         }
-        
-        // 提取邮箱
-        if (lowerLine.includes('邮箱') || lowerLine.includes('email') || lowerLine.includes('@')) {
+
+        // 提取邮箱 - 增强版
+        if (!result.profile.email) {
             const emailMatch = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
             if (emailMatch && emailMatch[0]) {
                 result.profile.email = emailMatch[0];
             }
         }
-        
+
         // 提取性别
-        if (lowerLine.includes('性别') || lowerLine.includes('gender')) {
-            if (line.includes('男')) result.profile.gender = '男';
-            if (line.includes('女')) result.profile.gender = '女';
+        if (!result.profile.gender) {
+            if (line.includes('男') && !line.includes('女')) result.profile.gender = '男';
+            else if (line.includes('女') && !line.includes('男')) result.profile.gender = '女';
         }
-        
+
         // 提取工作经验年限
-        if (lowerLine.includes('工作经验') || lowerLine.includes('工作年限')) {
-            const yearsMatch = line.match(/\d+/);
-            if (yearsMatch && yearsMatch[0]) {
-                result.profile.experience_years = yearsMatch[0];
+        if (!result.profile.experience_years) {
+            const yearsMatch = line.match(/(\d+)\s*年?(?:经验|工作|从业)?/);
+            if (yearsMatch && yearsMatch[1]) {
+                result.profile.experience_years = yearsMatch[1];
+            }
+        }
+
+        // 提取地址/位置
+        if (!result.profile.location) {
+            const locationPatterns = [
+                /[地址住址location\s]*[:：]?\s*([\u4e00-\u9fa5]+(?:市|省|区|县))/,
+                /^(?:现居|居住|位于)[:：]?\s*([\u4e00-\u9fa5]+)/,
+                /(上海|北京|广州|深圳|杭州|成都|武汉|南京|西安|重庆|天津)(?:市)?/
+            ];
+            for (const pattern of locationPatterns) {
+                const match = line.match(pattern);
+                if (match && match[1]) {
+                    result.profile.location = match[1];
+                    break;
+                }
             }
         }
     }

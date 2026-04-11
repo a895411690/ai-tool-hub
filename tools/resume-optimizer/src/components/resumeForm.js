@@ -4,6 +4,7 @@
  */
 
 import { escapeHtml, escapeAttr } from '../lib/utils.js';
+import { store } from '../lib/store.js';
 
 class ResumeForm {
     constructor() {

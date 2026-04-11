@@ -153,3 +153,7 @@ store.subscribe(() => {
 
 // 加载已保存的状态
 store.load();
+
+// 导出 store 实例供其他模块使用
+export { store };
+window.store = store;  // 保持向后兼容

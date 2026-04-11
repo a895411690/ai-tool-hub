@@ -158,7 +158,23 @@
                     </div>
                     <!-- 职位类型选择器 -->
                     <div id="jobTypeSelector" class="p-4 bg-gray-800/50 rounded-lg border border-gray-700"></div>
-                    
+
+                    <!-- 优化级别选择器（借鉴求职方舟3档优化） -->
+                    <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                        <label class="block text-sm font-medium mb-3 flex items-center gap-2">
+                            <i class="fas fa-sliders-h text-purple-400"></i>
+                            优化级别
+                            <span class="text-xs text-gray-500 ml-auto">参考求职方舟AI</span>
+                        </label>
+                        <div id="optimizationLevelSelector" class="grid grid-cols-3 gap-2">
+                            <!-- 将由JS动态渲染 -->
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            轻度：润色语言 | 中度：增强关键词+量化成果 | 深度：全面重构定制
+                        </p>
+                    </div>
+
                     <!-- 多视角切换 -->
                     <div id="viewToggle" class="p-4 bg-gray-800/50 rounded-lg border border-gray-700"></div>
                     
@@ -181,16 +197,16 @@
     <!-- 简历导入容器 -->
     <div id="importResumeContainer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4"></div>
 
-    <!-- Scripts (defer 确保按顺序在 DOM 解析完成后执行) -->
-    <script src="./src/lib/store.js" defer></script>
-    <script src="./src/lib/pdfGenerator.js" defer></script>
-    <script src="./src/lib/aiOptimizer.js" defer></script>
+    <!-- Scripts (ES6 Modules - 确保所有脚本都作为模块加载) -->
+    <script type="module" src="./src/lib/store.js" defer></script>
+    <script type="module" src="./src/lib/pdfGenerator.js" defer></script>
+    <script type="module" src="./src/lib/aiOptimizer.js" defer></script>
     <script type="module" src="./src/lib/shareUtils.js" defer></script>
     <script type="module" src="./src/lib/importUtils.js" defer></script>
     <script type="module" src="./src/components/importResume.js" defer></script>
-    <script src="./src/components/resumeForm.js" defer></script>
-    <script src="./src/components/resumePreview.js" defer></script>
-    
+    <script type="module" src="./src/components/resumeForm.js" defer></script>
+    <script type="module" src="./src/components/resumePreview.js" defer></script>
+
     <script type="module" src="./src/app.js" defer></script>
 </body>
 </html>

@@ -17,9 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
     setupKeyboardShortcuts();
     setupAutoSaveIndicator();
     showWelcomeMessage();
-    
+
     // 初始化简历导入功能
     setupResumeImport();
+
+    // 初始化优化级别选择器（借鉴求职方舟）
+    initOptimizationLevelSelector();
 });
 
 // 键盘快捷键
@@ -114,13 +117,33 @@ function openResumeImport() {
 // 处理简历导入完成事件
 function handleResumeImportComplete(event) {
     const importedData = event.detail;
-    
-    
+
+
     // 更新简历表单数据
     updateResumeFormWithImportedData(importedData);
-    
+
     // 显示成功消息
     showNotification('简历数据已成功导入！', 'success');
+}
+
+// 初始化优化级别选择器（借鉴求职方舟3档优化）
+function initOptimizationLevelSelector() {
+    // 等待AI优化器初始化完成
+    const checkAndInit = () => {
+        if (window.aiOptimizer && aiOptimizer._renderLevelSelector) {
+            // 恢复用户上次选择的级别
+            const savedLevel = localStorage.getItem('optimization_level') || 'medium';
+            aiOptimizer.currentLevel = savedLevel;
+
+            // 渲染优化级别选择器
+            aiOptimizer._renderLevelSelector();
+        } else {
+            // 如果还没初始化，等待100ms后重试
+            setTimeout(checkAndInit, 100);
+        }
+    };
+
+    checkAndInit();
 }
 
 // 使用导入数据更新简历表单
