@@ -2590,6 +2590,51 @@
                 font-size: 10px;
             }
         }
+
+        /* ============================================
+           FOOTER SECTION
+           ============================================ */
+        .site-footer {
+            background: var(--card-bg);
+            border-top: 1px solid var(--card-border);
+            padding: 24px 0;
+            margin-top: 40px;
+        }
+
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-copyright p {
+            color: var(--text-muted);
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .footer-icp a {
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-icp a:hover {
+            color: var(--primary);
+        }
+
+        @media (min-width: 768px) {
+            .footer-content {
+                flex-direction: row;
+                justify-content: space-between;
+                gap: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2852,6 +2897,20 @@
             <span class="nav-label">主题</span>
         </button>
     </nav>
+
+    <!-- Footer Section -->
+    <footer class="site-footer" role="contentinfo">
+        <div class="footer-content">
+            <div class="footer-copyright">
+                <p>&copy; 2025 AI Tool Hub. All rights reserved.</p>
+            </div>
+            <div class="footer-icp">
+                <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
+                    沪ICP备2026013388号
+                </a>
+            </div>
+        </div>
+    </footer>
 
     <!-- Share Modal -->
     <div id="shareModal" class="modal" onclick="closeShareModal(event)" role="dialog" aria-modal="true">
