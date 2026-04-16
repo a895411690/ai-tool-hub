@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>简历导入紧急修复验证</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { border: 1px solid #ccc; padding: 15px; margin: 10px 0; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>简历导入功能紧急修复验证</h1>
+    
+    <div class="test">
+        <h2>测试1: 检查方法绑定</h2>
+        <div id="test1">正在测试...</div>
+    </div>
+    
+    <div class="test">
+        <h2>测试2: 简单简历解析</h2>
+        <div id="test2">正在测试...</div>
+    </div>
+
+    <script type="module">
+        console.log('🚨 开始紧急修复验证...');
+        
+        // 动态导入解析器
+        import('./src/lib/importUtils.js')
+            .then(({ importUtils }) => {
+                console.log('✅ 解析器加载成功');
+                
+                // 测试1: 检查方法绑定
+                const test1 = document.getElementById('test1');
+                try {
+                    // 检查方法是否存在
+                    if (typeof importUtils.parseTextContent === 'function' &&
+                        typeof importUtils.fallbackExtractPersonalInfo === 'function' &&
+                        typeof importUtils.extractPersonalInfo === 'function') {
+                        test1.innerHTML = '<span class="success">✅ 所有方法已正确绑定到实例</span>';
+                        console.log('✅ 方法绑定验证通过');
+                    } else {
+                        test1.innerHTML = '<span class="error">❌ 方法绑定失败</span>';
+                        console.error('❌ 方法绑定失败');
+                    }
+                } catch (error) {
+                    test1.innerHTML = `<span class="error">❌ 方法绑定测试失败: ${error.message}</span>`;
+                    console.error('❌ 方法绑定测试失败:', error);
+                }
+                
+                // 测试2: 简单简历解析
+                const test2 = document.getElementById('test2');
+                try {
+                    const testResume = `姓名：张三\n电话：13800138000\n邮箱：zhangsan@example.com`;
+                    const result = importUtils.parseTextContent(testResume);
+                    
+                    if (result && result.profile) {
+                        test2.innerHTML = `<span class="success">✅ 简历解析成功</span><br>
+                                          姓名: ${result.profile.name || '未识别'}<br>
+                                          电话: ${result.profile.phone || '未识别'}<br>
+                                          邮箱: ${result.profile.email || '未识别'}`;
+                        console.log('✅ 简历解析测试通过:', result);
+                    } else {
+                        test2.innerHTML = '<span class="error">❌ 解析结果格式错误</span>';
+                        console.error('❌ 解析结果格式错误');
+                    }
+                } catch (error) {
+                    test2.innerHTML = `<span class="error">❌ 简历解析失败: ${error.message}</span>`;
+                    console.error('❌ 简历解析失败:', error);
+                }
+                
+                console.log('🎉 紧急修复验证完成');
+            })
+            .catch(error => {
+                console.error('❌ 解析器加载失败:', error);
+                document.getElementById('test1').innerHTML = `<span class="error">❌ 解析器加载失败: ${error.message}</span>`;
+                document.getElementById('test2').innerHTML = `<span class="error">❌ 无法进行测试</span>`;
+            });
+    </script>
+</body>
+</html>

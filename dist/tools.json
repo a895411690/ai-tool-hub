@@ -1,0 +1,620 @@
+{
+  "version": "1.5",
+  "lastUpdated": "2026-04-01",
+  "categories": [
+    {"id": "writing", "name": "AI写作", "icon": "fa-pen-nib"},
+    {"id": "painting", "name": "AI绘画", "icon": "fa-palette"},
+    {"id": "code", "name": "AI代码", "icon": "fa-code"},
+    {"id": "video", "name": "AI视频", "icon": "fa-video"},
+    {"id": "voice", "name": "AI语音", "icon": "fa-microphone"},
+    {"id": "design", "name": "AI设计", "icon": "fa-paint-brush"},
+    {"id": "office", "name": "AI办公", "icon": "fa-briefcase"}
+  ],
+  "tools": [
+    {
+      "id": 1,
+      "name": "秘塔写作猫",
+      "category": "writing",
+      "icon": "fa-cat",
+      "desc": "AI写作校对、文案生成",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "无需登录", "网页版"],
+      "url": "https://xiezuocat.com",
+      "updateTime": "2024-12",
+      "status": "stable",
+      "difficulty": "beginner",
+      "platform": ["web"],
+      "relatedTools": [3, 4, 5]
+    },
+    {
+      "id": 2,
+      "name": "ChatGPT",
+      "category": "writing",
+      "icon": "fa-comment-dots",
+      "desc": "全能AI对话、文案创作",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://chat.openai.com"
+    },
+    {
+      "id": 3,
+      "name": "文心一言",
+      "category": "writing",
+      "icon": "fa-brain",
+      "desc": "百度AI大模型、文案撰写",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://yiyan.baidu.com"
+    },
+    {
+      "id": 4,
+      "name": "讯飞星火",
+      "category": "writing",
+      "icon": "fa-star",
+      "desc": "讯飞AI写作、内容生成",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://xinghuo.xfyun.cn"
+    },
+    {
+      "id": 5,
+      "name": "豆包",
+      "category": "writing",
+      "icon": "fa-cookie",
+      "desc": "字节AI写作、问答、文案",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://www.doubao.com"
+    },
+    {
+      "id": 6,
+      "name": "有道文案",
+      "category": "writing",
+      "icon": "fa-pen",
+      "desc": "AI文案、广告语生成",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "无需登录", "网页版"],
+      "url": "https://zuowen.youdao.com"
+    },
+    {
+      "id": 7,
+      "name": "Claude",
+      "category": "writing",
+      "icon": "fa-robot",
+      "desc": "Anthropic AI助手、长文本处理",
+      "tags": ["free", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://claude.ai"
+    },
+    {
+      "id": 8,
+      "name": "通义千问",
+      "category": "writing",
+      "icon": "fa-cloud",
+      "desc": "阿里AI大模型、智能问答",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://tongyi.aliyun.com"
+    },
+    {
+      "id": 9,
+      "name": "Kimi",
+      "category": "writing",
+      "icon": "fa-moon",
+      "desc": "月之暗面AI、长文本理解",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://kimi.moonshot.cn"
+    },
+    {
+      "id": 10,
+      "name": "智谱清言",
+      "category": "writing",
+      "icon": "fa-comments",
+      "desc": "清华ChatGLM、中文AI助手",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://chatglm.cn"
+    },
+    {
+      "id": 11,
+      "name": "Midjourney",
+      "category": "painting",
+      "icon": "fa-image",
+      "desc": "AI绘画、艺术创作",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://www.midjourney.com"
+    },
+    {
+      "id": 12,
+      "name": "Stable Diffusion",
+      "category": "painting",
+      "icon": "fa-layer-group",
+      "desc": "开源AI绘画、图像生成",
+      "tags": ["free", "local"],
+      "toolTags": ["海外", "无需登录", "客户端"],
+      "url": "https://stablediffusionwebui.com"
+    },
+    {
+      "id": 13,
+      "name": "文心一格",
+      "category": "painting",
+      "icon": "fa-paint-brush",
+      "desc": "百度AI绘画、海报生成",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://yige.baidu.com"
+    },
+    {
+      "id": 14,
+      "name": "讯飞智绘",
+      "category": "painting",
+      "icon": "fa-magic",
+      "desc": "讯飞AI绘画、插画设计",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://zhihui.xfyun.cn"
+    },
+    {
+      "id": 15,
+      "name": "醒图AI",
+      "category": "painting",
+      "icon": "fa-wand-magic-sparkles",
+      "desc": "AI绘画、图片创作",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://www.xingtu.com"
+    },
+    {
+      "id": 16,
+      "name": "6pen Art",
+      "category": "painting",
+      "icon": "fa-fan",
+      "desc": "国风AI绘画、艺术创作",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "无需登录", "网页版"],
+      "url": "https://6pen.art"
+    },
+    {
+      "id": 17,
+      "name": "通义万相",
+      "category": "painting",
+      "icon": "fa-images",
+      "desc": "阿里AI绘画、图片生成",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://tongyi.aliyun.com/wanxiang"
+    },
+    {
+      "id": 18,
+      "name": "奇域AI",
+      "category": "painting",
+      "icon": "fa-swatchbook",
+      "desc": "中式美学AI绘画",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://www.qiyuai.net"
+    },
+    {
+      "id": 19,
+      "name": "DALL·E 3",
+      "category": "painting",
+      "icon": "fa-palette",
+      "desc": "OpenAI图像生成",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://openai.com/dall-e-3"
+    },
+    {
+      "id": 20,
+      "name": "Leonardo.ai",
+      "category": "painting",
+      "icon": "fa-brush",
+      "desc": "游戏素材AI绘画",
+      "tags": ["free", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://leonardo.ai"
+    },
+    {
+      "id": 21,
+      "name": "GitHub Copilot",
+      "category": "code",
+      "icon": "fa-github",
+      "desc": "AI代码补全、编程辅助",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "客户端"],
+      "url": "https://github.com/copilot"
+    },
+    {
+      "id": 22,
+      "name": "CodeGeeX",
+      "category": "code",
+      "icon": "fa-code",
+      "desc": "开源AI代码生成、注释",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "无需登录", "客户端"],
+      "url": "https://codegeex.cn"
+    },
+    {
+      "id": 23,
+      "name": "Cursor",
+      "category": "code",
+      "icon": "fa-terminal",
+      "desc": "AI编程编辑器、代码生成",
+      "tags": ["free", "online"],
+      "toolTags": ["海外", "需登录", "客户端"],
+      "url": "https://cursor.sh"
+    },
+    {
+      "id": 24,
+      "name": "通义灵码",
+      "category": "code",
+      "icon": "fa-laptop-code",
+      "desc": "阿里AI代码助手、编程",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "客户端"],
+      "url": "https://lingma.aliyun.com"
+    },
+    {
+      "id": 25,
+      "name": "Tabnine",
+      "category": "code",
+      "icon": "fa-keyboard",
+      "desc": "AI代码补全、多语言支持",
+      "tags": ["free", "online"],
+      "toolTags": ["海外", "无需登录", "客户端"],
+      "url": "https://www.tabnine.com"
+    },
+    {
+      "id": 26,
+      "name": "Codeium",
+      "category": "code",
+      "icon": "fa-robot",
+      "desc": "AI代码生成、开发辅助",
+      "tags": ["free", "online"],
+      "toolTags": ["海外", "无需登录", "客户端"],
+      "url": "https://codeium.com"
+    },
+    {
+      "id": 27,
+      "name": "字节MarsCode",
+      "category": "code",
+      "icon": "fa-rocket",
+      "desc": "字节AI编程助手",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://www.marscode.cn"
+    },
+    {
+      "id": 28,
+      "name": "商汤小浣熊",
+      "category": "code",
+      "icon": "fa-paw",
+      "desc": "商汤AI编程助手",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "客户端"],
+      "url": "https://raccoon.sensetime.com"
+    },
+    {
+      "id": 29,
+      "name": "Amazon CodeWhisperer",
+      "category": "code",
+      "icon": "fa-aws",
+      "desc": "AWS AI代码助手",
+      "tags": ["free", "online"],
+      "toolTags": ["海外", "需登录", "客户端"],
+      "url": "https://aws.amazon.com/codewhisperer"
+    },
+    {
+      "id": 30,
+      "name": "JetBrains AI",
+      "category": "code",
+      "icon": "fa-jet-fighter",
+      "desc": "JetBrains IDE AI助手",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "客户端"],
+      "url": "https://www.jetbrains.com/ai"
+    },
+    {
+      "id": 31,
+      "name": "Runway Gen-2",
+      "category": "video",
+      "icon": "fa-film",
+      "desc": "AI视频生成、剪辑",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://runwayml.com"
+    },
+    {
+      "id": 32,
+      "name": "Pika Labs",
+      "category": "video",
+      "icon": "fa-play-circle",
+      "desc": "AI动画视频、动态生成",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://pika.art"
+    },
+    {
+      "id": 33,
+      "name": "剪映AI",
+      "category": "video",
+      "icon": "fa-scissors",
+      "desc": "AI视频剪辑、文案生成",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "客户端"],
+      "url": "https://www.capcut.cn"
+    },
+    {
+      "id": 34,
+      "name": "讯飞听见",
+      "category": "video",
+      "icon": "fa-closed-captioning",
+      "desc": "AI视频字幕、语音转文字",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://ting.iflytek.com"
+    },
+    {
+      "id": 35,
+      "name": "即梦AI",
+      "category": "video",
+      "icon": "fa-video",
+      "desc": "AI视频生成、短视频创作",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://jimengai.com"
+    },
+    {
+      "id": 36,
+      "name": "万彩动画",
+      "category": "video",
+      "icon": "fa-film",
+      "desc": "AI视频制作、动画生成",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "无需登录", "客户端"],
+      "url": "https://www.animiz.cn"
+    },
+    {
+      "id": 37,
+      "name": "HeyGen",
+      "category": "video",
+      "icon": "fa-user-video",
+      "desc": "AI数字人视频生成",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://www.heygen.com"
+    },
+    {
+      "id": 38,
+      "name": "Sora",
+      "category": "video",
+      "icon": "fa-circle-play",
+      "desc": "OpenAI视频生成模型",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://openai.com/sora"
+    },
+    {
+      "id": 39,
+      "name": "可灵AI",
+      "category": "video",
+      "icon": "fa-clapperboard",
+      "desc": "快手AI视频生成",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://klingai.com"
+    },
+    {
+      "id": 40,
+      "name": "PixVerse",
+      "category": "video",
+      "icon": "fa-wand-magic",
+      "desc": "AI视频生成工具",
+      "tags": ["free", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://pixverse.ai"
+    },
+    {
+      "id": 41,
+      "name": "讯飞配音",
+      "category": "voice",
+      "icon": "fa-microphone-alt",
+      "desc": "AI语音合成、真人配音",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "无需登录", "网页版"],
+      "url": "https://peiyin.xunfei.cn"
+    },
+    {
+      "id": 42,
+      "name": "ElevenLabs",
+      "category": "voice",
+      "icon": "fa-volume-up",
+      "desc": "AI真人语音、音色生成",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://elevenlabs.io"
+    },
+    {
+      "id": 43,
+      "name": "腾讯智影",
+      "category": "voice",
+      "icon": "fa-headset",
+      "desc": "AI语音、视频配音",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://zenvideo.qq.com"
+    },
+    {
+      "id": 44,
+      "name": "魔音工坊",
+      "category": "voice",
+      "icon": "fa-music",
+      "desc": "AI配音、有声书制作",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://www.moyin.com"
+    },
+    {
+      "id": 45,
+      "name": "百度语音",
+      "category": "voice",
+      "icon": "fa-assistive-listening-systems",
+      "desc": "AI语音合成、识别",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "无需登录", "网页版"],
+      "url": "https://ai.baidu.com/tech/speech"
+    },
+    {
+      "id": 46,
+      "name": "微软Azure语音",
+      "category": "voice",
+      "icon": "fa-microsoft",
+      "desc": "Azure TTS语音合成",
+      "tags": ["free", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://azure.microsoft.com/zh-cn/services/cognitive-services/text-to-speech"
+    },
+    {
+      "id": 47,
+      "name": "剪映文字成片",
+      "category": "voice",
+      "icon": "fa-file-audio",
+      "desc": "文字转视频配音",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "客户端"],
+      "url": "https://www.capcut.cn"
+    },
+    {
+      "id": 48,
+      "name": "Play.ht",
+      "category": "voice",
+      "icon": "fa-podcast",
+      "desc": "AI配音、播客制作",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://play.ht"
+    },
+    {
+      "id": 49,
+      "name": "Resemble AI",
+      "category": "voice",
+      "icon": "fa-wave-square",
+      "desc": "AI语音克隆",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://www.resemble.ai"
+    },
+    {
+      "id": 50,
+      "name": "Murf AI",
+      "category": "voice",
+      "icon": "fa-microphone-lines",
+      "desc": "AI专业配音",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://murf.ai"
+    },
+    {
+      "id": 51,
+      "name": "稿定设计",
+      "category": "design",
+      "icon": "fa-object-group",
+      "desc": "AI海报、PPT设计",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://www.gaoding.com"
+    },
+    {
+      "id": 52,
+      "name": "Canva可画",
+      "category": "design",
+      "icon": "fa-palette",
+      "desc": "AI设计、图文排版",
+      "tags": ["free", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://www.canva.cn"
+    },
+    {
+      "id": 53,
+      "name": "WPS AI",
+      "category": "office",
+      "icon": "fa-file-word",
+      "desc": "AI办公、文档生成",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "客户端"],
+      "url": "https://ai.wps.cn"
+    },
+    {
+      "id": 54,
+      "name": "飞书AI",
+      "category": "office",
+      "icon": "fa-paper-plane",
+      "desc": "AI办公协作、文案处理",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://www.feishu.cn"
+    },
+    {
+      "id": 55,
+      "name": "创客贴",
+      "category": "design",
+      "icon": "fa-compass-drafting",
+      "desc": "AI设计、营销素材",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://www.chuangkit.com"
+    },
+    {
+      "id": 56,
+      "name": "Figma AI",
+      "category": "design",
+      "icon": "fa-figma",
+      "desc": "Figma AI设计助手",
+      "tags": ["free", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://www.figma.com/ai"
+    },
+    {
+      "id": 57,
+      "name": "即时设计",
+      "category": "design",
+      "icon": "fa-pen-ruler",
+      "desc": "国产UI设计工具AI版",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://js.design/ai"
+    },
+    {
+      "id": 58,
+      "name": "MasterGo AI",
+      "category": "design",
+      "icon": "fa-shapes",
+      "desc": "AI设计协作平台",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "网页版"],
+      "url": "https://mastergo.com/ai"
+    },
+    {
+      "id": 59,
+      "name": "钉钉AI",
+      "category": "office",
+      "icon": "fa-dingding",
+      "desc": "钉钉智能办公助手",
+      "tags": ["free", "online"],
+      "toolTags": ["国产", "需登录", "客户端"],
+      "url": "https://www.dingtalk.com"
+    },
+    {
+      "id": 60,
+      "name": "Notion AI",
+      "category": "office",
+      "icon": "fa-n",
+      "desc": "Notion智能写作助手",
+      "tags": ["vip", "online"],
+      "toolTags": ["海外", "需登录", "网页版"],
+      "url": "https://www.notion.so/product/ai"
+    }
+  ]
+}

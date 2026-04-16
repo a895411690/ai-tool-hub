@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 简历优化 - AI Tool Hub</title>
+    <meta name="description" content="AI驱动的简历优化工具，支持实时预览和一键导出">
+    <!-- 生产环境Tailwind CSS - 使用构建版本避免CDN警告 -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.0/dist/tailwind.min.css" rel="stylesheet">
+    <!-- 备用：本地Tailwind CSS -->
+    <!-- <link href="styles/tailwind.css" rel="stylesheet"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0"
+          crossorigin="anonymous">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
+            integrity="sha384-Yv5O+t3uE3hunW8uyrbpPW3iw6/5/Y7HitWJBLgqfMoA36NogMmy+8wWZMpn3HWc"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="./src/styles/main.css">
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-md border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <a href="../../index.html" class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                <i class="fas fa-arrow-left"></i>
+                <span>返回 AI Tool Hub</span>
+            </a>
+            <div class="flex items-center gap-3">
+                <i class="fas fa-file-alt text-indigo-400"></i>
+                <span class="font-semibold">AI 简历优化</span>
+                <span class="text-xs bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded">Beta</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button id="importResumeBtn" class="flex items-center gap-2 px-3 py-1.5 bg-green-600/20 text-green-400 hover:bg-green-600/30 rounded-lg text-sm transition-colors border border-green-500/30">
+                    <i class="fas fa-file-import"></i>
+                    导入简历
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-16 h-screen">
+        <div class="grid grid-cols-1 lg:grid-cols-2 h-full">
+            <!-- Left: Editor -->
+            <div class="h-full overflow-y-auto border-r border-gray-800">
+                <div class="p-6">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <i class="fas fa-edit text-indigo-400"></i>
+                        简历编辑
+                    </h2>
+                    <div id="resumeForm" class="space-y-6">
+                        <!-- Form content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Preview -->
+            <div class="h-full overflow-y-auto bg-gray-800/50">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <i class="fas fa-eye text-indigo-400"></i>
+                            实时预览
+                        </h2>
+                        <div class="flex gap-2">
+                            <button onclick="aiOptimizer.openPanel()" class="px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
+                                <i class="fas fa-wand-magic-sparkles mr-2"></i>
+                                AI 优化
+                            </button>
+                            <button onclick="pdfGenerator.download()" id="downloadPdfBtn" class="px-4 py-2 bg-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+                                <i class="fas fa-download mr-2"></i>
+                                导出 PDF
+                            </button>
+                        </div>
+                    </div>
+                    <div id="resumePreview" class="bg-white rounded-lg shadow-xl overflow-hidden">
+                        <!-- Preview content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- AI Optimizer Panel -->
+    <div id="aiPanel" class="fixed inset-0 z-50 hidden">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="aiOptimizer.closePanel()"></div>
+        <div class="absolute right-0 top-0 h-full w-full max-w-md bg-gray-900 border-l border-gray-800 shadow-2xl transform translate-x-full transition-transform duration-300" id="aiPanelContent">
+            <div class="p-6 h-full flex flex-col">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-bold flex items-center gap-2">
+                        <i class="fas fa-robot text-purple-400"></i>
+                        AI 简历优化
+                    </h3>
+                    <button onclick="aiOptimizer.closePanel()" class="text-gray-400 hover:text-white">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto space-y-4">
+                    <!-- API 设置 -->
+                    <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="text-sm font-medium flex items-center gap-2">
+                                <i class="fas fa-key text-yellow-400"></i>
+                                百度千帆 API 设置
+                            </label>
+                            <button onclick="aiOptimizer.toggleApiSettings()" id="apiSettingsToggle" class="text-xs text-gray-400 hover:text-white transition-colors">
+                                <i class="fas fa-chevron-down"></i> 展开
+                            </button>
+                        </div>
+                        <div id="apiSettingsPanel" class="hidden space-y-3">
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">API Key</label>
+                                <input type="password" id="qianfanApiKey" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-indigo-500 focus:outline-none" placeholder="输入百度千帆 API Key">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">模型</label>
+                                <select id="qianfanModel" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-indigo-500 focus:outline-none">
+                                    <option value="ernie-4.0-8k">ERNIE 4.0 8K（推荐）</option>
+                                    <option value="ernie-4.0-turbo-8k">ERNIE 4.0 Turbo 8K</option>
+                                    <option value="ernie-3.5-8k">ERNIE 3.5 8K（经济）</option>
+                                    <option value="ernie-speed-128k">ERNIE Speed 128K</option>
+                                    <option value="ernie-lite-8k">ERNIE Lite 8K（免费）</option>
+                                    <option value="deepseek-v3">DeepSeek V3</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="aiOptimizer.saveAndTestApi()" class="flex-1 py-2 bg-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+                                    <i class="fas fa-save mr-1"></i> 保存并测试
+                                </button>
+                                <button onclick="aiOptimizer.clearApiSettings()" class="px-3 py-2 bg-gray-700 rounded-lg text-sm hover:bg-gray-600 transition-colors">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div id="apiStatus" class="hidden text-xs"></div>
+                            <p class="text-xs text-gray-500">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                API Key 仅存储在本地浏览器中，不会上传到任何服务器。
+                                <a href="https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:underline">获取 API Key →</a>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                        <label class="block text-sm font-medium mb-2">职位描述</label>
+                        <textarea id="jobDescription" rows="6" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm focus:border-indigo-500 focus:outline-none resize-none" placeholder="粘贴目标职位的职位描述，AI将据此优化您的简历..."></textarea>
+                    </div>
+                    <button onclick="aiOptimizer.optimize()" id="optimizeBtn" class="w-full py-3 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg font-medium hover:opacity-90 transition-opacity">
+                        <i class="fas fa-wand-magic-sparkles mr-2"></i>
+                        开始优化
+                    </button>
+                    <div id="optimizationResult" class="hidden space-y-4">
+                        <!-- AI suggestions will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 简历导入容器 -->
+    <div id="importResumeContainer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4"></div>
+
+    <!-- Scripts (defer 确保按顺序在 DOM 解析完成后执行) -->
+    <script src="./src/lib/store.js" defer></script>
+    <script src="./src/lib/pdfGenerator.js" defer></script>
+    <script src="./src/lib/aiOptimizer.js" defer></script>
+    <script type="module" src="./src/lib/shareUtils.js" defer></script>
+    <script type="module" src="./src/lib/importUtils.js" defer></script>
+    <script type="module" src="./src/components/importResume.js" defer></script>
+    <script src="./src/components/resumeForm.js" defer></script>
+    <script src="./src/components/resumePreview.js" defer></script>
+    <!-- 综合修复脚本 -->
+    <script src="comprehensive_fix.js" defer></script>
+    
+    <script type="module" src="./src/app.js" defer></script>
+</body>
+</html>
