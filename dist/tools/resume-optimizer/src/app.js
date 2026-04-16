@@ -3,9 +3,10 @@
  * Entry point for the resume optimizer tool
  */
 
+import { showNotification } from './lib/utils.js';
+
 // 初始化应用
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🚀 AI Resume Optimizer initialized');
 
     // 组件由各自的脚本自动初始化
     // - resumeForm
@@ -16,9 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
     setupKeyboardShortcuts();
     setupAutoSaveIndicator();
     showWelcomeMessage();
-    
+
     // 初始化简历导入功能
     setupResumeImport();
+
+    // 初始化优化级别选择器（借鉴求职方舟）
+    initOptimizationLevelSelector();
 });
 
 // 键盘快捷键
@@ -89,7 +93,6 @@ function setupResumeImport() {
             openResumeImport();
         });
 
-        console.log('✅ 简历导入功能初始化完成');
     }, 500);
 }
 
@@ -114,14 +117,33 @@ function openResumeImport() {
 // 处理简历导入完成事件
 function handleResumeImportComplete(event) {
     const importedData = event.detail;
-    
-    console.log('📥 简历数据已导入:', importedData);
-    
+
+
     // 更新简历表单数据
     updateResumeFormWithImportedData(importedData);
-    
+
     // 显示成功消息
     showNotification('简历数据已成功导入！', 'success');
+}
+
+// 初始化优化级别选择器（借鉴求职方舟3档优化）
+function initOptimizationLevelSelector() {
+    // 等待AI优化器初始化完成
+    const checkAndInit = () => {
+        if (window.aiOptimizer && aiOptimizer._renderLevelSelector) {
+            // 恢复用户上次选择的级别
+            const savedLevel = localStorage.getItem('optimization_level') || 'medium';
+            aiOptimizer.currentLevel = savedLevel;
+
+            // 渲染优化级别选择器
+            aiOptimizer._renderLevelSelector();
+        } else {
+            // 如果还没初始化，等待100ms后重试
+            setTimeout(checkAndInit, 100);
+        }
+    };
+
+    checkAndInit();
 }
 
 // 使用导入数据更新简历表单
@@ -198,7 +220,6 @@ function updateResumeFormWithImportedData(data) {
             }
         }, 100);
 
-        console.log('✅ 简历表单已更新');
     } catch (error) {
         console.error('更新简历表单失败:', error);
         showNotification('导入数据更新表单时出错', 'error');
@@ -267,40 +288,4 @@ function setupErrorHandling() {
         event.preventDefault();
     });
     
-    console.log('✅ 错误处理已设置');
 }
-
-// 显示通知（使用 DOM API + textContent 防止 XSS）
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 fade-in ${
-        type === 'success' ? 'bg-green-500' :
-        type === 'error' ? 'bg-red-500' : 'bg-indigo-500'
-    } text-white`;
-
-    const wrapper = document.createElement('div');
-    wrapper.className = 'flex items-center gap-2';
-
-    const icon = document.createElement('i');
-    icon.className = `fas ${
-        type === 'success' ? 'fa-check-circle' :
-        type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'
-    }`;
-    wrapper.appendChild(icon);
-
-    const textSpan = document.createElement('span');
-    textSpan.textContent = message; // 安全：使用 textContent
-    wrapper.appendChild(textSpan);
-
-    notification.appendChild(wrapper);
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateY(10px)';
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-// 导出为全局访问
-window.showNotification = showNotification;

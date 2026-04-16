@@ -19,14 +19,14 @@ function copyToolsPlugin() {
 }
 
 export default defineConfig({
-  root: 'src',
+  root: '.',
   base: './',
   build: {
-    outDir: '../dist',
+    outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'src/index.html')
+        main: resolve(__dirname, 'index.html')
       }
     },
     minify: 'terser',

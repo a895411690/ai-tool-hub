@@ -3,20 +3,8 @@
  * Renders the resume preview in real-time
  */
 
-/**
- * HTML 实体转义，防止 XSS 攻击
- * @param {*} text - 待转义的文本
- * @returns {string} 转义后的安全字符串
- */
-function escapeHtml(text) {
-    if (typeof text !== 'string') return '';
-    return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
+import { escapeHtml } from '../lib/utils.js';
+import { store } from '../lib/store.js';
 
 class ResumePreview {
     constructor() {

@@ -3,30 +3,8 @@
  * Handles all form inputs for resume editing
  */
 
-/**
- * HTML 实体转义，防止 XSS 攻击
- * @param {*} text - 待转义的文本
- * @returns {string} 转义后的安全字符串
- */
-function escapeHtml(text) {
-    if (typeof text !== 'string') return '';
-    return text
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-
-/**
- * HTML 属性值转义
- * @param {*} text - 待转义的属性值
- * @returns {string} 转义后的安全字符串
- */
-function escapeAttr(text) {
-    if (typeof text !== 'string') return '';
-    return text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
+import { escapeHtml, escapeAttr } from '../lib/utils.js';
+import { store } from '../lib/store.js';
 
 class ResumeForm {
     constructor() {

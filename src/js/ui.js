@@ -1,14 +1,28 @@
 // UI 工具函数
 export function showToast(message) {
     const toast = document.getElementById('toast');
+    if (!toast) {
+        // 如果没有找到toast元素，创建一个临时的
+        const tempToast = document.createElement('div');
+        tempToast.id = 'toast';
+        tempToast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 px-6 py-3 bg-gray-800 text-white rounded-lg shadow-lg z-50 show';
+        tempToast.textContent = message;
+        document.body.appendChild(tempToast);
+        setTimeout(() => {
+            tempToast.remove();
+        }, 3000);
+        return;
+    }
     toast.textContent = message;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
 export function closeModal(event, modalId) {
-    if (!event || event.target === document.getElementById(modalId)) {
-        document.getElementById(modalId).classList.remove('active');
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    if (!event || event.target === modal) {
+        modal.classList.remove('active');
     }
 }
 

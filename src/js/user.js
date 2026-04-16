@@ -84,6 +84,8 @@ export function updateUserUI() {
     const menuEmail = document.getElementById('menuUserEmail');
     const authSection = document.getElementById('authSection');
 
+    if (!avatar || !icon || !name || !menuName || !menuEmail || !authSection) return;
+
     if (state.user) {
         avatar.src = state.user.avatar_url;
         avatar.classList.remove('hidden');
@@ -103,7 +105,8 @@ export function updateUserUI() {
 }
 
 export function toggleUserMenu() {
-    document.getElementById('userMenu').classList.toggle('show');
+    const userMenu = document.getElementById('userMenu');
+    if (userMenu) userMenu.classList.toggle('show');
 }
 
 // 数据同步

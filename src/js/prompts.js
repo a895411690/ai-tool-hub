@@ -15,17 +15,20 @@ export async function loadPrompts() {
 }
 
 export function showPromptsPage() {
-    document.getElementById('promptsPage').classList.add('show');
+    const page = document.getElementById('promptsPage');
+    if (page) page.classList.add('show');
     renderPromptCategories();
     renderPrompts(state.allPrompts);
 }
 
 export function closePromptsPage() {
-    document.getElementById('promptsPage').classList.remove('show');
+    const page = document.getElementById('promptsPage');
+    if (page) page.classList.remove('show');
 }
 
 export function renderPromptCategories() {
     const container = document.getElementById('promptCategoryFilter');
+    if (!container) return;
     const html = `
         <button class="prompt-cat-btn active px-4 py-2 rounded-full glass text-sm transition-all" data-category="all" onclick="filterPromptCategory('all')">全部</button>
         ${state.promptCategories.map(cat => `
@@ -40,15 +43,18 @@ export function renderPromptCategories() {
 export function renderPrompts(prompts) {
     const grid = document.getElementById('promptsGrid');
     const emptyEl = document.getElementById('promptEmptyState');
+    if (!grid && !emptyEl) return;
     
-    if (prompts.length === 0) {
-        grid.classList.add('hidden');
-        emptyEl.classList.remove('hidden');
+    if (!prompts || prompts.length === 0) {
+        if (grid) grid.classList.add('hidden');
+        if (emptyEl) emptyEl.classList.remove('hidden');
         return;
     }
     
-    grid.classList.remove('hidden');
-    emptyEl.classList.add('hidden');
+    if (grid) {
+        grid.classList.remove('hidden');
+        if (emptyEl) emptyEl.classList.add('hidden');
+    }
     
     grid.innerHTML = prompts.map(prompt => {
         const cat = state.promptCategories.find(c => c.id === prompt.category);
@@ -114,6 +120,7 @@ export function showPromptDetail(promptId) {
     
     const page = document.getElementById('detailPage');
     const content = document.getElementById('detailContent');
+    if (!page || !content) return;
     const cat = state.promptCategories.find(c => c.id === prompt.category);
     
     content.innerHTML = `

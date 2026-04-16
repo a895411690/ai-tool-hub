@@ -8,10 +8,16 @@ export async function loadTools() {
     const loadingEl = document.getElementById('loadingState');
     const errorEl = document.getElementById('errorState');
     const gridEl = document.getElementById('toolsGrid');
+    const mainContent = document.getElementById('mainContent');
     
-    loadingEl.classList.remove('hidden');
-    errorEl.classList.add('hidden');
-    gridEl.classList.add('hidden');
+    if (loadingEl) loadingEl.classList.remove('hidden');
+    if (errorEl) errorEl.classList.add('hidden');
+    if (gridEl) gridEl.classList.add('hidden');
+    
+    // 如果没有找到预期的DOM元素，创建临时加载状态
+    if (!loadingEl && mainContent) {
+        mainContent.innerHTML = '<div class="flex justify-center items-center min-h-[400px]"><i class="fas fa-spinner fa-spin text-4xl text-primary"></i></div>';
+    }
     
     try {
         // 尝试不同的路径
@@ -30,24 +36,34 @@ export async function loadTools() {
         renderCategories();
         renderTools(state.allTools);
         updateNewToolsCount(data.tools);
-        loadingEl.classList.add('hidden');
-        gridEl.classList.remove('hidden');
+        if (loadingEl) loadingEl.classList.add('hidden');
+        if (gridEl) gridEl.classList.remove('hidden');
+        if (mainContent) {
+            mainContent.innerHTML = '';
+        }
     } catch (error) {
         console.error('Failed to load tools:', error);
-        loadingEl.classList.add('hidden');
-        errorEl.classList.remove('hidden');
-        errorEl.textContent = `加载工具失败: ${error.message}`;
+        if (loadingEl) loadingEl.classList.add('hidden');
+        if (errorEl) {
+            errorEl.classList.remove('hidden');
+            errorEl.textContent = `加载工具失败: ${error.message}`;
+        } else if (mainContent) {
+            mainContent.innerHTML = `<div class="flex flex-col justify-center items-center min-h-[400px] text-center"><i class="fas fa-exclamation-circle text-4xl text-red-500 mb-4"></i><p class="text-gray-400">加载工具失败: ${error.message}</p></div>`;
+        }
     }
 }
 
 export function updateNewToolsCount(tools) {
+    const el = document.getElementById('newToolsCount');
+    if (!el) return;
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const newTools = tools.filter(t => new Date(t.updateTime) > sevenDaysAgo);
-    document.getElementById('newToolsCount').textContent = newTools.length;
+    const newTools = tools.filter(t => t.updateTime && new Date(t.updateTime) > sevenDaysAgo);
+    el.textContent = newTools.length;
 }
 
 export function renderCategories() {
     const container = document.getElementById('categoryFilter');
+    if (!container) return;
     const html = `
         <button class="category-btn active px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="all" onclick="filterCategory('all')">全部</button>
         ${state.categories.map(cat => `
@@ -60,15 +76,23 @@ export function renderCategories() {
 export function renderTools(tools) {
     const grid = document.getElementById('toolsGrid');
     const emptyEl = document.getElementById('emptyState');
+    const mainContent = document.getElementById('mainContent');
+    
+    if (!grid && !mainContent) return;
     
     if (tools.length === 0) {
-        grid.classList.add('hidden');
-        emptyEl.classList.remove('hidden');
+        if (grid) grid.classList.add('hidden');
+        if (emptyEl) emptyEl.classList.remove('hidden');
+        if (mainContent && !emptyEl) {
+            mainContent.innerHTML = '<div class="flex flex-col justify-center items-center min-h-[400px] text-center"><i class="fas fa-search text-4xl text-gray-600 mb-4"></i><p class="text-gray-400">没有找到匹配的工具</p></div>';
+        }
         return;
     }
     
-    grid.classList.remove('hidden');
-    emptyEl.classList.add('hidden');
+    if (grid) {
+        grid.classList.remove('hidden');
+        if (emptyEl) emptyEl.classList.add('hidden');
+    }
     
     // 使用 DocumentFragment 优化 DOM 操作
     const fragment = document.createDocumentFragment();
@@ -106,8 +130,18 @@ export function renderTools(tools) {
     });
     
     // 清空网格并添加新内容
-    grid.innerHTML = '';
-    grid.appendChild(fragment);
+    if (grid) {
+        grid.innerHTML = '';
+        grid.appendChild(fragment);
+    } else if (mainContent) {
+        // 如果没有grid元素，直接在mainContent中渲染
+        const gridContainer = document.createElement('div');
+        gridContainer.id = 'toolsGrid';
+        gridContainer.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-4 max-w-7xl mx-auto';
+        gridContainer.appendChild(fragment);
+        mainContent.innerHTML = '';
+        mainContent.appendChild(gridContainer);
+    }
 }
 
 export function filterCategory(category) {
@@ -742,6 +776,8 @@ export function renderRecommendations() {
     const recs = generateRecommendations();
     const container = document.getElementById('personalizedRecs');
     const tagsContainer = document.getElementById('recTags');
+    
+    if (!container) return;
     
     if (recs.length === 0) {
         container.classList.add('hidden');

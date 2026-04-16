@@ -3,6 +3,8 @@
  * Uses html2pdf.js for client-side PDF generation
  */
 
+import { showNotification } from './utils.js';
+
 class PDFGenerator {
     constructor() {
         this.options = {
@@ -63,10 +65,10 @@ class PDFGenerator {
 
             await worker.save();
 
-            this.showNotification('PDF 导出成功！', 'success');
+            showNotification('PDF 导出成功！', 'success');
         } catch (error) {
             console.error('PDF generation failed:', error);
-            this.showNotification('PDF 导出失败，请重试', 'error');
+            showNotification('PDF 导出失败，请重试', 'error');
         } finally {
             // 确保清理克隆的 DOM 节点
             const clone = document.body.querySelector('[style*="left: -9999px"][style*="210mm"]');
@@ -95,7 +97,7 @@ class PDFGenerator {
         // 使用 textContent 写入内容，防止 XSS
         const printWindow = window.open('', '_blank', 'noopener,noreferrer');
         if (!printWindow) {
-            this.showNotification('无法打开预览窗口，请允许弹出窗口', 'error');
+            showNotification('无法打开预览窗口，请允许弹出窗口', 'error');
             return;
         }
 
@@ -118,38 +120,6 @@ class PDFGenerator {
         `);
         printWindow.document.close();
         printWindow.print();
-    }
-
-    // 显示通知（使用 textContent 防止 XSS）
-    showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 fade-in ${
-            type === 'success' ? 'bg-green-500' :
-            type === 'error' ? 'bg-red-500' : 'bg-indigo-500'
-        } text-white`;
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'flex items-center gap-2';
-
-        const icon = document.createElement('i');
-        icon.className = `fas ${
-            type === 'success' ? 'fa-check-circle' :
-            type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'
-        }`;
-        wrapper.appendChild(icon);
-
-        const textSpan = document.createElement('span');
-        textSpan.textContent = message; // 安全：使用 textContent
-        wrapper.appendChild(textSpan);
-
-        notification.appendChild(wrapper);
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-            notification.style.opacity = '0';
-            notification.style.transform = 'translateY(10px)';
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
     }
 }
 
