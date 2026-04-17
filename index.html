@@ -2217,14 +2217,14 @@
 
         .share-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 12px;
             margin-top: 24px;
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 520px) {
             .share-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, 1fr);
                 gap: 10px;
             }
             .modal-option {
@@ -2234,6 +2234,13 @@
                 width: 46px;
                 height: 46px;
                 font-size: 22px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .share-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
             }
         }
 
@@ -3051,6 +3058,10 @@
                     <i class="fas fa-image" style="background: rgba(236,72,153,0.1); color: #ec4899;"></i>
                     <span>生成图片</span>
                 </button>
+                <a href="./tools/resume-optimizer/" class="modal-option" style="text-decoration: none; background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(251,146,60,0.12)); border-color: rgba(245,158,11,0.2);" aria-label="简历优化">
+                    <i style="background: linear-gradient(135deg, #f59e0b, #f97316); color: white;" class="fas fa-file-alt"></i>
+                    <span>简历优化</span>
+                </a>
             </div>
         </div>
     </div>
