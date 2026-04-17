@@ -470,6 +470,22 @@
             transform: translateY(0);
         }
 
+        .resume-entry-btn {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+            text-decoration: none;
+        }
+
+        .resume-entry-btn:hover {
+            background: linear-gradient(135deg, #d97706, #ea580c);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 6px 16px rgba(249, 115, 22, 0.4);
+            transform: translateY(-2px) scale(1.05);
+        }
+
         /* ============================================
            HERO SECTION
            ============================================ */
@@ -1780,6 +1796,50 @@
             font-weight: 600;
         }
 
+        .resume-nav-entry {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+            text-decoration: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            padding: 8px 12px;
+            border-radius: var(--radius-sm);
+            position: relative;
+        }
+
+        .resume-nav-entry .nav-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            box-shadow: 0 2px 6px rgba(249, 115, 22, 0.35);
+        }
+
+        .resume-nav-entry .nav-label {
+            color: #d97706;
+            font-weight: 700;
+            font-size: 10px;
+        }
+
+        .resume-nav-entry:hover {
+            color: #f59e0b;
+        }
+
+        .resume-nav-entry:hover .nav-icon {
+            transform: translateY(-2px) scale(1.12);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.45);
+        }
+
         /* ============================================
            MODAL - Modern Overlay
            ============================================ */
@@ -2858,6 +2918,9 @@
                 <div class="logo-text">AI Tool Hub</div>
             </a>
             <div class="header-actions">
+                <a href="./tools/resume-optimizer/" class="header-btn resume-entry-btn" aria-label="简历优化" title="AI 简历优化">
+                    <i class="fas fa-file-alt"></i>
+                </a>
                 <button onclick="showShareModal()" class="header-btn" aria-label="分享">
                     <i class="fas fa-share-alt"></i>
                 </button>
@@ -3087,6 +3150,10 @@
             <i class="fas fa-share-alt nav-icon"></i>
             <span class="nav-label">分享</span>
         </button>
+        <a href="./tools/resume-optimizer/" class="resume-nav-entry" aria-label="简历优化">
+            <i class="fas fa-file-alt nav-icon"></i>
+            <span class="nav-label">简历</span>
+        </a>
         <button onclick="toggleTheme()" aria-label="主题">
             <i class="fas fa-moon nav-icon" id="themeIconNav"></i>
             <span class="nav-label">主题</span>
@@ -3140,17 +3207,6 @@
                     <span>生成图片</span>
                 </button>
             </div>
-
-            <a href="./tools/resume-optimizer/" class="resume-promo-card" style="text-decoration: none;">
-                <div class="resume-promo-icon">
-                    <i class="fas fa-file-alt"></i>
-                </div>
-                <div class="resume-promo-info">
-                    <div class="resume-promo-title">AI 简历优化工具</div>
-                    <div class="resume-promo-desc">智能分析简历 · AI一键优化 · 多格式导出</div>
-                </div>
-                <div class="resume-promo-arrow"><i class="fas fa-chevron-right"></i></div>
-            </a>
         </div>
     </div>
 
