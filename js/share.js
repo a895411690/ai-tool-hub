@@ -15,7 +15,7 @@ function showShareModal() {
 function closeShareModal(event) {
     const modal = document.getElementById('shareModal');
     if (!modal) return;
-    if (!event || event.target === modal) {
+    if (!event || event.target === modal || event.target.closest('.share-close-btn')) {
         modal.classList.remove('active');
     }
 }
