@@ -22,11 +22,11 @@ export async function loadTools() {
     try {
         // 尝试不同的路径
         let response;
+        const _cacheBuster = '?t=' + Date.now();
         try {
-            response = await fetch('./tools.json');
+            response = await fetch('./tools.json' + _cacheBuster);
         } catch (e) {
-            // 尝试另一个路径
-            response = await fetch('/ai-tool-hub/tools.json');
+            response = await fetch('/ai-tool-hub/tools.json' + _cacheBuster);
         }
         
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);

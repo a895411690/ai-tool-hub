@@ -5,7 +5,7 @@ import state, { updateData } from './state.js';
 // Load Tools
 async function loadTools() {
     try {
-        const response = await fetch('tools.json');
+        const response = await fetch('tools.json?t=' + Date.now());
         
         if (!response.ok) {
             throw new Error(`网络请求失败: ${response.status}`);
