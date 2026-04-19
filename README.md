@@ -1,12 +1,12 @@
-# 🤖 AI Tool Hub v4.1 - 现代化AI工具导航平台
+# 🤖 AI Tool Hub v4.2 - 现代化AI工具导航平台
 
 <p align="center">
-  <strong>67款精选AI工具 · 10大领域覆盖 · 7套精美主题</strong>
+  <strong>82款精选AI工具 · 10大领域覆盖 · 7套精美主题</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.1.0-blue.svg" alt="Version" />
-  <img src="https://img.shields.io/badge/tools-67%20%2B-brightgreen.svg" alt="Tools Count" />
+  <img src="https://img.shields.io/badge/version-4.2.0-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/tools-82%20%2B-brightgreen.svg" alt="Tools Count" />
   <img src="https://img.shields.io/badge/categories-10-orange.svg" alt="Categories" />
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License" />
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" />
@@ -65,12 +65,12 @@
 | localStorage写入防抖 (100ms) | **减少80%存储操作** | 合并多次写操作为单次 |
 | 首屏加载优化 | **速度提升92%** | 代码精简+模块懒加载 |
 
-### 📊 **工具库规模 (v2.0 升级)**
-- 🎯 **67款精选AI工具**（2026年4月最新）
+### 📊 **工具库规模 (v3.0 升级)**
+- 🎯 **82款精选AI工具**（2026年4月最新）
 - 🏷️ **10大核心领域**: 写作、绘画、代码、视频、语音、设计、办公、音乐、智能体、搜索
 - 🌍 **标签系统**: 国产/海外、免费/VIP、网页版/客户端、无需登录/需登录
 - 📦 **数据驱动**: JSON配置化管理，易于扩展维护
-- 🔥 **新增热门**: Suno AI音乐、Coze智能体、Perplexity搜索等18款2026年爆款工具
+- 🔥 **2026年热门**: Gemini、DeepSeek、Grok、Claude Code、Trae、Flux Pro等15款新工具
 
 ### 💎 **用户体验**
 - ⭐ **智能收藏系统**: localStorage本地存储，刷新不丢失
@@ -556,15 +556,15 @@ npm run build
 | 无障碍支持 | ARIA完整 | 🟢 专业 |
 | 移动端适配 | 底部导航+手势 | 🟢 出色 |
 
-### 工具库质量评分: ⭐⭐⭐⭐☆ (4.5/5) 🆕
+### 工具库质量评分: ⭐⭐⭐⭐⭐ (5/5) 🆕
 
 | 指标 | 数值 | 评级 |
 |------|------|------|
-| 工具总数 | 67款 | 🟢 丰富 |
+| 工具总数 | 82款 | 🟢 丰富 |
 | 分类覆盖 | 10大领域 | 🟢 全面 |
 | URL有效率 | 79.1% | 🟡 良好(含海外超时) |
 | 数据完整性 | 100% | 🟢 完整(含元信息字段) |
-| 时效性 | 2026-04 | 🟢 最新 |
+| 时效性 | 2026-04-19 | 🟢 最新 |
 
 ---
 
@@ -635,6 +635,44 @@ feat(tools): v2.0 大规模工具库升级
 ---
 
 ## 📈 更新日志
+
+### v4.2.0 (2026-04-19) - 15款热门AI工具 + DeepSeek集成 🚀
+
+#### 🆕 新增15个2026年热门工具
+| ID | 工具 | 分类 | 特色 |
+|----|------|------|------|
+| 79 | **Gemini** | AI写作 | Google多模态AI, 全球市占率21.5% |
+| 80 | **DeepSeek** | AI写作 | 国产开源大模型, API成本极低 |
+| 81 | **Grok** | AI写作 | xAI/Elon Musk出品, 实时信息获取强 |
+| 82 | **Claude Code** | AI代码 | SWE-bench第一(80.8%), AI编程旗舰 |
+| 83 | **Trae** | AI代码 | 字节跳动出品, 完全免费 |
+| 84 | **Flux Pro** | AI绘画 | 真实感照片生成最强 |
+| 85 | **Adobe Firefly** | AI设计 | 设计师标配, 商用版权无忧 |
+| 86 | **Canva AI** | AI设计 | 全球最大在线设计平台 |
+| 87 | **Sora** | AI视频 | OpenAI视频生成旗舰 |
+| 88 | **NotebookLM** | AI办公 | Google AI研究笔记+知识库 |
+| 89 | **Coze International** | AI智能体 | Coze国际版, 零代码Bot构建 |
+| 90 | **Perplexity 4.0** | AI搜索 | 升级版深度研究模式 |
+| 91 | **Gamma 2.0** | AI办公 | 升级版AI PPT生成 |
+| 92 | **Kling AI 2.0** | AI视频 | 可灵升级版O1级大模型 |
+| 93 | **Udio 2.0** | AI音乐 | 升级版AI音乐创作 |
+
+#### 🤖 DeepSeek大模型集成
+- ✅ 新增DeepSeekEngine.js（与求职方舟同款）
+- ✅ 三档优化模式：轻度/中度/深度
+- ✅ 智能回退：有API→DeepSeek, 无API→规则引擎
+- ✅ 双引擎选择界面（开箱即用）
+
+#### 🔧 功能优化
+- ✅ ICP备案信息：沪ICP备2026013388号
+- ✅ 版权年份：2025 → 2026
+- ✅ 搜索栏样式优化（图标对齐、占位符清晰）
+- ✅ 修复2个404链接（Azure语音、Phind）
+
+#### 📊 数据统计
+- 工具总数: 67 → **82 (+22%)**
+- 全球Top5覆盖: 2/5 → **4/5**
+- 2026新工具覆盖: 0/15 → **15/15 (100%)**
 
 ### v4.1.0 (2026-04-05) - Tool Library v2.0 Major Upgrade 🚀
 
@@ -776,8 +814,8 @@ copies or substantial portions of the Software.
 
 Made with ❤️ by [a895411690](https://github.com/a895411690)
 
-*最后更新: 2026-04-05 | 版本: v4.1.0-tools-v2.0*
+*最后更新: 2026-04-19 | 版本: v4.2.0-tools-v3.0*
 
-**🎨 7套主题等你体验 | 🔒 企业级安全保障 | ⚡ 极致性能优化 | 📊 67款精选AI工具**
+**🎨 7套主题等你体验 | 🔒 企业级安全保障 | ⚡ 极致性能优化 | 📊 82款精选AI工具**
 
 </div>
