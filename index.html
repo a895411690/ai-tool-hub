@@ -562,9 +562,11 @@
 
         .search-container {
             position: relative;
-            max-width: 640px;
+            max-width: 680px;
             margin: 0 auto 32px;
             animation: fadeInUp 0.6s ease 0.3s both;
+            width: 100%;
+            padding: 0 16px;
         }
 
         .search-box {
@@ -574,6 +576,9 @@
             box-shadow: var(--card-shadow);
             border: 2px solid transparent;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            padding: 4px 8px 4px 20px;
         }
 
         .search-box:focus-within {
@@ -583,17 +588,20 @@
 
         #mainSearch {
             width: 100%;
-            padding: 18px 60px 18px 24px;
+            padding: 16px 52px 16px 44px;
             background: transparent;
             border: none;
             color: var(--text-primary);
             font-size: 16px;
             font-weight: 500;
+            line-height: 1.4;
+            box-sizing: border-box;
         }
 
         #mainSearch::placeholder {
-            color: var(--text-muted);
+            color: #9ca3af;
             font-weight: 400;
+            opacity: 1;
         }
 
         #mainSearch:focus {
@@ -602,11 +610,13 @@
 
         .search-icon {
             position: absolute;
-            left: 24px;
+            left: 20px;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--text-muted);
+            color: #9ca3af;
             pointer-events: none;
+            font-size: 16px;
+            z-index: 2;
         }
 
         #clearSearchBtn {
@@ -1733,28 +1743,36 @@
             background: white;
             border-radius: var(--radius-xl);
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
-            padding: 12px 28px;
+            padding: 10px 20px;
             display: flex;
-            gap: 32px;
+            gap: 16px;
             z-index: 90;
             border: 1px solid var(--card-border);
+            max-width: calc(100% - 32px);
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            align-items: center;
         }
 
         .bottom-nav a,
         .bottom-nav button {
-            display: flex;
+            display: inline-flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            gap: 3px;
             color: var(--text-muted);
             text-decoration: none;
             background: none;
             border: none;
             cursor: pointer;
             transition: all 0.25s ease;
-            padding: 8px 12px;
+            padding: 6px 12px;
             border-radius: var(--radius-sm);
             position: relative;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .bottom-nav a:hover,
@@ -1772,7 +1790,7 @@
         .bottom-nav button.active::after {
             content: '';
             position: absolute;
-            bottom: 0;
+            bottom: 2px;
             left: 50%;
             transform: translateX(-50%);
             width: 4px;
@@ -1783,7 +1801,13 @@
 
         .nav-icon {
             font-size: 20px;
+            line-height: 1;
             transition: transform 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
         }
 
         .bottom-nav a:hover .nav-icon,
@@ -1794,34 +1818,40 @@
         .nav-label {
             font-size: 11px;
             font-weight: 600;
+            line-height: 1.2;
+            display: inline-block;
         }
 
         .resume-nav-entry {
-            display: flex;
+            display: inline-flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            justify-content: center;
+            gap: 3px;
             color: var(--text-muted);
             text-decoration: none;
             background: none;
             border: none;
             cursor: pointer;
             transition: all 0.25s ease;
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: var(--radius-sm);
             position: relative;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .resume-nav-entry .nav-icon {
-            width: 28px;
-            height: 28px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             background: linear-gradient(135deg, #f59e0b, #f97316);
             color: white;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
+            font-size: 11px;
+            line-height: 1;
             box-shadow: 0 2px 6px rgba(249, 115, 22, 0.35);
         }
 
@@ -1829,6 +1859,10 @@
             color: #d97706;
             font-weight: 700;
             font-size: 10px;
+            letter-spacing: 0.2px;
+            text-shadow: 0 1px 2px rgba(217, 119, 6, 0.15);
+            display: inline-block;
+            line-height: 1.2;
         }
 
         .resume-nav-entry:hover {
@@ -2753,8 +2787,8 @@
 
             .bottom-nav {
                 bottom: 16px;
-                padding: 10px 20px;
-                gap: 20px;
+                padding: 8px 16px;
+                gap: 10px;
                 width: calc(100% - 32px);
                 max-width: 400px;
             }
@@ -2832,12 +2866,14 @@
             }
 
             .bottom-nav {
-                padding: 8px 16px;
-                gap: 12px;
+                padding: 6px 12px;
+                gap: 8px;
             }
 
             .nav-icon {
                 font-size: 18px;
+                width: 18px;
+                height: 18px;
             }
 
             .nav-label {
@@ -2881,6 +2917,47 @@
 
         .footer-icp a:hover {
             color: var(--primary);
+        }
+
+        /* 公安机关备案样式 */
+        .footer-police {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .footer-police a {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(99, 102, 1, 0.04);
+        }
+
+        .footer-police a:hover {
+            color: var(--primary);
+            background: rgba(99, 102, 241, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .police-icon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .beian-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
         }
 
         @media (min-width: 768px) {
@@ -3150,9 +3227,9 @@
             <i class="fas fa-share-alt nav-icon"></i>
             <span class="nav-label">分享</span>
         </button>
-        <a href="./tools/resume-optimizer/" class="resume-nav-entry" aria-label="简历优化">
+        <a href="./tools/resume-optimizer/" class="resume-nav-entry" aria-label="AI简历优化">
             <i class="fas fa-file-alt nav-icon"></i>
-            <span class="nav-label">简历</span>
+            <span class="nav-label">AI简历优化</span>
         </a>
         <button onclick="toggleTheme()" aria-label="主题">
             <i class="fas fa-moon nav-icon" id="themeIconNav"></i>
@@ -3164,7 +3241,7 @@
     <footer class="site-footer" role="contentinfo">
         <div class="footer-content">
             <div class="footer-copyright">
-                <p>&copy; 2025 AI Tool Hub. All rights reserved.</p>
+                <p>&copy; 2026 AI Tool Hub. All rights reserved.</p>
             </div>
             <div class="footer-icp">
                 <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">

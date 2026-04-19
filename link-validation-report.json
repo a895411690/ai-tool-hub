@@ -1,0 +1,1183 @@
+{
+  "timestamp": "2026-04-19T03:10:55.489Z",
+  "summary": {
+    "total": 128,
+    "valid": 52,
+    "invalid": 2,
+    "error": 74,
+    "redirected": 15,
+    "validRate": 40.63,
+    "totalTime": "16.75"
+  },
+  "details": [
+    {
+      "id": 10,
+      "name": "智谱清言",
+      "url": "https://chatglm.cn",
+      "valid": true,
+      "status": 200,
+      "responseTime": 158,
+      "finalUrl": null
+    },
+    {
+      "id": 1,
+      "name": "秘塔写作猫",
+      "url": "https://xiezuocat.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 245,
+      "finalUrl": null
+    },
+    {
+      "id": 9,
+      "name": "Kimi",
+      "url": "https://kimi.moonshot.cn",
+      "valid": true,
+      "status": 302,
+      "responseTime": 186,
+      "redirected": true,
+      "finalUrl": "https://www.kimi.com/"
+    },
+    {
+      "id": 4,
+      "name": "讯飞星火",
+      "url": "https://xinghuo.xfyun.cn",
+      "valid": true,
+      "status": 200,
+      "responseTime": 202,
+      "finalUrl": null
+    },
+    {
+      "id": 5,
+      "name": "豆包",
+      "url": "https://www.doubao.com",
+      "valid": true,
+      "status": 302,
+      "responseTime": 204,
+      "redirected": true,
+      "finalUrl": "https://www.doubao.com/chat/"
+    },
+    {
+      "id": 8,
+      "name": "通义千问",
+      "url": "https://tongyi.aliyun.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 261,
+      "finalUrl": null
+    },
+    {
+      "id": 17,
+      "name": "通义万相",
+      "url": "https://tongyi.aliyun.com/wanxiang",
+      "valid": true,
+      "status": 302,
+      "responseTime": 295,
+      "redirected": true,
+      "finalUrl": "https://tongyi.aliyun.com/wan"
+    },
+    {
+      "id": 3,
+      "name": "文心一言",
+      "url": "https://yiyan.baidu.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 501,
+      "finalUrl": null
+    },
+    {
+      "id": 13,
+      "name": "文心一格",
+      "url": "https://yige.baidu.com",
+      "valid": true,
+      "status": 302,
+      "responseTime": 328,
+      "redirected": true,
+      "finalUrl": "https://yiyan.baidu.com/refund/yigeMigrationGuide?from=yige"
+    },
+    {
+      "id": 15,
+      "name": "醒图AI",
+      "url": "https://www.xingtu.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 311,
+      "finalUrl": null
+    },
+    {
+      "id": 11,
+      "name": "Midjourney",
+      "url": "https://www.midjourney.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 525,
+      "finalUrl": null
+    },
+    {
+      "id": 7,
+      "name": "Claude",
+      "url": "https://claude.ai",
+      "valid": true,
+      "status": 302,
+      "responseTime": 547,
+      "redirected": true,
+      "finalUrl": "https://www.anthropic.com/app-unavailable-in-region"
+    },
+    {
+      "id": 22,
+      "name": "CodeGeeX",
+      "url": "https://codegeex.cn",
+      "valid": true,
+      "status": 200,
+      "responseTime": 142,
+      "finalUrl": null
+    },
+    {
+      "id": 28,
+      "name": "商汤小浣熊",
+      "url": "https://raccoon.sensetime.com",
+      "valid": true,
+      "status": 301,
+      "responseTime": 47,
+      "redirected": true,
+      "finalUrl": "https://xiaohuanxiong.com/"
+    },
+    {
+      "id": 24,
+      "name": "通义灵码",
+      "url": "https://lingma.aliyun.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 210,
+      "finalUrl": null
+    },
+    {
+      "id": 23,
+      "name": "Cursor",
+      "url": "https://cursor.sh",
+      "valid": true,
+      "status": 308,
+      "responseTime": 246,
+      "redirected": true,
+      "finalUrl": "https://cursor.com/"
+    },
+    {
+      "id": 27,
+      "name": "字节MarsCode",
+      "url": "https://www.marscode.cn",
+      "valid": true,
+      "status": 302,
+      "responseTime": 252,
+      "redirected": true,
+      "finalUrl": "https://www.trae.com.cn/plugin"
+    },
+    {
+      "id": 33,
+      "name": "剪映AI",
+      "url": "https://www.capcut.cn",
+      "valid": true,
+      "status": 200,
+      "responseTime": 318,
+      "finalUrl": null
+    },
+    {
+      "id": 31,
+      "name": "Runway Gen-2",
+      "url": "https://runwayml.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 379,
+      "finalUrl": null
+    },
+    {
+      "id": 21,
+      "name": "GitHub Copilot",
+      "url": "https://github.com/features/copilot",
+      "valid": true,
+      "status": 200,
+      "responseTime": 727,
+      "finalUrl": null
+    },
+    {
+      "id": 36,
+      "name": "万彩动画",
+      "url": "https://www.animiz.cn",
+      "valid": true,
+      "status": 200,
+      "responseTime": 115,
+      "finalUrl": null
+    },
+    {
+      "id": 35,
+      "name": "即梦AI",
+      "url": "https://jimeng.jianying.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 161,
+      "finalUrl": null
+    },
+    {
+      "id": 39,
+      "name": "可灵AI",
+      "url": "https://klingai.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 163,
+      "finalUrl": null
+    },
+    {
+      "id": 29,
+      "name": "Amazon CodeWhisperer",
+      "url": "https://aws.amazon.com/codewhisperer",
+      "valid": true,
+      "status": 301,
+      "responseTime": 746,
+      "redirected": true,
+      "finalUrl": "/codewhisperer/"
+    },
+    {
+      "id": 30,
+      "name": "JetBrains AI",
+      "url": "https://www.jetbrains.com/ai",
+      "valid": true,
+      "status": 301,
+      "responseTime": 838,
+      "redirected": true,
+      "finalUrl": "/ai/"
+    },
+    {
+      "id": 12,
+      "name": "Stable Diffusion",
+      "url": "https://github.com/AUTOMATIC1111/stable-diffusion-webui",
+      "valid": true,
+      "status": 200,
+      "responseTime": 1385,
+      "finalUrl": null
+    },
+    {
+      "id": 41,
+      "name": "讯飞配音",
+      "url": "https://peiyin.xunfei.cn",
+      "valid": true,
+      "status": 200,
+      "responseTime": 167,
+      "finalUrl": null
+    },
+    {
+      "id": 44,
+      "name": "魔音工坊",
+      "url": "https://www.moyin.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 186,
+      "finalUrl": null
+    },
+    {
+      "id": 47,
+      "name": "剪映文字成片",
+      "url": "https://www.capcut.cn",
+      "valid": true,
+      "status": 200,
+      "responseTime": 203,
+      "finalUrl": null
+    },
+    {
+      "id": 45,
+      "name": "百度语音",
+      "url": "https://ai.baidu.com/tech/speech",
+      "valid": true,
+      "status": 200,
+      "responseTime": 389,
+      "finalUrl": null
+    },
+    {
+      "id": 40,
+      "name": "PixVerse",
+      "url": "https://pixverse.ai",
+      "valid": true,
+      "status": 302,
+      "responseTime": 1369,
+      "redirected": true,
+      "finalUrl": "https://pixverse.ai/zh/"
+    },
+    {
+      "id": 51,
+      "name": "稿定设计",
+      "url": "https://www.gaoding.com",
+      "valid": true,
+      "status": 302,
+      "responseTime": 155,
+      "redirected": true,
+      "finalUrl": "/creation"
+    },
+    {
+      "id": 50,
+      "name": "Murf AI",
+      "url": "https://murf.ai",
+      "valid": true,
+      "status": 200,
+      "responseTime": 955,
+      "finalUrl": null
+    },
+    {
+      "id": 53,
+      "name": "WPS AI",
+      "url": "https://ai.wps.cn",
+      "valid": true,
+      "status": 200,
+      "responseTime": 318,
+      "finalUrl": null
+    },
+    {
+      "id": 55,
+      "name": "创客贴",
+      "url": "https://www.chuangkit.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 172,
+      "finalUrl": null
+    },
+    {
+      "id": 54,
+      "name": "飞书AI",
+      "url": "https://www.feishu.cn",
+      "valid": true,
+      "status": 200,
+      "responseTime": 450,
+      "finalUrl": null
+    },
+    {
+      "id": 46,
+      "name": "微软Azure语音",
+      "url": "https://azure.microsoft.com/zh-cn/services/ai-services/text-to-speech",
+      "valid": false,
+      "status": 404,
+      "message": "HTTP 404: Not Found",
+      "responseTime": 1814,
+      "finalUrl": null
+    },
+    {
+      "id": 57,
+      "name": "即时设计",
+      "url": "https://js.design/ai",
+      "valid": true,
+      "status": 200,
+      "responseTime": 122,
+      "finalUrl": null
+    },
+    {
+      "id": 58,
+      "name": "MasterGo AI",
+      "url": "https://mastergo.com/ai",
+      "valid": true,
+      "status": 200,
+      "responseTime": 114,
+      "finalUrl": null
+    },
+    {
+      "id": 59,
+      "name": "钉钉AI",
+      "url": "https://www.dingtalk.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 178,
+      "finalUrl": null
+    },
+    {
+      "id": 60,
+      "name": "Notion AI",
+      "url": "https://www.notion.so/product/ai",
+      "valid": true,
+      "status": 200,
+      "responseTime": 853,
+      "finalUrl": null
+    },
+    {
+      "id": 49,
+      "name": "Resemble AI",
+      "url": "https://www.resemble.ai",
+      "valid": true,
+      "status": 200,
+      "responseTime": 2544,
+      "finalUrl": null
+    },
+    {
+      "id": 63,
+      "name": "网易天音",
+      "url": "https://tianyin.music.163.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 116,
+      "finalUrl": null
+    },
+    {
+      "id": 56,
+      "name": "Figma AI",
+      "url": "https://www.figma.com/ai",
+      "valid": true,
+      "status": 308,
+      "responseTime": 1448,
+      "redirected": true,
+      "finalUrl": "/ai/"
+    },
+    {
+      "id": 62,
+      "name": "Udio",
+      "url": "https://www.udio.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 553,
+      "finalUrl": null
+    },
+    {
+      "id": 64,
+      "name": "Soundraw",
+      "url": "https://soundraw.com",
+      "valid": true,
+      "status": 301,
+      "responseTime": 333,
+      "redirected": true,
+      "finalUrl": "https://x.com/rundns"
+    },
+    {
+      "id": 66,
+      "name": "Coze (扣子)",
+      "url": "https://www.coze.cn",
+      "valid": true,
+      "status": 200,
+      "responseTime": 384,
+      "finalUrl": null
+    },
+    {
+      "id": 67,
+      "name": "Dify",
+      "url": "https://dify.ai",
+      "valid": true,
+      "status": 200,
+      "responseTime": 424,
+      "finalUrl": null
+    },
+    {
+      "id": 65,
+      "name": "AIVA",
+      "url": "https://www.aiva.ai",
+      "valid": true,
+      "status": 200,
+      "responseTime": 2640,
+      "finalUrl": null
+    },
+    {
+      "id": 2,
+      "name": "ChatGPT",
+      "url": "https://chatgpt.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 2,
+      "name": "ChatGPT",
+      "url": "https://chatgpt.com",
+      "valid": false,
+      "status": 0,
+      "message": "socket hang up",
+      "responseTime": 8026
+    },
+    {
+      "id": 10,
+      "name": "智谱清言",
+      "url": "https://chatglm.cn",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 1,
+      "name": "秘塔写作猫",
+      "url": "https://xiezuocat.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 9,
+      "name": "Kimi",
+      "url": "https://kimi.moonshot.cn",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 4,
+      "name": "讯飞星火",
+      "url": "https://xinghuo.xfyun.cn",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 5,
+      "name": "豆包",
+      "url": "https://www.doubao.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 19,
+      "name": "DALL·E 3",
+      "url": "https://chatgpt.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 19,
+      "name": "DALL·E 3",
+      "url": "https://chatgpt.com",
+      "valid": false,
+      "status": 0,
+      "message": "socket hang up",
+      "responseTime": 8004
+    },
+    {
+      "id": 8,
+      "name": "通义千问",
+      "url": "https://tongyi.aliyun.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 20,
+      "name": "Leonardo.ai",
+      "url": "https://leonardo.ai",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 20,
+      "name": "Leonardo.ai",
+      "url": "https://leonardo.ai",
+      "valid": false,
+      "status": 0,
+      "message": "socket hang up",
+      "responseTime": 8014
+    },
+    {
+      "id": 17,
+      "name": "通义万相",
+      "url": "https://tongyi.aliyun.com/wanxiang",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 3,
+      "name": "文心一言",
+      "url": "https://yiyan.baidu.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 13,
+      "name": "文心一格",
+      "url": "https://yige.baidu.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 15,
+      "name": "醒图AI",
+      "url": "https://www.xingtu.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 72,
+      "name": "秘塔AI搜索",
+      "url": "https://metaso.cn",
+      "valid": true,
+      "status": 200,
+      "responseTime": 317,
+      "finalUrl": null
+    },
+    {
+      "id": 11,
+      "name": "Midjourney",
+      "url": "https://www.midjourney.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 26,
+      "name": "Codeium",
+      "url": "https://codeium.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 26,
+      "name": "Codeium",
+      "url": "https://codeium.com",
+      "valid": false,
+      "status": 0,
+      "message": "socket hang up",
+      "responseTime": 8002
+    },
+    {
+      "id": 7,
+      "name": "Claude",
+      "url": "https://claude.ai",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 22,
+      "name": "CodeGeeX",
+      "url": "https://codegeex.cn",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 28,
+      "name": "商汤小浣熊",
+      "url": "https://raccoon.sensetime.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 24,
+      "name": "通义灵码",
+      "url": "https://lingma.aliyun.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 23,
+      "name": "Cursor",
+      "url": "https://cursor.sh",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 27,
+      "name": "字节MarsCode",
+      "url": "https://www.marscode.cn",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 33,
+      "name": "剪映AI",
+      "url": "https://www.capcut.cn",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 31,
+      "name": "Runway Gen-2",
+      "url": "https://runwayml.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 21,
+      "name": "GitHub Copilot",
+      "url": "https://github.com/features/copilot",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 37,
+      "name": "HeyGen",
+      "url": "https://www.heygen.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 37,
+      "name": "HeyGen",
+      "url": "https://www.heygen.com",
+      "valid": false,
+      "status": 0,
+      "message": "socket hang up",
+      "responseTime": 8018
+    },
+    {
+      "id": 36,
+      "name": "万彩动画",
+      "url": "https://www.animiz.cn",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 35,
+      "name": "即梦AI",
+      "url": "https://jimeng.jianying.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 39,
+      "name": "可灵AI",
+      "url": "https://klingai.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 76,
+      "name": "ChatExcel",
+      "url": "https://chatexcel.com",
+      "valid": true,
+      "status": 301,
+      "responseTime": 177,
+      "redirected": true,
+      "finalUrl": "https://www.chatexcel.com/"
+    },
+    {
+      "id": 29,
+      "name": "Amazon CodeWhisperer",
+      "url": "https://aws.amazon.com/codewhisperer",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 42,
+      "name": "ElevenLabs",
+      "url": "https://elevenlabs.io",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 42,
+      "name": "ElevenLabs",
+      "url": "https://elevenlabs.io",
+      "valid": false,
+      "status": 0,
+      "message": "socket hang up",
+      "responseTime": 8014
+    },
+    {
+      "id": 74,
+      "name": "Phind",
+      "url": "https://phind.com",
+      "valid": false,
+      "status": 404,
+      "message": "HTTP 404: Not Found",
+      "responseTime": 970,
+      "finalUrl": null
+    },
+    {
+      "id": 30,
+      "name": "JetBrains AI",
+      "url": "https://www.jetbrains.com/ai",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 12,
+      "name": "Stable Diffusion",
+      "url": "https://github.com/AUTOMATIC1111/stable-diffusion-webui",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 41,
+      "name": "讯飞配音",
+      "url": "https://peiyin.xunfei.cn",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 44,
+      "name": "魔音工坊",
+      "url": "https://www.moyin.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 47,
+      "name": "剪映文字成片",
+      "url": "https://www.capcut.cn",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 45,
+      "name": "百度语音",
+      "url": "https://ai.baidu.com/tech/speech",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 78,
+      "name": "腾讯文档AI",
+      "url": "https://docs.qq.com",
+      "valid": true,
+      "status": 200,
+      "responseTime": 569,
+      "finalUrl": null
+    },
+    {
+      "id": 77,
+      "name": "Mem.ai",
+      "url": "https://mem.ai",
+      "valid": true,
+      "status": 200,
+      "responseTime": 776,
+      "finalUrl": null
+    },
+    {
+      "id": 40,
+      "name": "PixVerse",
+      "url": "https://pixverse.ai",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 51,
+      "name": "稿定设计",
+      "url": "https://www.gaoding.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 50,
+      "name": "Murf AI",
+      "url": "https://murf.ai",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 53,
+      "name": "WPS AI",
+      "url": "https://ai.wps.cn",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 55,
+      "name": "创客贴",
+      "url": "https://www.chuangkit.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 54,
+      "name": "飞书AI",
+      "url": "https://www.feishu.cn",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 46,
+      "name": "微软Azure语音",
+      "url": "https://azure.microsoft.com/zh-cn/services/ai-services/text-to-speech",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 57,
+      "name": "即时设计",
+      "url": "https://js.design/ai",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 58,
+      "name": "MasterGo AI",
+      "url": "https://mastergo.com/ai",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 59,
+      "name": "钉钉AI",
+      "url": "https://www.dingtalk.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 61,
+      "name": "Suno AI",
+      "url": "https://suno.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 61,
+      "name": "Suno AI",
+      "url": "https://suno.com",
+      "valid": false,
+      "status": 0,
+      "message": "socket hang up",
+      "responseTime": 8014
+    },
+    {
+      "id": 60,
+      "name": "Notion AI",
+      "url": "https://www.notion.so/product/ai",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 49,
+      "name": "Resemble AI",
+      "url": "https://www.resemble.ai",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 56,
+      "name": "Figma AI",
+      "url": "https://www.figma.com/ai",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 62,
+      "name": "Udio",
+      "url": "https://www.udio.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 64,
+      "name": "Soundraw",
+      "url": "https://soundraw.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 66,
+      "name": "Coze (扣子)",
+      "url": "https://www.coze.cn",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 68,
+      "name": "FastGPT",
+      "url": "https://fastgpt.run",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 68,
+      "name": "FastGPT",
+      "url": "https://fastgpt.run",
+      "valid": false,
+      "status": 0,
+      "message": "socket hang up",
+      "responseTime": 8022
+    },
+    {
+      "id": 67,
+      "name": "Dify",
+      "url": "https://dify.ai",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 69,
+      "name": "GPTs Store",
+      "url": "https://chatgpt.com/gpts",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 69,
+      "name": "GPTs Store",
+      "url": "https://chatgpt.com/gpts",
+      "valid": false,
+      "status": 0,
+      "message": "socket hang up",
+      "responseTime": 8003
+    },
+    {
+      "id": 65,
+      "name": "AIVA",
+      "url": "https://www.aiva.ai",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 70,
+      "name": "LangChain",
+      "url": "https://langchain.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 70,
+      "name": "LangChain",
+      "url": "https://langchain.com",
+      "valid": false,
+      "status": 0,
+      "message": "socket hang up",
+      "responseTime": 8032
+    },
+    {
+      "id": 71,
+      "name": "Perplexity AI",
+      "url": "https://www.perplexity.ai",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 71,
+      "name": "Perplexity AI",
+      "url": "https://www.perplexity.ai",
+      "valid": false,
+      "status": 0,
+      "message": "socket hang up",
+      "responseTime": 8013
+    },
+    {
+      "id": 73,
+      "name": "You.com",
+      "url": "https://you.com",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 73,
+      "name": "You.com",
+      "url": "https://you.com",
+      "valid": false,
+      "status": 0,
+      "message": "socket hang up",
+      "responseTime": 8100
+    },
+    {
+      "id": 72,
+      "name": "秘塔AI搜索",
+      "url": "https://metaso.cn",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    },
+    {
+      "id": 75,
+      "name": "Gamma",
+      "url": "https://gamma.app",
+      "valid": false,
+      "status": 0,
+      "message": "请求超时 (8000ms)",
+      "responseTime": 8000
+    }
+  ]
+}
