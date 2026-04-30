@@ -28,38 +28,108 @@ class DeepSeekEngine {
     }
 
     /**
-     * 调用DeepSeek API
+     * 调用DeepSeek API（带指数退避重试机制）
+     * @param {Array} messages - 消息数组
+     * @param {Object} options - 请求选项
+     * @param {number} retries - 重试次数（默认3次）
+     * @returns {Promise<string>} - API返回内容
      */
-    async _callAPI(messages, options = {}) {
+    async _callAPI(messages, options = {}, retries = 3) {
         if (!this.hasApiKey()) {
             throw new Error('请先配置DeepSeek API Key');
         }
 
-        const response = await fetch(`${this.baseUrl}/chat/completions`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${this.apiKey}`
-            },
-            body: JSON.stringify({
-                model: this.model,
-                messages: messages,
-                temperature: options.temperature || 0.7,
-                max_tokens: options.maxTokens || 4096,
-                top_p: options.topP || 0.9,
-                frequency_penalty: options.frequencyPenalty || 0.3,
-                presence_penalty: options.presencePenalty || 0.1
-            }),
-            signal: AbortSignal.timeout(this.timeout)
-        });
+        let lastError;
 
-        if (!response.ok) {
-            const error = await response.json().catch(() => ({}));
-            throw new Error(error.error?.message || `API请求失败: ${response.status}`);
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            try {
+                // 如果不是第一次尝试，显示重试提示
+                if (attempt > 0) {
+                    console.log(`🔄 DeepSeek API重试第${attempt}次...`);
+                }
+
+                const response = await fetch(`${this.baseUrl}/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${this.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: this.model,
+                        messages: messages,
+                        temperature: options.temperature || 0.7,
+                        max_tokens: options.maxTokens || 4096,
+                        top_p: options.topP || 0.9,
+                        frequency_penalty: options.frequencyPenalty || 0.3,
+                        presence_penalty: options.presencePenalty || 0.1
+                    }),
+                    signal: AbortSignal.timeout(this.timeout)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.error?.message || `API请求失败: ${response.status}`);
+                }
+
+                const data = await response.json();
+                return data.choices[0]?.message?.content || '';
+
+            } catch (error) {
+                lastError = error;
+
+                // 如果是最后最后一次尝试，抛出错误
+                if (attempt === retries) {
+                    break;
+                }
+
+                // 判断是否应该重试
+                const shouldRetry = this._shouldRetry(error);
+                if (!shouldRetry) {
+                    throw error;
+                }
+
+                // 指数退避：等待时间 = 2^attempt * 1000ms (1s, 2s, 4s)
+                const delay = Math.pow(2, attempt) * 1000;
+                console.log(`⏳ ${delay}ms后重试...`);
+                await this._sleep(delay);
+            }
         }
 
-        const data = await response.json();
-        return data.choices[0]?.message?.content || '';
+        throw lastError;
+    }
+
+    /**
+     * 判断是否值得重试
+     * @private
+     */
+    _shouldRetry(error) {
+        // 网络错误值得重试
+        if (error.name === 'TypeError' || error.name === 'AbortError') {
+            return true;
+        }
+
+        // 特定的HTTP状态码值得重试
+        const retryableStatuses = [408, 429, 500, 502, 503, 504];
+        const statusMatch = error.message.match(/(\d{3})/);
+        if (statusMatch) {
+            const status = parseInt(statusMatch[1]);
+            return retryableStatuses.includes(status);
+        }
+
+        // 超时应重试
+        if (error.message.includes('timeout') || error.message.includes('超时')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * 睡眠函数
+     * @private
+     */
+    _sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     /**

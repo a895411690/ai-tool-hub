@@ -5,7 +5,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 简历优化 - AI Tool Hub</title>
     <meta name="description" content="AI驱动的简历优化工具，支持实时预览和一键导出">
-    
+
+    <!-- Content Security Policy (CSP) - 防止XSS和代码注入攻击 -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com;
+        style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
+        font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
+        img-src 'self' data: https: http: blob:;
+        connect-src 'self' https://api.deepseek.com https://cdnjs.cloudflare.com;
+        frame-src 'none';
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        upgrade-insecure-requests;
+    ">
+
     <!-- DNS 预解析 -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>

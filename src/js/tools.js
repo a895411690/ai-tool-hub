@@ -2,7 +2,7 @@
 import state from './state.js';
 import { showToast, closeModal } from './ui.js';
 import { syncToGist, toggleUserMenu } from './user.js';
-import { debounce } from './utils.js';
+import { debounce, escapeHtml, escapeAttr, validateUrl, storage } from './utils.js';
 
 export async function loadTools() {
     const loadingEl = document.getElementById('loadingState');
@@ -48,7 +48,7 @@ export async function loadTools() {
             errorEl.classList.remove('hidden');
             errorEl.textContent = `加载工具失败: ${error.message}`;
         } else if (mainContent) {
-            mainContent.innerHTML = `<div class="flex flex-col justify-center items-center min-h-[400px] text-center"><i class="fas fa-exclamation-circle text-4xl text-red-500 mb-4"></i><p class="text-gray-400">加载工具失败: ${error.message}</p></div>`;
+            mainContent.innerHTML = `<div class="flex flex-col justify-center items-center min-h-[400px] text-center"><i class="fas fa-exclamation-circle text-4xl text-red-500 mb-4"></i><p class="text-gray-400">加载工具失败: ${escapeHtml(error.message)}</p></div>`;
         }
     }
 }
@@ -67,7 +67,7 @@ export function renderCategories() {
     const html = `
         <button class="category-btn active px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="all" onclick="filterCategory('all')">全部</button>
         ${state.categories.map(cat => `
-            <button class="category-btn px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="${cat.id}" onclick="filterCategory('${cat.id}')">${cat.name}</button>
+            <button class="category-btn px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="${escapeAttr(cat.id)}" onclick="filterCategory('${escapeAttr(cat.id)}')">${escapeHtml(cat.name)}</button>
         `).join('')}
     `;
     container.innerHTML = html;
@@ -103,11 +103,11 @@ export function renderTools(tools) {
         toolElement.onclick = () => showToolDetail(tool.id);
         
         const compareButton = state.compareMode ? `
-            <button onclick="event.stopPropagation(); toggleCompare(${tool.id})" class="w-8 h-8 rounded-full ${state.compareList.includes(tool.id) ? 'bg-indigo-500' : 'glass'} flex items-center justify-center">
+            <button onclick="event.stopPropagation(); toggleCompare(${escapeAttr(String(tool.id))})" class="w-8 h-8 rounded-full ${state.compareList.includes(tool.id) ? 'bg-indigo-500' : 'glass'} flex items-center justify-center">
                 ${state.compareList.includes(tool.id) ? '<i class="fas fa-check text-white text-xs"></i>' : '<i class="fas fa-plus text-gray-400 text-xs"></i>'}
             </button>
         ` : `
-            <button onclick="event.stopPropagation(); toggleFavorite(${tool.id})" class="text-gray-500 hover:text-red-500 transition-all">
+            <button onclick="event.stopPropagation(); toggleFavorite(${escapeAttr(String(tool.id))})" class="text-gray-500 hover:text-red-500 transition-all">
                 <i class="${state.favorites.includes(tool.id) ? 'fas text-red-500' : 'far'} fa-heart"></i>
             </button>
         `;
@@ -115,14 +115,14 @@ export function renderTools(tools) {
         toolElement.innerHTML = `
             <div class="flex items-start justify-between mb-3">
                 <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-600/20 flex items-center justify-center">
-                    <i class="fas ${tool.icon} text-xl text-indigo-400"></i>
+                    <i class="fas ${escapeAttr(tool.icon)} text-xl text-indigo-400"></i>
                 </div>
                 ${compareButton}
             </div>
-            <h3 class="font-semibold mb-1">${tool.name}</h3>
-            <p class="text-sm text-gray-500 mb-3 line-clamp-2">${tool.desc}</p>
+            <h3 class="font-semibold mb-1">${escapeHtml(tool.name)}</h3>
+            <p class="text-sm text-gray-500 mb-3 line-clamp-2">${escapeHtml(tool.desc)}</p>
             <div class="flex items-center gap-2 flex-wrap">
-                ${tool.tags.map(tag => `<span class="px-2 py-0.5 rounded-full text-xs glass">${tag}</span>`).join('')}
+                ${tool.tags.map(tag => `<span class="px-2 py-0.5 rounded-full text-xs glass">${escapeHtml(tag)}</span>`).join('')}
             </div>
         `;
         
@@ -221,7 +221,7 @@ export function updateCompareBar() {
         count.textContent = state.compareList.length;
         items.innerHTML = state.compareList.map(id => {
             const tool = state.allTools.find(t => t.id === id);
-            return `<span class="px-2 py-1 rounded-full glass text-xs">${tool?.name || ''}</span>`;
+            return `<span class="px-2 py-1 rounded-full glass text-xs">${escapeHtml(tool?.name || '')}</span>`;
         }).join('');
     } else {
         bar.classList.remove('show');
@@ -252,9 +252,9 @@ export function startCompare() {
                         ${tools.map(tool => `
                             <th class="p-4 text-center min-w-[200px]">
                                 <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-600/20 flex items-center justify-center mx-auto mb-3">
-                                    <i class="fas ${tool.icon} text-3xl text-indigo-400"></i>
+                                    <i class="fas ${escapeAttr(tool.icon)} text-3xl text-indigo-400"></i>
                                 </div>
-                                <h4 class="font-semibold">${tool.name}</h4>
+                                <h4 class="font-semibold">${escapeHtml(tool.name)}</h4>
                             </th>
                         `).join('')}
                     </tr>
@@ -262,13 +262,13 @@ export function startCompare() {
                 <tbody class="text-sm">
                     <tr class="border-t border-gray-700">
                         <td class="p-4 text-gray-400">简介</td>
-                        ${tools.map(tool => `<td class="p-4 text-center text-gray-300">${tool.desc}</td>`).join('')}
+                        ${tools.map(tool => `<td class="p-4 text-center text-gray-300">${escapeHtml(tool.desc)}</td>`).join('')}
                     </tr>
                     <tr class="border-t border-gray-700">
                         <td class="p-4 text-gray-400">分类</td>
                         ${tools.map(tool => {
         const cat = state.categories.find(c => c.id === tool.category);
-        return `<td class="p-4 text-center">${cat?.name || tool.category}</td>`;
+        return `<td class="p-4 text-center">${escapeHtml(cat?.name || tool.category)}</td>`;
     }).join('')}
                     </tr>
                     <tr class="border-t border-gray-700">
@@ -276,28 +276,28 @@ export function startCompare() {
                         ${tools.map(tool => `
                             <td class="p-4 text-center">
                                 <div class="flex flex-wrap justify-center gap-1">
-                                    ${tool.tags.map(tag => `<span class="px-2 py-0.5 rounded-full glass text-xs">${tag}</span>`).join('')}
+                                    ${tool.tags.map(tag => `<span class="px-2 py-0.5 rounded-full glass text-xs">${escapeHtml(tag)}</span>`).join('')}
                                 </div>
                             </td>
                         `).join('')}
                     </tr>
                     <tr class="border-t border-gray-700">
                         <td class="p-4 text-gray-400">状态</td>
-                        ${tools.map(tool => `<td class="p-4 text-center">${tool.status || '稳定'}</td>`).join('')}
+                        ${tools.map(tool => `<td class="p-4 text-center">${escapeHtml(tool.status || '稳定')}</td>`).join('')}
                     </tr>
                     <tr class="border-t border-gray-700">
                         <td class="p-4 text-gray-400">难度</td>
-                        ${tools.map(tool => `<td class="p-4 text-center">${tool.difficulty || '简单'}</td>`).join('')}
+                        ${tools.map(tool => `<td class="p-4 text-center">${escapeHtml(tool.difficulty || '简单')}</td>`).join('')}
                     </tr>
                     <tr class="border-t border-gray-700">
                         <td class="p-4 text-gray-400">更新时间</td>
-                        ${tools.map(tool => `<td class="p-4 text-center">${tool.updateTime || '2024'}</td>`).join('')}
+                        ${tools.map(tool => `<td class="p-4 text-center">${escapeHtml(tool.updateTime || '2024')}</td>`).join('')}
                     </tr>
                     <tr class="border-t border-gray-700">
                         <td class="p-4 text-gray-400">操作</td>
                         ${tools.map(tool => `
                             <td class="p-4 text-center">
-                                <a href="${tool.url}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-sm hover:opacity-90 transition-all">
+                                <a href="${escapeAttr(tool.url)}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 text-sm hover:opacity-90 transition-all">
                                     <i class="fas fa-external-link-alt"></i> 访问
                                 </a>
                             </td>
@@ -336,17 +336,19 @@ export function handleSubmit(event) {
     }
     
     // 验证 URL 格式
-    try {
-        new URL(submission.url);
-    } catch {
-        showToast('请输入有效的 URL');
+    const urlValidation = validateUrl(submission.url);
+    if (!urlValidation.valid) {
+        showToast(`URL验证失败: ${urlValidation.error}`);
         return;
     }
+
+    // 使用验证后的URL
+    submission.url = urlValidation.url;
     
-    // Save to localStorage
-    const submissions = JSON.parse(localStorage.getItem('toolSubmissions') || '[]');
+    // Save to localStorage (使用安全的storage封装)
+    const submissions = storage.get('toolSubmissions') || [];
     submissions.push(submission);
-    localStorage.setItem('toolSubmissions', JSON.stringify(submissions));
+    storage.set('toolSubmissions', submissions);
     
     showToast('工具提交成功，等待审核！');
     closeModal(null, 'submitModal');
@@ -389,31 +391,31 @@ export function showToolDetail(toolId) {
     content.innerHTML = `
         <div class="mb-6">
             <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-600/20 flex items-center justify-center mb-4">
-                <i class="fas ${tool.icon} text-4xl text-indigo-400"></i>
+                <i class="fas ${escapeAttr(tool.icon)} text-4xl text-indigo-400"></i>
             </div>
-            <h1 class="text-3xl font-bold mb-2">${tool.name}</h1>
-            <p class="text-gray-400">${tool.desc}</p>
+            <h1 class="text-3xl font-bold mb-2">${escapeHtml(tool.name)}</h1>
+            <p class="text-gray-400">${escapeHtml(tool.desc)}</p>
         </div>
         
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div class="glass-card rounded-xl p-4 text-center">
                 <i class="fas fa-star text-yellow-500 mb-2"></i>
-                <p class="text-lg font-semibold">${tool.rating || '暂无'}</p>
+                <p class="text-lg font-semibold">${escapeHtml(tool.rating || '暂无')}</p>
                 <p class="text-xs text-gray-500">评分</p>
             </div>
             <div class="glass-card rounded-xl p-4 text-center">
                 <i class="fas fa-tag text-green-500 mb-2"></i>
-                <p class="text-lg font-semibold">${tool.status || '稳定'}</p>
+                <p class="text-lg font-semibold">${escapeHtml(tool.status || '稳定')}</p>
                 <p class="text-xs text-gray-500">状态</p>
             </div>
             <div class="glass-card rounded-xl p-4 text-center">
                 <i class="fas fa-layer-group text-blue-500 mb-2"></i>
-                <p class="text-lg font-semibold">${tool.difficulty || '简单'}</p>
+                <p class="text-lg font-semibold">${escapeHtml(tool.difficulty || '简单')}</p>
                 <p class="text-xs text-gray-500">难度</p>
             </div>
             <div class="glass-card rounded-xl p-4 text-center">
                 <i class="fas fa-calendar text-purple-500 mb-2"></i>
-                <p class="text-lg font-semibold">${tool.updateTime || '2024'}</p>
+                <p class="text-lg font-semibold">${escapeHtml(tool.updateTime || '2024')}</p>
                 <p class="text-xs text-gray-500">更新</p>
             </div>
         </div>
@@ -422,8 +424,8 @@ export function showToolDetail(toolId) {
             <div class="glass-card rounded-xl p-4">
                 <h3 class="font-semibold mb-2">功能标签</h3>
                 <div class="flex flex-wrap gap-2">
-                    ${tool.tags.map(tag => `<span class="px-3 py-1 rounded-full glass text-sm">${tag}</span>`).join('')}
-                    ${(tool.toolTags || []).map(tag => `<span class="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-sm">${tag}</span>`).join('')}
+                    ${tool.tags.map(tag => `<span class="px-3 py-1 rounded-full glass text-sm">${escapeHtml(tag)}</span>`).join('')}
+                    ${(tool.toolTags || []).map(tag => `<span class="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-sm">${escapeHtml(tag)}</span>`).join('')}
                 </div>
             </div>
             
@@ -443,19 +445,19 @@ export function showToolDetail(toolId) {
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-1" id="ratingStars">
                         ${Array(5).fill(0).map((_, i) => `
-                            <button onclick="rateTool(${tool.id}, ${i + 1})" class="text-2xl hover:scale-110 transition-all ${i < (state.ratings[tool.id] || 0) ? 'text-yellow-500' : 'text-gray-600'}">
+                            <button onclick="rateTool(${escapeAttr(String(tool.id))}, ${escapeAttr(String(i + 1))})" class="text-2xl hover:scale-110 transition-all ${i < (state.ratings[tool.id] || 0) ? 'text-yellow-500' : 'text-gray-600'}">
                                 <i class="fas fa-star"></i>
                             </button>
                         `).join('')}
                     </div>
-                    <span class="text-sm text-gray-500" id="ratingText">${state.ratings[tool.id] ? `你的评分: ${state.ratings[tool.id]}星` : '点击星星评分'}</span>
+                    <span class="text-sm text-gray-500" id="ratingText">${state.ratings[tool.id] ? `你的评分: ${escapeHtml(String(state.ratings[tool.id]))}星` : '点击星星评分'}</span>
                 </div>
             </div>
             
             <div class="glass-card rounded-xl p-4">
                 <h3 class="font-semibold mb-3">私人笔记</h3>
-                <textarea id="toolNote" rows="3" class="w-full px-4 py-3 rounded-xl glass bg-transparent text-sm resize-none focus:border-primary outline-none" placeholder="记录使用心得...">${state.notes[tool.id] || ''}</textarea>
-                <button onclick="saveNote(${tool.id})" class="mt-3 w-full py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-sm font-medium hover:opacity-90 transition-all">
+                <textarea id="toolNote" rows="3" class="w-full px-4 py-3 rounded-xl glass bg-transparent text-sm resize-none focus:border-primary outline-none" placeholder="记录使用心得...">${escapeHtml(state.notes[tool.id] || '')}</textarea>
+                <button onclick="saveNote(${escapeAttr(String(tool.id))})" class="mt-3 w-full py-2 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-600 text-sm font-medium hover:opacity-90 transition-all">
                     保存笔记
                 </button>
             </div>
@@ -468,14 +470,14 @@ export function showToolDetail(toolId) {
                     ${tool.relatedTools.map(id => {
         const related = state.allTools.find(t => t.id === id);
         return related ? `
-                            <div class="glass-card rounded-xl p-3 cursor-pointer hover:border-primary transition-all" onclick="closeDetail(); showToolDetail(${related.id});">
+                            <div class="glass-card rounded-xl p-3 cursor-pointer hover:border-primary transition-all" onclick="closeDetail(); showToolDetail(${escapeAttr(String(related.id))});">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-600/20 flex items-center justify-center">
-                                        <i class="fas ${related.icon} text-lg text-indigo-400"></i>
+                                        <i class="fas ${escapeAttr(related.icon)} text-lg text-indigo-400"></i>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <h4 class="font-medium text-sm truncate">${related.name}</h4>
-                                        <p class="text-xs text-gray-500 truncate">${related.desc}</p>
+                                        <h4 class="font-medium text-sm truncate">${escapeHtml(related.name)}</h4>
+                                        <p class="text-xs text-gray-500 truncate">${escapeHtml(related.desc)}</p>
                                     </div>
                                 </div>
                             </div>
@@ -485,7 +487,7 @@ export function showToolDetail(toolId) {
             </div>
         ` : ''}
         
-        <a href="${tool.url}" target="_blank" class="block w-full py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-center font-semibold hover:opacity-90 transition-all">
+        <a href="${escapeAttr(tool.url)}" target="_blank" class="block w-full py-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-center font-semibold hover:opacity-90 transition-all">
             <i class="fas fa-external-link-alt mr-2"></i>访问官网
         </a>
     `;
@@ -786,10 +788,10 @@ export function renderRecommendations() {
     
     container.classList.remove('hidden');
     tagsContainer.innerHTML = recs.map(tool => `
-        <button onclick="showToolDetail(${tool.id})" class="flex items-center gap-2 px-4 py-2 rounded-full glass hover:border-primary transition-all text-sm">
-            <i class="fas ${tool.icon} text-indigo-400"></i>
-            <span>${tool.name}</span>
-            <span class="text-xs text-gray-500">${tool.reason}</span>
+        <button onclick="showToolDetail(${escapeAttr(String(tool.id))})" class="flex items-center gap-2 px-4 py-2 rounded-full glass hover:border-primary transition-all text-sm">
+            <i class="fas ${escapeAttr(tool.icon)} text-indigo-400"></i>
+            <span>${escapeHtml(tool.name)}</span>
+            <span class="text-xs text-gray-500">${escapeHtml(tool.reason)}</span>
         </button>
     `).join('');
 }

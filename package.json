@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint src --ext .js,.ts",
     "format": "prettier --write \"src/**/*.{js,ts,css,html}\"",
-    "test": "jest",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
     "deploy": "gh-pages -d dist"
   },
   "devDependencies": {
