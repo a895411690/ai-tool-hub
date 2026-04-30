@@ -9,7 +9,7 @@
     <!-- DNS 预解析 -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="preconnect" href="https://qianfan.baidubce.com" crossorigin>
+    <link rel="preconnect" href="https://api.groq.com" crossorigin>
     
     <!-- 预加载关键资源 -->
     <link rel="preload" href="./src/app.js" as="script" crossorigin>
@@ -113,47 +113,45 @@
                     </button>
                 </div>
                 <div class="flex-1 overflow-y-auto space-y-4">
-                    <!-- API 设置 -->
+                    <!-- API 设置（可选） -->
                     <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
                         <div class="flex items-center justify-between mb-3">
                             <label class="text-sm font-medium flex items-center gap-2">
                                 <i class="fas fa-key text-yellow-400"></i>
-                                百度千帆 API 设置
+                                高级AI设置（可选）
+                                <span class="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full">免费使用</span>
                             </label>
                             <button onclick="aiOptimizer.toggleApiSettings()" id="apiSettingsToggle" class="text-xs text-gray-400 hover:text-white transition-colors">
                                 <i class="fas fa-chevron-down"></i> 展开
                             </button>
                         </div>
                         <div id="apiSettingsPanel" class="hidden space-y-3">
-                            <div>
-                                <label class="block text-xs text-gray-400 mb-1">API Key</label>
-                                <input type="password" id="qianfanApiKey" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-indigo-500 focus:outline-none" placeholder="输入百度千帆 API Key">
+                            <div class="text-xs text-gray-500 mb-2">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                无需配置即可使用基础AI优化功能！配置API Key可解锁更强模型。
                             </div>
                             <div>
-                                <label class="block text-xs text-gray-400 mb-1">模型</label>
+                                <label class="block text-xs text-gray-400 mb-1">API Key（可选）</label>
+                                <input type="password" id="qianfanApiKey" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-indigo-500 focus:outline-none" placeholder="留空则使用内置智能引擎（推荐）">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-gray-400 mb-1">高级模型（可选）</label>
                                 <select id="qianfanModel" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-indigo-500 focus:outline-none">
-                                    <option value="ernie-4.0-8k">ERNIE 4.0 8K（推荐）</option>
-                                    <option value="ernie-4.0-turbo-8k">ERNIE 4.0 Turbo 8K</option>
-                                    <option value="ernie-3.5-8k">ERNIE 3.5 8K（经济）</option>
-                                    <option value="ernie-speed-128k">ERNIE Speed 128K</option>
-                                    <option value="ernie-lite-8k">ERNIE Lite 8K（免费）</option>
-                                    <option value="deepseek-v3">DeepSeek V3</option>
+                                    <option value="">使用内置智能引擎（推荐）</option>
+                                    <option value="llama-3.1-8b-instant">Llama 3.1 8B (快速)</option>
+                                    <option value="llama-3.1-70b-versatile">Llama 3.1 70B (强大)</option>
+                                    <option value="mixtral-8x7b-32768">Mixtral 8x7B (中文优秀)</option>
                                 </select>
                             </div>
                             <div class="flex gap-2">
                                 <button onclick="aiOptimizer.saveAndTestApi()" class="flex-1 py-2 bg-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
-                                    <i class="fas fa-save mr-1"></i> 保存并测试
+                                    <i class="fas fa-save mr-1"></i> 测试连接
                                 </button>
                                 <button onclick="aiOptimizer.clearApiSettings()" class="px-3 py-2 bg-gray-700 rounded-lg text-sm hover:bg-gray-600 transition-colors">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                             <div id="apiStatus" class="hidden text-xs"></div>
-                            <p class="text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                API Key 仅存储在本地浏览器中，不会上传到任何服务器。
-                                <a href="https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:underline">获取 API Key →</a>
-                            </p>
                         </div>
                     </div>
                     <!-- 职位类型选择器 -->
