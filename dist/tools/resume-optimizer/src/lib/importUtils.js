@@ -288,12 +288,56 @@ class ImportUtils {
     }
 
     /**
+     * HTML内容净化 - 移除危险标签和属性，防止XSS攻击
+     * @param {string} html - 原始HTML内容
+     * @returns {string} - 净化后的安全HTML
+     */
+    sanitizeHtml(html) {
+        if (!html || typeof html !== 'string') {
+            return '';
+        }
+
+        // 移除危险标签（不区分大小写）
+        const dangerousTags = /<(script|iframe|object|embed|form|input|button|textarea|select)[^>]*>.*?<\/\1>/gi;
+        let sanitized = html.replace(dangerousTags, '');
+
+        // 移除自闭合的危险标签
+        const dangerousSelfClosingTags = /<(script|iframe|object|embed|input|button|textarea|select|img|link|style|meta)[^>]*\/?>/gi;
+        sanitized = sanitized.replace(dangerousSelfClosingTags, '');
+
+        // 移除事件处理器 (onclick, onload, onerror等)
+        const eventHandlers = /\s(on\w+)\s*=\s*(['"])[^\2]*\2/gi;
+        sanitized = sanitized.replace(eventHandlers, '');
+
+        // 移除javascript:伪协议
+        const jsPseudoProtocol = /(href|src|action)\s*=\s*(['"])\s*javascript:[^\2]*\2/gi;
+        sanitized = sanitized.replace(jsPseudoProtocol, '$1=$2#$2');
+
+        // 移除data:伪协议（可能导致XSS）
+        const dataPseudoProtocol = /(href|src|action)\s*=\s*(['"])\s*data:[^\2]*\2/gi;
+        sanitized = sanitized.replace(dataPseudoProtocol, '$1=$2#$2');
+
+        // 移除vbscript:伪协议
+        const vbPseudoProtocol = /(href|src|action)\s*=\s*(['"])\s*vbscript:[^\2]*\2/gi;
+        sanitized = sanitized.replace(vbPseudoProtocol, '$1=$2#$2');
+
+        // 移除expression: (CSS表达式，IE特有)
+        const cssExpression = /expression\s*\(/gi;
+        sanitized = sanitized.replace(cssExpression, '');
+
+        return sanitized;
+    }
+
+    /**
      * 从HTML提取文本
      */
     extractTextFromHTML(html) {
+        // 先净化HTML内容，防止XSS攻击
+        const sanitizedHtml = this.sanitizeHtml(html);
+
         // 创建临时DOM元素提取文本
         const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = html;
+        tempDiv.innerHTML = sanitizedHtml;
         const text = tempDiv.textContent || tempDiv.innerText || '';
         tempDiv.remove(); // 清理临时DOM元素，防止内存泄漏
         return text;
