@@ -2939,31 +2939,42 @@
             justify-content: center;
             gap: 6px;
             margin-top: 8px;
+            width: 100%;
         }
 
         .footer-police a {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            color: var(--text-secondary);
-            font-size: 12px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            padding: 4px 10px;
-            border-radius: 6px;
-            background: rgba(99, 102, 1, 0.04);
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px;
+            color: #6b7280 !important;
+            font-size: 12px !important;
+            line-height: 1.5 !important;
+            text-decoration: none !important;
+            padding: 6px 12px !important;
+            border-radius: 6px !important;
+            background: rgba(249, 250, 251, 0.8) !important;
+            border: 1px solid rgba(229, 231, 235, 0.8) !important;
+            transition: all 0.3s ease !important;
+            white-space: nowrap !important;
         }
 
         .footer-police a:hover {
-            color: var(--primary);
-            background: rgba(99, 102, 241, 0.08);
-            transform: translateY(-1px);
+            color: #6366f1 !important;
+            background: rgba(99, 102, 241, 0.08) !important;
+            border-color: rgba(99, 102, 241, 0.2) !important;
+            transform: translateY(-1px) !important;
         }
 
         .police-icon {
-            width: 16px;
-            height: 16px;
-            flex-shrink: 0;
+            width: 18px !important;
+            height: 18px !important;
+            min-width: 18px !important;
+            min-height: 18px !important;
+            flex-shrink: 0 !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+            object-fit: contain !important;
         }
 
         .beian-container {
@@ -3261,10 +3272,12 @@
                     沪ICP备2026013388号
                 </a>
             </div>
-            <div class="footer-police">
-                <a href="https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=31011502405714" target="_blank" rel="noopener noreferrer">
-                    <img src="https://weihub.cloud/assets/police-icon.png" alt="公安备案图标" class="police-icon" onerror="this.style.display='none'">
-                    <span>沪公网安备 31011502405714号</span>
+            <div style="display:block;text-align:center;margin-top:12px;width:100%;">
+                <a href="https://beian.mps.gov.cn/#/query/webSearch?code=31011502405714" rel="noreferrer" target="_blank" 
+                   style="display:inline-flex;align-items:center;gap:6px;color:#6b7280;font-size:12px;text-decoration:none;padding:6px 12px;border-radius:6px;background:#f9fafb;border:1px solid #e5e7eb;white-space:nowrap;">
+                    <img src="./police-icon.png" alt="公安备案图标" style="width:18px;height:18px;display:inline-block;vertical-align:middle;" 
+                         onerror="this.style.display='inline-block';this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABHklEQVQ4T2NkYGD4z8DAwMgABXAGNgGwSgwVAFbmAgXQdISfAB4DiIgWAQoAA0YwHrBkYGAQYf3v838q8wPCkYGBgYmBg+M/3n9G+oHwEGGxgYGBiYGH53r8vyr/AYIGBgaGBkYGD4z8DA4NMCvQDEkKYPgAqgwH+BgYGA4Y8BcAA1IwP8GBgYnhD8PwxkMAAHEMGJgAAAAASUVORK5CYII='">
+                    <span>沪公网安备31011502405714号</span>
                 </a>
             </div>
         </div>
