@@ -2910,9 +2910,10 @@
             margin: 0 auto;
             padding: 0 24px;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            justify-content: space-between;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
         }
 
         .footer-copyright p {
@@ -3267,16 +3268,15 @@
             <div class="footer-copyright">
                 <p>&copy; 2026 AI Tool Hub. All rights reserved.</p>
             </div>
-            <div class="footer-icp">
-                <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer" 
+                   style="color:#6b7280;font-size:12px;text-decoration:none;">
                     沪ICP备2026013388号
                 </a>
-            </div>
-            <div style="display:block;text-align:center;margin-top:12px;width:100%;">
                 <a href="https://beian.mps.gov.cn/#/query/webSearch?code=31011502405714" rel="noreferrer" target="_blank" 
-                   style="display:inline-flex;align-items:center;gap:6px;color:#6b7280;font-size:12px;text-decoration:none;padding:6px 12px;border-radius:6px;background:#f9fafb;border:1px solid #e5e7eb;white-space:nowrap;">
-                    <img src="./police-icon.png" alt="公安备案图标" style="width:18px;height:18px;display:inline-block;vertical-align:middle;" 
-                         onerror="this.style.display='inline-block';this.src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABHklEQVQ4T2NkYGD4z8DAwMgABXAGNgGwSgwVAFbmAgXQdISfAB4DiIgWAQoAA0YwHrBkYGAQYf3v838q8wPCkYGBgYmBg+M/3n9G+oHwEGGxgYGBiYGH53r8vyr/AYIGBgaGBkYGD4z8DA4NMCvQDEkKYPgAqgwH+BgYGA4Y8BcAA1IwP8GBgYnhD8PwxkMAAHEMGJgAAAAASUVORK5CYII='">
+                   style="display:flex;align-items:center;gap:4px;color:#6b7280;font-size:12px;text-decoration:none;white-space:nowrap;">
+                    <img src="./police-icon.png" alt="公安备案图标" style="width:16px;height:16px;display:inline-block;vertical-align:middle;" 
+                         onerror="this.style.display='none'">
                     <span>沪公网安备31011502405714号</span>
                 </a>
             </div>
