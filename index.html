@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Cache Control - Disable excessive caching for HTML -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>AI Tool Hub - 优质AI工具导航</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,7 +16,7 @@
     <!-- Content Security Policy (CSP) for enhanced security -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval';
         style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
         font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
         img-src 'self' data: https: http:;
@@ -570,117 +574,295 @@
         }
 
         /* ============================================
-           SEARCH - Modern Pill Design
+           SEARCH - Command Bar Design (Linear/Notion)
            ============================================ */
 
         .search-container {
             position: relative;
-            max-width: 680px;
-            margin: 0 auto 32px;
+            max-width: 720px;
+            margin: 0 auto 40px;
             animation: fadeInUp 0.6s ease 0.3s both;
             width: 100%;
             padding: 0 16px;
+            z-index: 100;
         }
 
         .search-box {
             position: relative;
-            background: white;
-            border-radius: var(--radius-full);
-            box-shadow: var(--card-shadow);
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
+            background: var(--bg-elevated);
+            border-radius: 18px;
+            box-shadow: 
+                0 1px 3px rgba(0, 0, 0, 0.04),
+                0 4px 12px rgba(0, 0, 0, 0.06),
+                0 0 0 1px rgba(0, 0, 0, 0.06);
+            border: 1.5px solid transparent;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
-            padding: 4px 8px 4px 20px;
+            gap: 10px;
+            padding: 12px 12px 12px 14px;
+            backdrop-filter: blur(8px);
+        }
+
+        .dark .search-box {
+            background: rgba(30, 30, 35, 0.9);
+            box-shadow: 
+                0 1px 3px rgba(0, 0, 0, 0.2),
+                0 4px 20px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.06);
         }
 
         .search-box:focus-within {
-            border-color: var(--primary);
-            box-shadow: var(--card-shadow-hover), 0 0 0 4px rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.6);
+            box-shadow: 
+                0 0 0 1px rgba(99, 102, 241, 0.12),
+                0 4px 24px rgba(99, 102, 241, 0.15),
+                0 8px 32px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .search-icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            color: var(--text-muted);
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .search-box:focus-within .search-icon-wrapper {
+            color: var(--primary);
+            transform: scale(1.05);
         }
 
         #mainSearch {
-            width: 100%;
-            padding: 16px 52px 16px 44px;
+            flex: 1;
+            min-width: 0;
+            padding: 4px 0;
             background: transparent;
             border: none;
             color: var(--text-primary);
             font-size: 16px;
             font-weight: 500;
-            line-height: 1.4;
+            line-height: 1.5;
             box-sizing: border-box;
+            font-family: inherit;
         }
 
         #mainSearch::placeholder {
-            color: #9ca3af;
+            color: var(--text-muted);
             font-weight: 400;
-            opacity: 1;
+            opacity: 0.8;
         }
 
         #mainSearch:focus {
             outline: none;
         }
 
-        .search-icon {
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9ca3af;
-            pointer-events: none;
-            font-size: 16px;
-            z-index: 2;
+        .search-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
         }
 
-        #clearSearchBtn {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--text-muted);
-            color: white;
-            border: none;
-            cursor: pointer;
+        .search-clear-btn {
             display: flex;
             align-items: center;
             justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            background: var(--bg-subtle);
+            color: var(--text-secondary);
+            border: none;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            padding: 0;
+        }
+
+        .search-clear-btn:hover {
+            background: var(--card-border);
+            color: var(--text-primary);
+        }
+
+        .search-shortcut {
+            display: inline-flex;
+            align-items: center;
+            gap: 1px;
+            padding: 4px 7px;
+            background: var(--bg-subtle);
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 600;
+            font-family: ui-monospace, SF Mono, Menlo, Monaco, Consolas, monospace;
+            line-height: 1;
+            cursor: default;
+            user-select: none;
             transition: all 0.2s ease;
+        }
+
+        .search-box:focus-within .search-shortcut {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.25);
+            color: var(--primary);
+        }
+
+        .search-shortcut .modifier {
             font-size: 12px;
         }
 
-        #clearSearchBtn:hover {
-            background: var(--text-secondary);
-            transform: translateY(-50%) scale(1.1);
+        /* Search Dropdown */
+        .search-dropdown {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 16px;
+            right: 16px;
+            background: var(--bg-elevated);
+            border-radius: 16px;
+            box-shadow: 
+                0 8px 30px rgba(0, 0, 0, 0.12),
+                0 0 0 1px rgba(0, 0, 0, 0.06);
+            padding: 8px;
+            max-height: 380px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 500;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-6px) scale(0.98);
+            transform-origin: top center;
+            transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(16px);
         }
 
-        .search-history {
-            position: absolute;
-            top: calc(100% + 8px);
+        .dark .search-dropdown {
+            background: rgba(22, 22, 26, 0.95);
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.35),
+                0 0 0 1px rgba(255, 255, 255, 0.06);
+        }
+
+        .search-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .search-dropdown:empty {
+            display: none !important;
+        }
+
+        .search-dropdown::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .search-dropdown::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 8px;
+        }
+
+        .search-dropdown::-webkit-scrollbar-thumb {
+            background: var(--card-border);
+            border-radius: 3px;
+        }
+
+        .search-suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .search-suggestion-item:hover,
+        .search-suggestion-item.active {
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        .dark .search-suggestion-item:hover,
+        .dark .search-suggestion-item.active {
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .search-suggestion-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .search-suggestion-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-suggestion-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-suggestion-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-suggestion-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 8px;
+            background: var(--bg-subtle);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            flex-shrink: 0;
+        }
+
+        /* Backdrop */
+        .search-backdrop {
+            position: fixed;
+            top: 0;
             left: 0;
             right: 0;
-            background: white;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--card-shadow-hover);
-            padding: 12px;
-            max-height: 280px;
-            overflow-y: auto;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.06);
             z-index: 50;
             opacity: 0;
             visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.2s ease;
+            backdrop-filter: blur(2px);
         }
 
-        .search-history.show {
+        .search-backdrop.show {
             opacity: 1;
             visibility: visible;
-            transform: translateY(0);
         }
 
-        .search-history-item {
+        .stat-card {
             padding: 12px 16px;
             border-radius: var(--radius-sm);
             cursor: pointer;
@@ -1894,15 +2076,16 @@
         .modal {
             position: fixed;
             inset: 0;
-            background: rgba(17, 24, 39, 0.6);
-            backdrop-filter: blur(8px);
+            background: rgba(17, 24, 39, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 200;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s ease;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             padding: 20px;
         }
 
@@ -1912,15 +2095,21 @@
         }
 
         .modal-content {
-            background: white;
-            border-radius: var(--radius-xl);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.95));
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
             padding: 32px;
-            max-width: 420px;
+            max-width: 480px;
             width: 100%;
-            transform: scale(0.95) translateY(20px);
+            transform: scale(0.92) translateY(30px);
             opacity: 0;
-            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 
+                0 25px 60px -15px rgba(0, 0, 0, 0.18),
+                0 0 80px -20px rgba(99, 102, 241, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .modal.active .modal-content {
@@ -1929,92 +2118,289 @@
         }
 
         /* ============================================
-           📋 TOOL DETAIL MODAL (v4.3.0)
+           📋 TOOL DETAIL MODAL (v5.0.0 - Modern Design)
            ============================================ */
 
         .tool-detail-content {
-            max-height: 85vh;
+            max-height: 88vh;
             overflow-y: auto;
-            padding: 28px !important;
+            padding: 0 !important;
+            max-width: 580px;
+            border-radius: 28px;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(99, 102, 241, 0.3) transparent;
         }
 
-        .detail-header {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            align-items: flex-start;
+        .tool-detail-content::-webkit-scrollbar {
+            width: 6px;
         }
 
-        .detail-header-icon {
-            width: 64px;
-            height: 64px;
-            border-radius: var(--radius-lg);
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(236, 72, 153, 0.12));
+        .tool-detail-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .tool-detail-content::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 3px;
+        }
+
+        .modal-close-btn-modern {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background: rgba(248, 250, 252, 0.8);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            color: #64748b;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
-            color: var(--primary);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            backdrop-filter: blur(8px);
+        }
+
+        .modal-close-btn-modern:hover {
+            background: #f87171;
+            border-color: #f87171;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .detail-content-wrapper {
+            padding: 40px;
+            padding-top: 52px;
+        }
+
+        .detail-hero {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 28px;
+            align-items: flex-start;
+        }
+
+        .detail-icon-wrapper {
+            position: relative;
             flex-shrink: 0;
         }
 
-        .detail-header-info {
+        .detail-icon-bg {
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            background: linear-gradient(135deg, var(--primary), var(--accent-pink));
+            border-radius: 24px;
+            opacity: 0.15;
+            filter: blur(8px);
+        }
+
+        .detail-header-icon {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            border-radius: 22px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.9));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 34px;
+            color: var(--primary);
+            box-shadow: 
+                0 12px 32px rgba(99, 102, 241, 0.15),
+                0 0 0 1px rgba(99, 102, 241, 0.08);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .detail-hero-info {
             flex: 1;
+            padding-top: 4px;
         }
 
         .detail-title {
-            font-size: 22px !important;
+            font-size: 26px !important;
             font-weight: 800 !important;
             color: var(--text-primary) !important;
             margin-bottom: 8px !important;
-            line-height: 1.3;
+            line-height: 1.2;
+            letter-spacing: -0.5px;
         }
 
         .detail-desc {
             font-size: 14px;
             color: var(--text-secondary);
             line-height: 1.6;
-            margin: 0 !important;
+            margin: 0 0 14px 0 !important;
         }
 
-        .detail-tags-section {
-            margin-bottom: 20px;
-            padding: 12px 0;
-            border-top: 1px solid var(--card-border);
-            border-bottom: 1px solid var(--card-border);
-        }
-
-        .detail-tags {
+        .detail-tags-modern {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
         }
 
-        .detail-info-grid {
+        .detail-separator {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.2), transparent);
+            margin-bottom: 24px;
+        }
+
+        .detail-meta-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-bottom: 20px;
+            gap: 14px;
+            margin-bottom: 24px;
         }
 
-        .info-item {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .info-label {
-            font-size: 12px;
-            color: var(--text-muted);
+        .meta-card {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 12px;
+            padding: 16px;
+            background: linear-gradient(145deg, rgba(248, 250, 252, 0.7), rgba(255, 255, 255, 0.5));
+            border-radius: 16px;
+            border: 1px solid rgba(226, 232, 240, 0.6);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .info-value {
-            font-size: 15px;
-            font-weight: 600;
+        .meta-card:hover {
+            background: linear-gradient(145deg, rgba(99, 102, 241, 0.06), rgba(236, 72, 153, 0.04));
+            border-color: rgba(99, 102, 241, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.1);
+        }
+
+        .meta-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(236, 72, 153, 0.12));
+            border-radius: 12px;
+            color: var(--primary);
+            font-size: 16px;
+        }
+
+        .meta-content {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            flex: 1;
+        }
+
+        .meta-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .meta-value {
+            font-size: 14px;
+            font-weight: 700;
             color: var(--text-primary);
+        }
+
+        .detail-platform-modern {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 16px 18px;
+            background: linear-gradient(145deg, rgba(248, 250, 252, 0.6), rgba(255, 255, 255, 0.4));
+            border-radius: 16px;
+            border: 1px solid rgba(226, 232, 240, 0.7);
+        }
+
+        .platform-label-modern {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .detail-platform-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .rating-section-modern {
+            margin-bottom: 28px;
+            padding: 20px;
+            background: linear-gradient(145deg, rgba(251, 191, 36, 0.06), rgba(245, 158, 11, 0.04));
+            border-radius: 18px;
+            border: 1px solid rgba(251, 191, 36, 0.18);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        }
+
+        .rating-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .rating-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rating-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .star-rating-modern {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .star-btn-modern {
+            background: transparent;
+            border: none;
+            padding: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .star-svg {
+            transition: all 0.2s ease;
+            color: #d1d5db;
+        }
+
+        .star-btn-modern:hover {
+            transform: scale(1.2);
+        }
+
+        .star-btn-modern:hover .star-svg,
+        .star-btn-modern.active .star-svg {
+            color: #fbbf24;
+            filter: drop-shadow(0 2px 6px rgba(251, 191, 36, 0.4));
+        }
+
+        .rating-text-modern {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 10px;
+            display: block;
         }
 
         .detail-platform-section {
@@ -2053,48 +2439,83 @@
 
         .detail-actions {
             display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
+            gap: 14px;
+            margin-bottom: 28px;
         }
 
         .btn-primary {
             flex: 1;
-            padding: 14px 24px;
+            padding: 16px 28px;
             background: linear-gradient(135deg, var(--primary), var(--accent-pink));
             color: white;
             border: none;
-            border-radius: var(--radius-lg);
+            border-radius: 16px;
             font-size: 15px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             text-decoration: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            box-shadow: 
+                0 6px 20px rgba(99, 102, 241, 0.35),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
         }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 10px 30px rgba(99, 102, 241, 0.45),
+                0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
 
         .btn-secondary {
-            padding: 14px 20px;
-            background: transparent;
-            border: 2px solid var(--card-border);
-            border-radius: var(--radius-lg);
+            padding: 16px 24px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(248, 250, 252, 0.6));
+            border: 1.5px solid rgba(99, 102, 241, 0.15);
+            border-radius: 16px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             color: var(--text-secondary);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .btn-secondary:hover {
+            background: linear-gradient(145deg, rgba(99, 102, 241, 0.05), rgba(236, 72, 153, 0.05));
+            border-color: rgba(99, 102, 241, 0.35);
+            color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.12);
         }
 
         .btn-secondary:hover {
@@ -2173,12 +2594,13 @@
         .rating-section {
             display: flex;
             align-items: center;
-            gap: 14px;
-            margin-bottom: 20px;
-            padding: 14px 18px;
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.06), rgba(251, 191, 36, 0.06));
-            border-radius: var(--radius-lg);
-            border: 1px solid rgba(245, 158, 11, 0.15);
+            gap: 16px;
+            margin-bottom: 24px;
+            padding: 18px 20px;
+            background: linear-gradient(145deg, rgba(245, 158, 11, 0.08), rgba(251, 191, 36, 0.06));
+            border-radius: 16px;
+            border: 1px solid rgba(245, 158, 11, 0.18);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
         }
 
         .rating-label {
@@ -2187,37 +2609,46 @@
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             min-width: 80px;
         }
 
         .star-rating {
             display: flex;
-            gap: 4px;
+            gap: 6px;
         }
 
         .star-btn {
-            background: none;
-            border: none;
-            font-size: 26px;
-            color: #d1d5db;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(248, 250, 252, 0.6));
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 10px;
+            font-size: 28px;
+            color: #e5e7eb;
             cursor: pointer;
-            transition: all 0.2s ease;
-            padding: 2px;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            padding: 6px 8px;
             line-height: 1;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
         }
 
         .star-btn:hover {
-            transform: scale(1.15);
+            transform: scale(1.18) translateY(-2px);
             color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.4);
+            box-shadow: 0 4px 16px rgba(245, 158, 11, 0.25);
         }
 
         .star-btn.active {
             color: #f59e0b;
+            background: linear-gradient(145deg, rgba(251, 191, 36, 0.15), rgba(245, 158, 11, 0.1));
+            border-color: rgba(245, 158, 11, 0.35);
+            box-shadow: 0 2px 12px rgba(245, 158, 11, 0.15);
         }
 
         .star-btn.active:hover {
             color: #f97316;
+            border-color: rgba(249, 115, 22, 0.5);
+            box-shadow: 0 4px 16px rgba(249, 115, 22, 0.25);
         }
 
         .rating-text {
@@ -2225,6 +2656,7 @@
             color: var(--text-muted);
             font-weight: 500;
             min-width: 70px;
+            padding-left: 8px;
         }
 
         /* ============================================
@@ -3050,16 +3482,29 @@
                 </p>
             </section>
 
-            <!-- Search -->
+            <!-- Search - Modern Design -->
             <div class="search-container" role="search">
                 <div class="search-box">
-                    <i class="fas fa-search search-icon" aria-hidden="true"></i>
-                    <input type="text" id="mainSearch" placeholder="搜索 AI 工具..." autocomplete="off" aria-label="搜索AI工具">
-                    <button id="clearSearchBtn" class="hidden" aria-label="清除搜索">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <div class="search-icon-wrapper">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.3-4.3"></path>
+                        </svg>
+                    </div>
+                    <input type="text" id="mainSearch" placeholder="搜索 AI 工具..." autocomplete="off" aria-label="搜索AI工具" spellcheck="false">
+                    <div class="search-actions">
+                        <button id="clearSearchBtn" class="search-clear-btn hidden" aria-label="清除搜索" title="清除搜索">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 6 6 18"></path>
+                                <path d="m6 6 12 12"></path>
+                            </svg>
+                        </button>
+                        <kbd class="search-shortcut" title="按 ⌘K 或 Ctrl+K 快速搜索">
+                            <span class="modifier">⌘</span><span class="key">K</span>
+                        </kbd>
+                    </div>
                 </div>
-                <div class="search-history" id="searchHistory" role="listbox" aria-label="搜索历史"></div>
+                <div class="search-dropdown" id="searchHistory" role="listbox" aria-label="搜索历史"></div>
             </div>
 
             <!-- Hot Tools Section (v4.3.0) -->
@@ -3275,8 +3720,7 @@
                 </a>
                 <a href="https://beian.mps.gov.cn/#/query/webSearch?code=31011502405714" rel="noreferrer" target="_blank" 
                    style="display:flex;align-items:center;gap:4px;color:#6b7280;font-size:12px;text-decoration:none;white-space:nowrap;">
-                    <img src="./police-icon.png" alt="公安备案图标" style="width:16px;height:16px;display:inline-block;vertical-align:middle;" 
-                         onerror="this.style.display='none'">
+                    <i class="fas fa-shield-alt" style="font-size:14px;color:#6b7280;"></i>
                     <span>沪公网安备31011502405714号</span>
                 </a>
             </div>
@@ -3394,64 +3838,101 @@
         <span id="toastMsg"></span>
     </div>
 
-    <!-- Tool Detail Modal (v4.3.0) -->
-    <div id="toolDetailModal" class="modal" onclick="closeToolDetail()" role="dialog" aria-modal="true">
-        <div class="modal-content tool-detail-content" onclick="event.stopPropagation()" style="max-width: 560px;">
-            <button class="modal-close-btn" onclick="closeToolDetail()" aria-label="关闭">
-                <i class="fas fa-times"></i>
+    <!-- Tool Detail Modal (v5.0.0 - Modern Design) -->
+    <div id="toolDetailModal" class="modal modal-modern" onclick="closeToolDetail()" role="dialog" aria-modal="true">
+        <div class="modal-content tool-detail-content" onclick="event.stopPropagation()">
+            <button class="modal-close-btn modal-close-btn-modern" onclick="closeToolDetail()" aria-label="关闭">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
             </button>
 
-            <!-- Header Section -->
-            <div class="detail-header">
-                <div class="detail-header-icon"></div>
-                <div class="detail-header-info">
-                    <h2 class="detail-title">工具名称</h2>
-                    <p class="detail-desc">工具描述文字</p>
+            <div class="detail-content-wrapper">
+                <div class="detail-hero">
+                    <div class="detail-icon-wrapper">
+                        <div class="detail-icon-bg"></div>
+                        <div class="detail-header-icon"></div>
+                    </div>
+                    <div class="detail-hero-info">
+                        <h2 class="detail-title">工具名称</h2>
+                        <p class="detail-desc">工具描述文字</p>
+                        <div class="detail-tags detail-tags-modern"></div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Tags & Status -->
-            <div class="detail-tags-section">
-                <div class="detail-tags"></div>
-            </div>
+                <div class="detail-separator"></div>
 
-            <!-- Info Grid -->
-            <div class="detail-info-grid">
-                <div class="info-item">
-                    <span class="info-label"><i class="fas fa-folder"></i> 分类</span>
-                    <span class="info-value detail-category">-</span>
+                <div class="detail-meta-grid">
+                    <div class="meta-card">
+                        <div class="meta-icon"><i class="fas fa-folder"></i></div>
+                        <div class="meta-content">
+                            <span class="meta-label">分类</span>
+                            <span class="meta-value detail-category">-</span>
+                        </div>
+                    </div>
+                    <div class="meta-card">
+                        <div class="meta-icon"><i class="fas fa-signal"></i></div>
+                        <div class="meta-content">
+                            <span class="meta-label">难度</span>
+                            <span class="meta-value detail-difficulty">-</span>
+                        </div>
+                    </div>
+                    <div class="meta-card">
+                        <div class="meta-icon"><i class="fas fa-clock"></i></div>
+                        <div class="meta-content">
+                            <span class="meta-label">更新</span>
+                            <span class="meta-value detail-update-time">-</span>
+                        </div>
+                    </div>
+                    <div class="meta-card">
+                        <div class="meta-icon"><i class="fas fa-mouse-pointer"></i></div>
+                        <div class="meta-content">
+                            <span class="meta-label">热度</span>
+                            <span class="meta-value detail-click-count">0</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="info-item">
-                    <span class="info-label"><i class="fas fa-signal"></i> 难度</span>
-                    <span class="info-value detail-difficulty">-</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label"><i class="fas fa-clock"></i> 更新</span>
-                    <span class="info-value detail-update-time">-</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label"><i class="fas fa-mouse-pointer"></i> 点击</span>
-                    <span class="info-value detail-click-count">0</span>
-                </div>
-            </div>
 
-            <!-- Platform Badges -->
-            <div class="detail-platform-section">
-                <span class="platform-label"><i class="fas fa-desktop"></i> 支持平台:</span>
-                <div class="detail-platform"></div>
-            </div>
-
-            <!-- Rating Section (v4.4.0) -->
-            <div class="rating-section">
-                <span class="rating-label"><i class="fas fa-star-half-alt"></i> 我的评分:</span>
-                <div class="star-rating" id="toolStarRating" data-tool-id="">
-                    <button class="star-btn" data-rating="1" onclick="rateTool(1)" title="1星 - 很差">★</button>
-                    <button class="star-btn" data-rating="2" onclick="rateTool(2)" title="2星 - 较差">★</button>
-                    <button class="star-btn" data-rating="3" onclick="rateTool(3)" title="3星 - 一般">★</button>
-                    <button class="star-btn" data-rating="4" onclick="rateTool(4)" title="4星 - 很好">★</button>
-                    <button class="star-btn" data-rating="5" onclick="rateTool(5)" title="5星 - 极好">★</button>
+                <div class="detail-platform-modern">
+                    <span class="platform-label-modern"><i class="fas fa-desktop"></i> 支持平台</span>
+                    <div class="detail-platform detail-platform-badges"></div>
                 </div>
-                <span class="rating-text" id="ratingText">点击评分</span>
+
+                <div class="rating-section-modern">
+                    <div class="rating-header">
+                        <span class="rating-title"><i class="fas fa-star"></i> 我的评分</span>
+                        <span class="rating-subtitle">点击星星为工具打分</span>
+                    </div>
+                    <div class="star-rating star-rating-modern" id="toolStarRating" data-tool-id="">
+                        <button class="star-btn star-btn-modern" data-rating="1" onclick="rateTool(1)" title="1星">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" class="star-svg">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </button>
+                        <button class="star-btn star-btn-modern" data-rating="2" onclick="rateTool(2)" title="2星">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" class="star-svg">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </button>
+                        <button class="star-btn star-btn-modern" data-rating="3" onclick="rateTool(3)" title="3星">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" class="star-svg">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </button>
+                        <button class="star-btn star-btn-modern" data-rating="4" onclick="rateTool(4)" title="4星">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" class="star-svg">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </button>
+                        <button class="star-btn star-btn-modern" data-rating="5" onclick="rateTool(5)" title="5星">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" class="star-svg">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                    <span class="rating-text-modern" id="ratingText">点击评分</span>
+                </div>
             </div>
 
             <!-- Action Buttons -->
@@ -3477,7 +3958,6 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
     <script type="module" src="js/main.js"></script>
 </body>
 </html>

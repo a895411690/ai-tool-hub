@@ -1,6 +1,6 @@
 // Import state from centralized state module (no circular dependency!)
 import state, { getCategoryName, isFavorite, addToSearchHistory } from './state.js';
-import { escapeHtml, escapeAttr, MAX_SEARCH_HISTORY, SEARCH_DEBOUNCE_TIME } from './utils.js';
+import { escapeHtml, escapeAttr, SEARCH_DEBOUNCE_TIME, showToast } from './utils.js';
 
 /**
  * Render category filter buttons
@@ -44,8 +44,6 @@ function renderHotTools() {
 
     // Generate HTML for each hot tool card
     const html = hotTools.map(tool => {
-        const categoryName = getCategoryName(tool.category);
-
         // Generate tags
         let tagsHtml = '';
         if (tool.tags?.includes('free')) tagsHtml += '<span class="tag tag-free">免费</span>';
@@ -53,7 +51,7 @@ function renderHotTools() {
         if (tool.toolTags?.includes('国产')) tagsHtml += '<span class="tag tag-domestic">国产</span>';
 
         return `
-            <div class="hot-tool-card" onclick="showToolDetail(${tool.id})">
+            <div class="hot-tool-card" data-tool-id="${tool.id}">
                 <div class="hot-tool-icon">
                     <i class="fas ${escapeAttr(tool.icon)}"></i>
                 </div>
@@ -135,7 +133,7 @@ function renderStatisticsDashboard() {
             const rankClass = index === 0 ? 'top-rank-1' : index === 1 ? 'top-rank-2' : index === 2 ? 'top-rank-3' : 'top-rank-default';
 
             return `
-                <div class="top-tool-item" onclick="showToolDetail(${tool.id})">
+                <div class="top-tool-item" data-tool-id="${tool.id}">
                     <span class="top-rank ${rankClass}">${index + 1}</span>
                     <div class="top-tool-info">
                         <div class="top-tool-name">${escapeHtml(tool.name)}</div>
@@ -210,7 +208,7 @@ function createToolCard(tool) {
     }
 
     return `
-        <div class="tool-card" onclick="showToolDetail(${tool.id})">
+        <div class="tool-card" data-tool-id="${tool.id}">
             <div class="card-header">
                 <div class="card-icon">
                     <i class="fas ${escapeAttr(tool.icon)}"></i>
@@ -285,6 +283,10 @@ function filterCategory(category) {
 
 let currentSort = 'default';
 
+function setCurrentSort(sortBy) {
+    currentSort = sortBy;
+}
+
 // Advanced Filters State (v4.3.0)
 const advancedFilters = {
     price: [],
@@ -297,30 +299,30 @@ function sortTools(tools, sortBy) {
 
     const sorted = [...tools];
     switch (sortBy) {
-        case 'name-asc':
-            return sorted.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
-        case 'name-desc':
-            return sorted.sort((a, b) => b.name.localeCompare(a.name, 'zh-CN'));
-        case 'hot':
-            return sorted.sort((a, b) => {
-                if (a.status === 'hot' && b.status !== 'hot') return -1;
-                if (b.status === 'hot' && a.status !== 'hot') return 1;
-                return 0;
-            });
-        case 'free-first':
-            return sorted.sort((a, b) => {
-                const aFree = a.tags?.includes('free') ? 0 : 1;
-                const bFree = b.tags?.includes('free') ? 0 : 1;
-                return aFree - bFree;
-            });
-        case 'domestic':
-            return sorted.sort((a, b) => {
-                const aDomestic = a.toolTags?.includes('国产') ? 0 : 1;
-                const bDomestic = b.toolTags?.includes('国产') ? 0 : 1;
-                return aDomestic - bDomestic;
-            });
-        default:
-            return tools;
+    case 'name-asc':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+    case 'name-desc':
+        return sorted.sort((a, b) => b.name.localeCompare(a.name, 'zh-CN'));
+    case 'hot':
+        return sorted.sort((a, b) => {
+            if (a.status === 'hot' && b.status !== 'hot') return -1;
+            if (b.status === 'hot' && a.status !== 'hot') return 1;
+            return 0;
+        });
+    case 'free-first':
+        return sorted.sort((a, b) => {
+            const aFree = a.tags?.includes('free') ? 0 : 1;
+            const bFree = b.tags?.includes('free') ? 0 : 1;
+            return aFree - bFree;
+        });
+    case 'domestic':
+        return sorted.sort((a, b) => {
+            const aDomestic = a.toolTags?.includes('国产') ? 0 : 1;
+            const bDomestic = b.toolTags?.includes('国产') ? 0 : 1;
+            return aDomestic - bDomestic;
+        });
+    default:
+        return tools;
     }
 }
 
@@ -391,6 +393,31 @@ function loadSavedFilters() {
 }
 
 /**
+ * Show search history dropdown
+ */
+function showSearchHistory() {
+    const container = document.getElementById('searchHistory');
+    if (!container || state.searchHistory.length === 0) return;
+
+    container.innerHTML = state.searchHistory.slice(0, 8).map(term => `
+        <div class="search-suggestion-item" data-search-text="${escapeAttr(term)}">
+            <div class="search-suggestion-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(-10deg)">
+                    <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L13 11h7v7l-2.26-2.26"/>
+                </svg>
+            </div>
+            <div class="search-suggestion-content">
+                <div class="search-suggestion-title">${escapeHtml(term)}</div>
+                <div class="search-suggestion-subtitle">搜索历史</div>
+            </div>
+            <span class="search-suggestion-badge">最近</span>
+        </div>
+    `).join('');
+
+    container.classList.add('show');
+}
+
+/**
  * Setup search functionality with debounced input handling (v4.4.0 Enhanced)
  */
 function setupSearch() {
@@ -400,11 +427,23 @@ function setupSearch() {
     let searchDebounceTimeout = null;
     let currentSearchTerm = '';
 
-    // Search suggestions container (v4.4.0)
+    // Search suggestions container (v5.1.0 Modern Command Bar Design)
     const suggestionsContainer = document.createElement('div');
     suggestionsContainer.id = 'searchSuggestions';
-    suggestionsContainer.className = 'search-suggestions';
-    searchInput.parentNode.appendChild(suggestionsContainer);
+    suggestionsContainer.className = 'search-dropdown';
+    const searchContainer = searchInput.closest('.search-container');
+    if (searchContainer) {
+        searchContainer.appendChild(suggestionsContainer);
+    } else {
+        searchInput.parentNode.appendChild(suggestionsContainer);
+    }
+
+    // Search history container also needs consistent class
+    const searchHistoryContainer = document.getElementById('searchHistory');
+    if (searchHistoryContainer && !searchHistoryContainer.classList.contains('search-dropdown')) {
+        searchHistoryContainer.classList.remove('search-history');
+        searchHistoryContainer.classList.add('search-dropdown');
+    }
 
     // Search results counter element (v4.4.0)
     let resultsCounter = document.querySelector('.results-counter');
@@ -417,6 +456,9 @@ function setupSearch() {
             toolsGrid.parentNode.insertBefore(resultsCounter, toolsGrid);
         }
     }
+
+    // Track last searched term to avoid recording intermediate states
+    let lastRecordedSearch = '';
 
     searchInput.addEventListener('input', (e) => {
         const term = e.target.value.trim().toLowerCase();
@@ -442,18 +484,96 @@ function setupSearch() {
 
             // Update results counter (v4.4.0)
             updateResultsCounter(term);
-
-            // Save search history using state function
-            if (term) {
-                addToSearchHistory(term);
-            }
         }, SEARCH_DEBOUNCE_TIME);
     });
 
-    // Hide suggestions when clicking outside
+    // Record search history only on Enter key (submitted search)
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && currentSearchTerm && currentSearchTerm !== lastRecordedSearch) {
+            addToSearchHistory(currentSearchTerm);
+            lastRecordedSearch = currentSearchTerm;
+        }
+    });
+
+    // Handle click on suggestion items (direct binding to container for reliability)
+    suggestionsContainer.addEventListener('click', function handleSuggestionClick(e) {
+        const item = e.target.closest('.search-suggestion-item');
+        if (item) {
+            const searchText = item.dataset.searchText;
+            if (searchText) {
+                hideSearchSuggestions(suggestionsContainer);
+                if (searchHistoryContainer) searchHistoryContainer.classList.remove('show');
+                searchInput.value = searchText;
+                currentSearchTerm = searchText.toLowerCase();
+                addToSearchHistory(currentSearchTerm);
+                lastRecordedSearch = currentSearchTerm;
+
+                if (clearSearchBtn) clearSearchBtn.classList.toggle('hidden', !currentSearchTerm);
+
+                if (searchDebounceTimeout) {
+                    clearTimeout(searchDebounceTimeout);
+                }
+                searchDebounceTimeout = setTimeout(() => {
+                    applyFiltersAndSort();
+                    updateResultsCounter(currentSearchTerm);
+                }, SEARCH_DEBOUNCE_TIME);
+
+                searchInput.blur();
+            }
+        }
+    });
+
+    // Command/Ctrl + K Shortcut (v5.1.0 Modern Command Bar Style)
+    document.addEventListener('keydown', function handleCmdK(e) {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            const searchInput = document.getElementById('mainSearch');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.select();
+            }
+        }
+    });
+
+    // Escape key to clear and blur search
+    document.addEventListener('keydown', function handleEscapeSearch(e) {
+        if (e.key === 'Escape') {
+            const searchInput = document.getElementById('mainSearch');
+            if (searchInput && document.activeElement === searchInput) {
+                searchInput.value = '';
+                currentSearchTerm = '';
+                searchInput.blur();
+                hideSearchSuggestions(suggestionsContainer);
+                if (searchHistoryContainer) searchHistoryContainer.classList.remove('show');
+                const clearSearchBtn = document.getElementById('clearSearchBtn');
+                if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
+                applyFiltersAndSort();
+            }
+        }
+    });
+
+    // Handle click on search history items (event delegation)
+    const historyContainer = document.getElementById('searchHistory');
+    if (historyContainer) {
+        historyContainer.addEventListener('click', (e) => {
+            const item = e.target.closest('.search-suggestion-item');
+            if (item) {
+                const searchText = item.dataset.searchText;
+                if (searchText) {
+                    setSearch(searchText);
+                    historyContainer.classList.remove('show');
+                }
+            }
+        });
+    }
+
+    // Hide suggestions and history when clicking outside
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.search-container') && !e.target.closest('#searchSuggestions')) {
+        if (!e.target.closest('.search-container') &&
+            !e.target.closest('#searchSuggestions') &&
+            !e.target.closest('#searchHistory')) {
             hideSearchSuggestions(suggestionsContainer);
+            if (searchHistoryContainer) searchHistoryContainer.classList.remove('show');
         }
     });
 
@@ -501,13 +621,19 @@ function showSearchSuggestions(term, container) {
         return;
     }
 
-    container.innerHTML = topSuggestions.map(s => `
-        <div class="suggestion-item" onclick="setSearch('${escapeAttr(s.text)}')">
-            <i class="fas ${escapeAttr(s.icon || 'fa-search')} suggestion-icon"></i>
-            <span class="suggestion-text">${highlightText(escapeHtml(s.text), term)}</span>
-            <span class="suggestion-type">${s.type === 'name' ? '名称' : s.type === 'desc' ? '描述' : '标签'}</span>
+    container.innerHTML = topSuggestions.map(s => {
+        const toolDetail = typeof s.id === 'number' ? state.tools.find(t => t.id === s.id) : null;
+        const firstLetter = s.text && s.text.length > 0 ? s.text.charAt(0).toUpperCase() : '?';
+        return `
+        <div class="search-suggestion-item" data-search-text="${escapeAttr(s.text)}">
+            <div class="search-suggestion-icon">${firstLetter}</div>
+            <div class="search-suggestion-content">
+                <div class="search-suggestion-title">${highlightText(escapeHtml(s.text), term)}</div>
+                <div class="search-suggestion-subtitle">${toolDetail ? escapeHtml(toolDetail.desc).substring(0, 42) + '...' : (s.type === 'name' ? '按工具名称搜索' : s.type === 'desc' ? '按描述搜索' : '按标签搜索')}</div>
+            </div>
+            <span class="search-suggestion-badge">${s.type === 'name' ? '名称' : s.type === 'desc' ? '描述' : '标签'}</span>
         </div>
-    `).join('');
+    `;}).join('');
 
     container.classList.add('show');
 }
@@ -576,7 +702,13 @@ function setSearch(term) {
     searchInput.value = term;
     const searchHistoryEl = document.getElementById('searchHistory');
     if (searchHistoryEl) searchHistoryEl.classList.remove('show');
-    searchInput.dispatchEvent(new Event('input'));
+    const suggestionsEl = document.getElementById('searchSuggestions');
+    if (suggestionsEl) {
+        suggestionsEl.classList.remove('show');
+    }
+
+    applyFiltersAndSort();
+    updateResultsCounter(term);
 }
 
 /**
@@ -646,4 +778,4 @@ function clearAllFilters() {
 }
 
 // Export functions
-export { renderCategories, renderHotTools, renderStatisticsDashboard, renderTools, filterCategory, loadSavedFilters, setSearch, clearSearch, setupSearch, sortTools, applyFiltersAndSort, toggleAdvancedFilters, toggleAdvancedFilter, clearAllFilters };
+export { renderCategories, renderHotTools, renderStatisticsDashboard, renderTools, filterCategory, loadSavedFilters, setSearch, clearSearch, setupSearch, sortTools, setCurrentSort, applyFiltersAndSort, toggleAdvancedFilters, toggleAdvancedFilter, clearAllFilters };

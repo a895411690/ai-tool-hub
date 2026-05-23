@@ -3,6 +3,10 @@
  * 提供简历分享到社交媒体和生成分享链接的功能
  */
 
+import { pdfGenerator } from './pdfGenerator.js';
+import { store } from './store.js';
+import { showNotification } from './utils.js';
+
 class ShareUtils {
     constructor() {
         this.baseUrl = 'https://ai-tool-hub.github.io/tools/resume-optimizer/';
@@ -104,7 +108,7 @@ class ShareUtils {
             this.initShareData(store.getState());
         }
 
-        const shareText = `${this.shareData.title}\\n${this.shareData.description}\\n\\n${this.shareData.url}`;
+        const shareText = `${this.shareData.title}\n${this.shareData.description}\n\n${this.shareData.url}`;
         
         navigator.clipboard.writeText(shareText)
             .then(() => {
@@ -117,11 +121,12 @@ class ShareUtils {
             });
     }
 
-    // 分享PDF版本
     sharePDF() {
-        // 先生成PDF
-        pdfGenerator.generate().then(pdfBlob => {
-            // 创建下载链接
+        pdfGenerator.generateBlob().then(pdfBlob => {
+            if (!pdfBlob) {
+                showNotification('PDF生成失败，请重试', 'error');
+                return;
+            }
             const url = URL.createObjectURL(pdfBlob);
             const a = document.createElement('a');
             a.href = url;

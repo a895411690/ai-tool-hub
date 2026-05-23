@@ -1,7 +1,3 @@
-// Import functions
-import { clearSearch } from './ui.js';
-import { closeShareModal } from './share.js';
-
 /** @constant {number} Maximum number of search history items to store */
 const MAX_SEARCH_HISTORY = 10;
 
@@ -47,12 +43,13 @@ function escapeAttr(text) {
  * Supports:
  * - '/' or 'S' or 's': Focus search input
  * - 'Escape': Clear search, close modals
+ * @param {Object} callbacks - Optional callbacks to avoid circular imports
+ * @param {Function} [callbacks.onEscape] - Called on Escape key with no args
  */
-function setupKeyboardShortcuts() {
+function setupKeyboardShortcuts(callbacks = {}) {
     document.addEventListener('keydown', (e) => {
         const searchInput = document.getElementById('mainSearch');
-        const searchHistory = document.getElementById('searchHistory');
-        
+
         if (e.key === '/' || e.key === 's' || e.key === 'S') {
             if (searchInput && document.activeElement !== searchInput) {
                 e.preventDefault();
@@ -60,9 +57,9 @@ function setupKeyboardShortcuts() {
             }
         }
         if (e.key === 'Escape') {
-            clearSearch();
-            if (searchHistory) searchHistory.classList.remove('show');
-            closeShareModal();
+            if (typeof callbacks.onEscape === 'function') {
+                callbacks.onEscape();
+            }
         }
     });
 }

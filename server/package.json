@@ -1,0 +1,16 @@
+{
+  "name": "ai-tool-hub-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "AI Tool Hub Backend - Resume optimization API with DeepSeek",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "cors": "^2.8.5",
+    "jsonwebtoken": "^9.0.2",
+    "dotenv": "^16.4.0"
+  }
+}

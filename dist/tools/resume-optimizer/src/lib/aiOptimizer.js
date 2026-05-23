@@ -1,27 +1,26 @@
 /**
  * AI Resume Optimizer - Professional Edition
  * 基于求职方舟/AI简历姬最佳实践重构
- * 集成DeepSeek大模型 - 与求职方舟同款AI引擎
+ * 后端API驱动 - DeepSeek大模型由服务端调用
  * 
  * 核心特性：
- * 1. DeepSeek大模型驱动（与求职方舟相同）
+ * 1. 后端AI大模型驱动（DeepSeek-V3，服务端代理）
  * 2. 3档智能优化级别（轻度/中度/深度）
  * 3. JD驱动的针对性优化
  * 4. STAR法则自动重构
  * 5. 智能量化成果生成
  * 6. ATS关键词对齐
  * 7. 实时对比预览
+ * 8. 本地规则引擎兜底
  */
 
 import { escapeHtml, escapeAttr, showNotification } from './utils.js';
-import { deepSeekEngine } from './deepSeekEngine.js';
+import { apiClient } from './apiClient.js';
 
 class AIOptimizer {
     constructor() {
-        this.apiKey = localStorage.getItem(AIOptimizer.STORAGE_KEY_API) || '';
-        this.model = localStorage.getItem(AIOptimizer.STORAGE_KEY_MODEL) || 'deepseek-chat';
         this.isOptimizing = false;
-        this.useDeepSeek = true; // 默认使用DeepSeek大模型
+        this.useRemoteAI = true;
         
         // 三档优化配置（参考求职方舟）
         this.optimizationLevels = {
@@ -160,13 +159,18 @@ class AIOptimizer {
             return;
         }
 
-        const resumeData = window.store ? window.store.getState() : {};
+const resumeData = window.store ? window.store.getState() : {};
         if (!resumeData.profile || !resumeData.profile.name) {
             showNotification('请先填写简历基本信息', 'error');
             return;
         }
 
-        this.isOptimizing = true;
+        // 如果启用远程AI且未登录，弹出登录框
+        if (this.useRemoteAI && !apiClient.isAuthenticated()) {
+            const { authModal } = await import('../components/authModal.js');
+            authModal.show();
+            return;
+        }
         this._showLoading();
 
         try {
@@ -186,11 +190,25 @@ class AIOptimizer {
                     result = await this._mediumOptimize(resumeData, jobDescription);
             }
 
+            // Store optimized data for apply/export
+            if (result.optimizedData) {
+                this._lastOptimizedData = result.optimizedData;
+            } else {
+                this._lastOptimizedData = resumeData;
+            }
             this._displayResult(result);
             showNotification(`✨ ${this.optimizationLevels[this.currentLevel].name}完成！`, 'success');
             
         } catch (error) {
-            showNotification(`优化失败: ${error.message}`, 'error');
+            const msg = error.message || '未知错误';
+            const userMsg = msg.includes('does not support') || msg.includes('Cannot read')
+                ? 'AI模型暂不支持此内容格式，请使用纯文本简历信息'
+                : msg.includes('Insufficient') || msg.includes('insufficient_balance')
+                ? 'AI服务余额不足，请联系管理员充值'
+                : msg.includes('not configured')
+                ? 'AI服务暂未配置，请稍后再试'
+                : `优化失败: ${msg}`;
+            showNotification(userMsg, 'error');
         } finally {
             this.isOptimizing = false;
             this._hideLoading();
@@ -199,14 +217,21 @@ class AIOptimizer {
 
     // ========== 轻度优化 ==========
     async _lightOptimize(resumeData, jobDescription) {
-        // 如果配置了DeepSeek API Key，使用大模型
-        if (this.useDeepSeek && deepSeekEngine.hasApiKey()) {
+        // 如果已登录且启用远程AI，使用后端API
+        if (this.useRemoteAI && apiClient.isAuthenticated()) {
             try {
                 const resumeText = this._resumeDataToText(resumeData);
-                return await deepSeekEngine.lightOptimize(resumeText, jobDescription);
+                const result = await apiClient.optimize('light', resumeText, jobDescription, {
+                    onProgress: (status) => console.log('[AI优化]', status),
+                    onToken: (token) => {} // 流式token，静默处理
+                });
+                if (result) {
+                    result.optimizedData = result.optimizedData || resumeData;
+                    return result;
+                }
             } catch (error) {
-                console.warn('DeepSeek轻度优化失败，回退到规则引擎:', error.message);
-                showNotification('DeepSeek调用失败，使用本地优化', 'warning');
+                console.warn('AI轻度优化失败，回退到规则引擎:', error.message);
+                showNotification('AI服务暂时不可用，使用本地优化', 'warning');
             }
         }
 
@@ -252,14 +277,21 @@ class AIOptimizer {
 
     // ========== 中度优化 ==========
     async _mediumOptimize(resumeData, jobDescription) {
-        // 如果配置了DeepSeek API Key，使用大模型
-        if (this.useDeepSeek && deepSeekEngine.hasApiKey()) {
+        // 如果已登录且启用远程AI，使用后端API
+        if (this.useRemoteAI && apiClient.isAuthenticated()) {
             try {
                 const resumeText = this._resumeDataToText(resumeData);
-                return await deepSeekEngine.mediumOptimize(resumeText, jobDescription);
+                const result = await apiClient.optimize('medium', resumeText, jobDescription, {
+                    onProgress: (status) => console.log('[AI优化]', status),
+                    onToken: (token) => {}
+                });
+                if (result) {
+                    result.optimizedData = result.optimizedData || resumeData;
+                    return result;
+                }
             } catch (error) {
-                console.warn('DeepSeek中度优化失败，回退到规则引擎:', error.message);
-                showNotification('DeepSeek调用失败，使用本地优化', 'warning');
+                console.warn('AI中度优化失败，回退到规则引擎:', error.message);
+                showNotification('AI服务暂时不可用，使用本地优化', 'warning');
             }
         }
 
@@ -294,14 +326,21 @@ class AIOptimizer {
 
     // ========== 深度优化 ==========
     async _deepOptimize(resumeData, jobDescription) {
-        // 如果配置了DeepSeek API Key，使用大模型
-        if (this.useDeepSeek && deepSeekEngine.hasApiKey()) {
+        // 如果已登录且启用远程AI，使用后端API
+        if (this.useRemoteAI && apiClient.isAuthenticated()) {
             try {
                 const resumeText = this._resumeDataToText(resumeData);
-                return await deepSeekEngine.deepOptimize(resumeText, jobDescription);
+                const result = await apiClient.optimize('deep', resumeText, jobDescription, {
+                    onProgress: (status) => console.log('[AI优化]', status),
+                    onToken: (token) => {}
+                });
+                if (result) {
+                    result.optimizedData = result.optimizedData || resumeData;
+                    return result;
+                }
             } catch (error) {
-                console.warn('DeepSeek深度优化失败，回退到规则引擎:', error.message);
-                showNotification('DeepSeek调用失败，使用本地优化', 'warning');
+                console.warn('AI深度优化失败，回退到规则引擎:', error.message);
+                showNotification('AI服务暂时不可用，使用本地优化', 'warning');
             }
         }
 
@@ -414,24 +453,27 @@ class AIOptimizer {
     // 简历诊断
     _diagnoseResume(data, jdAnalysis) {
         const analysis = this._analyzeResume(data);
+        const hasJd = jdAnalysis && jdAnalysis.keywords && jdAnalysis.keywords.length > 0;
         
-        // 完整性评分 (40%)
+        // 完整性评分 (40% without JD, 40% with JD)
         let completeness = 0;
         if (analysis.hasSummary) completeness += 25;
         if (analysis.experienceCount > 0) completeness += 25;
         if (analysis.skillsCount >= 3) completeness += 25;
         if (analysis.educationCount > 0) completeness += 25;
 
-        // 匹配度评分 (30%)
-        const keywordMatch = this._matchKeywords(jdAnalysis.keywords, analysis.skills);
+        // 匹配度评分 (30% with JD, 0% without)
+        const keywordMatch = hasJd ? this._matchKeywords(jdAnalysis.keywords, analysis.skills) : { matchRate: 0, matched: [], missing: [], added: [] };
         const matchScore = keywordMatch.matchRate;
 
-        // 质量评分 (30%)
+        // 质量评分
         let qualityScore = 60;
         if (analysis.hasQuantifiable) qualityScore += 20;
         if (data.profile?.summary?.length > 50) qualityScore += 20;
 
-        const overallScore = Math.round(completeness * 0.4 + matchScore * 0.3 + qualityScore * 0.3);
+        const overallScore = hasJd
+            ? Math.round(completeness * 0.4 + matchScore * 0.3 + qualityScore * 0.3)
+            : Math.round(completeness * 0.5 + qualityScore * 0.5);
 
         return {
             overallScore,
@@ -450,18 +492,15 @@ class AIOptimizer {
     // 文本润色（轻度）
     _polishText(text) {
         if (!text) return text;
-        
+
         let polished = text
-            .replace(/\b负责\b/g, '主导负责')
-            .replace(/\b参与\b/g, '积极参与')
-            .replace(/\b完成\b/g, '成功完成')
-            .replace(/\b改进\b/g, '显著改进')
-            .replace(/\b提高\b/g, '大幅提高')
-            .replace(/\b学习\b/g, '深入掌握')
-            .replace(/\b熟悉\b/g, '精通')
+            .replace(/(?<![a-zA-Z\u4e00-\u9fff])负责(?![\u4e00-\u9fff]{0,1}任)/g, '主导负责')
+            .replace(/(?<![a-zA-Z\u4e00-\u9fff])参与(?![a-zA-Z\u4e00-\u9fff])/g, '积极参与')
+            .replace(/(?<![a-zA-Z\u4e00-\u9fff])完成(?![a-zA-Z\u4e00-\u9fff])/g, '顺利完成')
+            .replace(/(?<![a-zA-Z\u4e00-\u9fff])改进(?![a-zA-Z\u4e00-\u9fff])/g, '持续改进')
             .replace(/\s+/g, ' ')
             .trim();
-            
+
         return polished;
     }
 
@@ -497,33 +536,22 @@ class AIOptimizer {
     // 经历量化
     _quantifyExperience(desc, jobType) {
         if (!desc || desc.length < 20) {
-            return `在该公司担任核心技术人员期间：
-
-🎯 **主要职责**：
-• 主导公司核心产品的设计与开发，确保项目按时高质量交付
-• 优化系统性能，显著提升响应速度和处理能力
-• 与团队紧密协作，推动技术方案落地
-
-📈 **量化成果**：
-• 成功交付${Math.floor(Math.random() * 5) + 3}个项目，客户满意度95%+
-• 通过技术优化，整体效率提升${Math.floor(Math.random() * 30) + 20}%
-• 为团队建立标准化流程，代码质量明显改善`;
+            return desc || '';
         }
 
-        // 在原有基础上增强
         let enhanced = desc;
-        
-        // 强化动词
-        enhanced = enhanced.replace(/\b参与\b/g, '主导推进');
-        enhanced = enhanced.replace(/\b负责\b/g, '全权负责');
-        enhanced = enhanced.replace(/\b协助\b/g, '协同支持');
 
-        // 如果没有数字，添加量化指标
-        if (!/\d+%/.test(enhanced)) {
-            enhanced += '\n• 整体工作效率提升25-35%';
-        }
-        if (!/\d+万/.test(enhanced) && /成本|预算/.test(enhanced)) {
-            enhanced += '\n• 为公司节省成本15-25万元/年';
+        // 强化行为动词（不改变含义）
+        enhanced = enhanced.replace(/(?<![a-zA-Z\u4e00-\u9fff])参与(?![a-zA-Z\u4e00-\u9fff])/g, '积极协助');
+        enhanced = enhanced.replace(/(?<![a-zA-Z\u4e00-\u9fff])负责(?![\u4e00-\u9fff]{0,1}任)/g, '主导负责');
+        enhanced = enhanced.replace(/(?<![a-zA-Z\u4e00-\u9fff])协助(?![a-zA-Z\u4e00-\u9fff])/g, '配合推进');
+
+        // 如果已有量化数据，不要重复添加
+        if (/\d+%/.test(enhanced)) return enhanced;
+
+        // 添加提示性文本（不编造具体数字）
+        if (/优化|改进|提升/.test(enhanced)) {
+            enhanced += '\n• 关键指标得到显著提升';
         }
 
         return enhanced;
@@ -622,7 +650,10 @@ ${star.result}`
         // 技能矩阵优化
         optimized.skills = [
             ...(original.skills || []),
-            ...diagnosis.weaknesses.filter(w => w.type === 'missing_skills').map(w => w.item).slice(0, 3)
+            ...diagnosis.weaknesses
+                .filter(w => w.type === 'missing_skills')
+                .flatMap(w => w.item.replace(/^缺失关键词[:：]\s*/, '').split(/[,，、]/).map(s => s.trim()).filter(Boolean))
+                .slice(0, 3)
         ];
 
         return optimized;
@@ -664,7 +695,9 @@ ${star.result}`
         if (resumeData.experience && resumeData.experience.length > 0) {
             text += `## 工作经历\n\n`;
             resumeData.experience.forEach(exp => {
-                text += `### ${exp.company || '某公司'} | ${exp.title || '职位'} | ${exp.period || ''}\n`;
+                const title = exp.position || exp.title || '职位';
+                const period = [exp.startDate, exp.endDate].filter(Boolean).join(' - ') || exp.period || '';
+                text += `### ${exp.company || '某公司'} | ${title} | ${period}\n`;
                 if (exp.description) {
                     text += `\n${exp.description}\n\n`;
                 }
@@ -717,8 +750,14 @@ ${star.result}`
     }
 
     _calculateScore(original, optimized) {
-        // 简化的评分逻辑
-        return Math.floor(Math.random() * 15) + 80; // 80-95分
+        let score = 50;
+        if (optimized.profile?.summary) score += 10;
+        if (optimized.profile?.summary?.length > 50) score += 5;
+        if (optimized.experience?.length > 0) score += 10;
+        if (optimized.skills?.length >= 3) score += 10;
+        if (optimized.education?.length > 0) score += 5;
+        if (this._hasQuantifiableAchievements(optimized)) score += 10;
+        return Math.min(99, Math.max(60, score));
     }
 
     _extractChanges(original, optimized) {
@@ -768,7 +807,7 @@ ${star.result}`
         if (analysis.experienceCount === 0) weaknesses.push({ type: 'content', item: '缺少工作经历' });
         if (analysis.skillsCount < 3) weaknesses.push({ type: 'skills', item: '技能数量不足' });
         if (!analysis.hasQuantifiable) weaknesses.push({ type: 'content', item: '缺乏量化成果' });
-        if (keywordMatch.missing.length > 0) {
+        if (keywordMatch && keywordMatch.missing && keywordMatch.missing.length > 0) {
             weaknesses.push({ type: 'missing_skills', item: `缺失关键词: ${keywordMatch.missing.slice(0, 3).join(', ')}` });
         }
         return weaknesses;
@@ -801,7 +840,7 @@ ${star.result}`
         };
     }
 
-    // ========== UI方法 ==========
+    // 免费简历诊断
 
     _showLoading() {
         const btn = document.getElementById('optimizeBtn');
@@ -940,16 +979,180 @@ ${star.result}`
 
     // 应用优化
     applyOptimization() {
-        showNotification('优化结果已应用！', 'success');
-        // 这里可以实现实际的简历更新逻辑
+        if (!this._lastOptimizedData) {
+            showNotification('没有可应用的优化结果', 'error');
+            return;
+        }
+
+        try {
+            const optimized = this._lastOptimizedData;
+
+            // 更新store中的数据
+            if (window.store) {
+                // 更新个人简介
+                if (optimized.profile) {
+                    if (optimized.profile.summary) {
+                        window.store.updatePath('profile.summary', optimized.profile.summary);
+                    }
+                    if (optimized.profile.name) {
+                        window.store.updatePath('profile.name', optimized.profile.name);
+                    }
+                    if (optimized.profile.title) {
+                        window.store.updatePath('profile.title', optimized.profile.title);
+                    }
+                }
+
+                // 更新工作经历
+                if (optimized.experience) {
+                    window.store.updatePath('experience', optimized.experience);
+                }
+
+                // 更新技能
+                if (optimized.skills) {
+                    window.store.updatePath('skills', optimized.skills);
+                }
+
+                window.store.save();
+            }
+
+            // 更新表单字段
+            if (optimized.profile?.summary) {
+                const summaryField = document.getElementById('profileSummary');
+                if (summaryField) {
+                    summaryField.value = optimized.profile.summary;
+                    summaryField.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+            }
+
+            // 关闭面板
+            this.closePanel();
+
+            showNotification('✅ 优化结果已应用到简历！', 'success');
+        } catch (error) {
+            console.error('应用优化结果失败:', error);
+            showNotification('应用优化结果失败: ' + error.message, 'error');
+        }
     }
 
     // 导出优化结果
     exportOptimized() {
-        showNotification('正在导出...', 'info');
-        // 这里可以实现导出功能
+        if (!this._lastOptimizedData) {
+            showNotification('没有可导出的优化结果', 'error');
+            return;
+        }
+
+        try {
+            const data = this._lastOptimizedData;
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `resume-optimized-${new Date().toISOString().slice(0, 10)}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showNotification('✅ 优化结果已导出！', 'success');
+        } catch (error) {
+            console.error('导出失败:', error);
+            showNotification('导出失败: ' + error.message, 'error');
+        }
     }
-}
+
+    // 免费简历诊断
+    diagnoseResume() {
+        const resumeData = window.store ? window.store.getState() : {};
+        if (!resumeData.profile || !resumeData.profile.name) {
+            showNotification('请先填写简历基本信息', 'error');
+            return;
+        }
+
+        const analysis = this._analyzeResume(resumeData);
+        const jdKeywords = [];
+        const keywordMatch = this._matchKeywords(jdKeywords, analysis.skills);
+
+        const jdAnalysis = this._analyzeJD('');
+        const diagnosis = this._diagnoseResume(resumeData, null);
+
+        const container = document.getElementById('optimizationResult');
+        if (!container) return;
+
+        container.classList.remove('hidden');
+
+        container.innerHTML = `
+            <div style="background: linear-gradient(135deg, #3b82f620, #1f2937); padding: 24px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #3b82f630;">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-1">
+                            <i class="fas fa-stethoscope mr-2" style="color: #3b82f6"></i>
+                            简历诊断报告
+                        </h3>
+                        <p class="text-sm text-gray-400">基于AI分析的简历质量评估</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold" style="color: #3b82f6">${diagnosis.overallScore}分</div>
+                        <div class="text-xs text-gray-500">综合评分</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 mt-4">
+                    <div class="bg-gray-800/50 rounded-lg p-3">
+                        <div class="text-xs text-gray-500 mb-1">完整度</div>
+                        <div class="text-lg font-semibold text-blue-400">${diagnosis.completeness}%</div>
+                    </div>
+                    <div class="bg-gray-800/50 rounded-lg p-3">
+                        <div class="text-xs text-gray-500 mb-1">内容质量</div>
+                        <div class="text-lg font-semibold text-green-400">${diagnosis.qualityScore}%</div>
+                    </div>
+                    <div class="bg-gray-800/50 rounded-lg p-3">
+                        <div class="text-xs text-gray-500 mb-1">ATS通过率</div>
+                        <div class="text-lg font-semibold text-purple-400">${diagnosis.atsScore}%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h4 class="font-semibold text-white mb-3 flex items-center gap-2">
+                    <i class="fas fa-check-circle text-green-400"></i>
+                    简历优点
+                </h4>
+                <div class="space-y-2">
+                    ${(diagnosis.strengths || []).map(s => `
+                        <div class="bg-green-900/20 rounded-lg px-4 py-2 text-sm text-green-400">
+                            <i class="fas fa-check mr-2"></i>${escapeHtml(s)}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h4 class="font-semibold text-white mb-3 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                    需要改进
+                </h4>
+                <div class="space-y-2">
+                    ${(diagnosis.weaknesses || []).map(w => `
+                        <div class="bg-yellow-900/20 rounded-lg px-4 py-2 text-sm text-yellow-400">
+                            <i class="fas fa-arrow-right mr-2"></i>${escapeHtml(typeof w === 'string' ? w : w.item)}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-gray-700">
+                <button onclick="aiOptimizer.openPanel()" class="w-full py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 transition-all">
+                    <i class="fas fa-wand-magic-sparkles mr-2"></i>开始AI优化
+                </button>
+            </div>
+        `;
+
+        showNotification('📊 简历诊断完成！', 'success');
+    }
+
+    }
 
 // 创建全局实例
 const aiOptimizer = new AIOptimizer();
@@ -957,74 +1160,4 @@ if (typeof window !== 'undefined') {
     window.aiOptimizer = aiOptimizer;
 }
 
-// 配置常量
-AIOptimizer.STORAGE_KEY_API = 'ai_optimizer_api_key';
-AIOptimizer.STORAGE_KEY_MODEL = 'ai_optimizer_model';
-AIOptimizer.DEEPSEEK_STORAGE_KEY = 'deepseek_api_key';
-
-/**
- * 配置DeepSeek API Key
- * @param {string} apiKey - DeepSeek API密钥
- * @returns {boolean} - 是否配置成功
- */
-AIOptimizer.configureDeepSeekAPI = function(apiKey) {
-    if (!apiKey || apiKey.length < 10) {
-        showNotification('请输入有效的API Key', 'error');
-        return false;
-    }
-
-    // 保存到localStorage
-    localStorage.setItem(AIOptimizer.DEEPSEEK_STORAGE_KEY, apiKey);
-    
-    // 设置到DeepSeek引擎
-    deepSeekEngine.setApiKey(apiKey);
-    
-    // 同步到aiOptimizer
-    aiOptimizer.apiKey = apiKey;
-
-    showNotification('✅ DeepSeek API配置成功！', 'success');
-    console.log('DeepSeek API已配置，可以使用大模型优化简历了');
-    return true;
-};
-
-/**
- * 获取DeepSeek API状态
- */
-AIOptimizer.getDeepSeekStatus = function() {
-    const hasKey = deepSeekEngine.hasApiKey();
-    return {
-        configured: hasKey,
-        model: 'DeepSeek-V3',
-        provider: 'DeepSeek (与求职方舟同款)',
-        features: hasKey ? [
-            '✅ 轻度语言润色',
-            '✅ 中度关键词对齐+成果量化', 
-            '✅ 深度STAR法则重构+品牌塑造',
-            '✅ JD智能分析',
-            '✅ ATS优化'
-        ] : [
-            '⚠️ 需要配置API Key',
-            '🔧 当前使用规则引擎（离线模式）'
-        ]
-    };
-};
-
-/**
- * 测试DeepSeek连接
- */
-AIOptimizer.testDeepSeekConnection = async function() {
-    if (!deepSeekEngine.hasApiKey()) {
-        return { success: false, message: '请先配置API Key' };
-    }
-    
-    showNotification('正在测试DeepSeek连接...', 'info');
-    const result = await deepSeekEngine.testConnection();
-    
-    if (result.success) {
-        showNotification(`✅ ${result.message}`, 'success');
-    } else {
-        showNotification(`❌ ${result.message}`, 'error');
-    }
-    
-    return result;
-};
+export { AIOptimizer, aiOptimizer };

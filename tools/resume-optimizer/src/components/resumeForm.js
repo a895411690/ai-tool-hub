@@ -146,13 +146,13 @@ class ResumeForm {
         this.renderSkillsTags(state.skills);
     }
 
-    addExperience() {
+    addExperience(data = {}) {
         store.addArrayItem('experience', {
-            company: '',
-            position: '',
-            startDate: '',
-            endDate: '',
-            description: ''
+            company: data.company || '',
+            position: data.position || '',
+            startDate: data.startDate || '',
+            endDate: data.endDate || '',
+            description: data.description || ''
         });
         this.renderExperienceList(store.getState().experience);
     }
@@ -195,12 +195,12 @@ class ResumeForm {
         store.updateArrayItem('experience', id, { [field]: value });
     }
 
-    addEducation() {
+    addEducation(data = {}) {
         store.addArrayItem('education', {
-            school: '',
-            degree: '',
-            field: '',
-            graduationDate: ''
+            school: data.school || '',
+            degree: data.degree || '',
+            field: data.field || data.major || '',
+            graduationDate: data.graduationDate || data.period || ''
         });
         this.renderEducationList(store.getState().education);
     }
@@ -252,3 +252,6 @@ class ResumeForm {
 
 // 创建全局实例
 const resumeForm = new ResumeForm();
+if (typeof window !== 'undefined') {
+    window.resumeForm = resumeForm;
+}

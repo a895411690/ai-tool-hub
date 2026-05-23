@@ -1,10 +1,30 @@
 // Import all modules
 import { loadTools } from './app.js';
-import { renderCategories, renderHotTools, renderTools, filterCategory, loadSavedFilters, setSearch, clearSearch, setupSearch, sortTools, applyFiltersAndSort, toggleAdvancedFilters, toggleAdvancedFilter, clearAllFilters } from './ui.js';
+import { renderCategories, renderHotTools, renderTools, filterCategory, loadSavedFilters, setSearch, clearSearch, setupSearch, sortTools, setCurrentSort, applyFiltersAndSort, toggleAdvancedFilters, toggleAdvancedFilter, clearAllFilters } from './ui.js';
 import { openTool, toggleFavorite, showToolDetail, closeToolDetail, rateTool } from './tool.js';
 import { showShareModal, closeShareModal, shareToWeChat, shareToQQ, copyShareLink, generateShareImage } from './share.js';
 import { setupKeyboardShortcuts, setupPullToRefresh, toggleTheme, showToast, loadAnnouncement, closeAnnouncement, checkForUpdate, closeUpdateModal, registerServiceWorker, showThemeModal, closeThemeModal, setTheme, loadSavedTheme } from './utils.js';
 import state, { exportUserData, importUserData } from './state.js';
+
+// ============================================
+// GLOBAL EVENT DELEGATION (v5.1.1 Bug Fix!)
+// Solves ES Module race condition: onclick handlers fire before window bindings
+// ============================================
+document.addEventListener('click', function globalClickHandler(e) {
+    const path = e.composedPath ? e.composedPath() : [e.target];
+    for (let i = 0; i < path.length; i++) {
+        const el = path[i];
+        if (!el || !el.getAttribute) continue;
+        const toolId = el.dataset?.toolId;
+        if (toolId) {
+            const isBtn = !!e.target.closest('button,.favorite-btn,a,.card-actions button');
+            if (!isBtn) {
+                try { showToolDetail(parseInt(toolId, 10)); } catch (err) { console.error(err); }
+            }
+            return;
+        }
+    }
+});
 
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -23,6 +43,7 @@ function showAllTools() {
 }
 
 function changeSort(sortBy) {
+    setCurrentSort(sortBy);
     document.querySelectorAll('.sort-btn').forEach(btn => {
         btn.classList.remove('active');
         if (btn.dataset.sort === sortBy) btn.classList.add('active');
@@ -117,16 +138,22 @@ function setupBackToTopButton() {
     }, { passive: true });
 }
 
-// Initialize the app
 document.addEventListener('DOMContentLoaded', () => {
-    loadSavedTheme();  // Load saved theme first
+    loadSavedTheme();
     loadTools();
     setupSearch();
-    setupKeyboardShortcuts();
+    setupKeyboardShortcuts({
+        onEscape: () => {
+            clearSearch();
+            const searchHistory = document.getElementById('searchHistory');
+            if (searchHistory) searchHistory.classList.remove('show');
+            closeShareModal();
+        }
+    });
     setupPullToRefresh();
     checkForUpdate();
     loadAnnouncement();
     loadSavedFilters();
     registerServiceWorker();
-    setupBackToTopButton();  // v4.3.0: Back to top button
+    setupBackToTopButton();
 });

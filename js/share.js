@@ -1,4 +1,4 @@
-// Import functions
+import html2canvas from 'html2canvas';
 import { showToast } from './utils.js';
 
 /**
@@ -53,6 +53,8 @@ function copyShareLink() {
  * @async
  */
 async function generateShareImage() {
+    const toolCount = window.__AI_TOOL_HUB_COUNT__ || '80+';
+
     const shareCard = document.createElement('div');
     shareCard.innerHTML = `
         <div style="width: 375px; padding: 30px; background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%); border-radius: 20px; font-family: Inter, sans-serif; color: white;">
@@ -66,12 +68,12 @@ async function generateShareImage() {
                 </div>
             </div>
             <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 20px;">
-                <div style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">60+ 优质AI工具</div>
+                <div style="font-size: 20px; font-weight: bold; margin-bottom: 8px;">${toolCount} 优质AI工具</div>
                 <div style="font-size: 14px; color: #9ca3af; line-height: 1.6;">涵盖写作、绘画、代码、视频、语音、设计、办公等领域</div>
             </div>
             <div style="display: flex; gap: 8px; margin-bottom: 20px;">
                 <span style="padding: 6px 12px; background: rgba(34, 197, 94, 0.2); color: #4ade80; border-radius: 20px; font-size: 12px;">免费访问</span>
-                <span style="padding: 6px 12px; background: rgba(99, 102, 241, 0.2); color: #818cf8; border-radius: 20px; font-size: 12px;">v2.5新版</span>
+                <span style="padding: 6px 12px; background: rgba(99, 102, 241, 0.2); color: #818cf8; border-radius: 20px; font-size: 12px;">新版</span>
             </div>
             <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1);">
                 <div style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">扫描二维码访问</div>
@@ -85,11 +87,7 @@ async function generateShareImage() {
     
     try {
         showToast('正在生成分享图片...');
-        
-        if (typeof html2canvas === 'undefined') {
-            throw new Error('html2canvas库未加载');
-        }
-        
+
         const canvas = await html2canvas(shareCard.firstElementChild, {
             backgroundColor: null,
             scale: 2

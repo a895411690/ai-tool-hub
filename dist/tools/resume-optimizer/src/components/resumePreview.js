@@ -149,3 +149,6 @@ class ResumePreview {
 
 // 创建全局实例
 const resumePreview = new ResumePreview();
+
+export { ResumePreview, resumePreview };
+window.resumePreview = resumePreview;

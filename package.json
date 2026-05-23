@@ -1,6 +1,6 @@
 {
   "name": "ai-tool-hub-optimized",
-  "version": "3.0.0",
+  "version": "5.1.1",
   "description": "AI Tool Hub - 智能工具聚合平台 (Optimized)",
   "type": "module",
   "scripts": {
@@ -29,5 +29,8 @@
     "人工智能"
   ],
   "author": "a895411690",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "html2canvas": "^1.4.1"
+  }
 }

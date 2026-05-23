@@ -13,7 +13,7 @@
         style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
         font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
         img-src 'self' data: https: http: blob:;
-        connect-src 'self' https://api.deepseek.com https://cdnjs.cloudflare.com;
+        connect-src 'self' https://cdnjs.cloudflare.com;
         frame-src 'none';
         object-src 'none';
         base-uri 'self';
@@ -24,7 +24,6 @@
     <!-- DNS 预解析 -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="preconnect" href="https://api.groq.com" crossorigin>
     
     <!-- 预加载关键资源 -->
     <link rel="preload" href="./src/app.js" as="script" crossorigin>
@@ -128,50 +127,10 @@
                     </button>
                 </div>
                 <div class="flex-1 overflow-y-auto space-y-4">
-                    <!-- API 设置（可选） -->
-                    <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                        <div class="flex items-center justify-between mb-3">
-                            <label class="text-sm font-medium flex items-center gap-2">
-                                <i class="fas fa-key text-yellow-400"></i>
-                                高级AI设置（可选）
-                                <span class="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full">免费使用</span>
-                            </label>
-                            <button onclick="aiOptimizer.toggleApiSettings()" id="apiSettingsToggle" class="text-xs text-gray-400 hover:text-white transition-colors">
-                                <i class="fas fa-chevron-down"></i> 展开
-                            </button>
-                        </div>
-                        <div id="apiSettingsPanel" class="hidden space-y-3">
-                            <div class="text-xs text-gray-500 mb-2">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                无需配置即可使用基础AI优化功能！配置API Key可解锁更强模型。
-                            </div>
-                            <div>
-                                <label class="block text-xs text-gray-400 mb-1">API Key（可选）</label>
-                                <input type="password" id="qianfanApiKey" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-indigo-500 focus:outline-none" placeholder="留空则使用内置智能引擎（推荐）">
-                            </div>
-                            <div>
-                                <label class="block text-xs text-gray-400 mb-1">高级模型（可选）</label>
-                                <select id="qianfanModel" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-indigo-500 focus:outline-none">
-                                    <option value="">使用内置智能引擎（推荐）</option>
-                                    <option value="llama-3.1-8b-instant">Llama 3.1 8B (快速)</option>
-                                    <option value="llama-3.1-70b-versatile">Llama 3.1 70B (强大)</option>
-                                    <option value="mixtral-8x7b-32768">Mixtral 8x7B (中文优秀)</option>
-                                </select>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="aiOptimizer.saveAndTestApi()" class="flex-1 py-2 bg-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
-                                    <i class="fas fa-save mr-1"></i> 测试连接
-                                </button>
-                                <button onclick="aiOptimizer.clearApiSettings()" class="px-3 py-2 bg-gray-700 rounded-lg text-sm hover:bg-gray-600 transition-colors">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                            <div id="apiStatus" class="hidden text-xs"></div>
-                        </div>
+                    <!-- 用户认证状态 -->
+                    <div id="authSection">
+                        <!-- 由 authModal.js 动态渲染 -->
                     </div>
-                    <!-- 职位类型选择器 -->
-                    <div id="jobTypeSelector" class="p-4 bg-gray-800/50 rounded-lg border border-gray-700"></div>
-
                     <!-- 优化级别选择器（借鉴求职方舟3档优化） -->
                     <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
                         <label class="block text-sm font-medium mb-3 flex items-center gap-2">
@@ -188,9 +147,6 @@
                         </p>
                     </div>
 
-                    <!-- 多视角切换 -->
-                    <div id="viewToggle" class="p-4 bg-gray-800/50 rounded-lg border border-gray-700"></div>
-                    
                     <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
                         <label class="block text-sm font-medium mb-2">职位描述</label>
                         <textarea id="jobDescription" rows="6" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm focus:border-indigo-500 focus:outline-none resize-none" placeholder="粘贴目标职位的职位描述，AI将据此优化您的简历..."></textarea>
@@ -213,12 +169,14 @@
     <!-- Scripts (ES6 Modules - 确保所有脚本都作为模块加载) -->
     <script type="module" src="./src/lib/store.js" defer></script>
     <script type="module" src="./src/lib/pdfGenerator.js" defer></script>
+    <script type="module" src="./src/lib/apiClient.js" defer></script>
     <script type="module" src="./src/lib/aiOptimizer.js" defer></script>
     <script type="module" src="./src/lib/shareUtils.js" defer></script>
     <script type="module" src="./src/lib/importUtils.js" defer></script>
     <script type="module" src="./src/components/importResume.js" defer></script>
     <script type="module" src="./src/components/resumeForm.js" defer></script>
     <script type="module" src="./src/components/resumePreview.js" defer></script>
+    <script type="module" src="./src/components/authModal.js" defer></script>
 
     <script type="module" src="./src/app.js" defer></script>
 </body>

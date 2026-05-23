@@ -19,6 +19,10 @@ function safeJsonParse(key, defaultValue) {
     }
 }
 
+// Private timeout references (not part of state data)
+let _clickSaveTimeout = null;
+let _ratingSaveTimeout = null;
+
 // Global Application State
 const state = {
     tools: [],           // All tools data from tools.json
@@ -119,8 +123,8 @@ function recordToolClick(toolId) {
         localStorage.setItem('ai-tool-hub-click-stats', JSON.stringify(state.clickStats));
     } else {
         // Use debounced save for better performance
-        clearTimeout(state._clickSaveTimeout);
-        state._clickSaveTimeout = setTimeout(() => {
+        clearTimeout(_clickSaveTimeout);
+        _clickSaveTimeout = setTimeout(() => {
             localStorage.setItem('ai-tool-hub-click-stats', JSON.stringify(state.clickStats));
         }, 2000);
     }
@@ -161,8 +165,8 @@ function setToolRating(toolId, rating) {
     state.ratings[toolId] = rating;
 
     // Debounce save to localStorage
-    clearTimeout(state._ratingSaveTimeout);
-    state._ratingSaveTimeout = setTimeout(() => {
+    clearTimeout(_ratingSaveTimeout);
+    _ratingSaveTimeout = setTimeout(() => {
         localStorage.setItem('ai-tool-hub-ratings', JSON.stringify(state.ratings));
     }, 500);
 
@@ -187,7 +191,7 @@ function getAverageRating() {
     if (values.length === 0) return 0;
 
     const sum = values.reduce((acc, val) => acc + val, 0);
-    return (sum / values.length).toFixed(1);
+    return Math.round((sum / values.length) * 10) / 10;
 }
 
 /**
@@ -229,19 +233,32 @@ function importUserData(jsonString) {
             throw new Error('无效的数据格式');
         }
 
-        // Merge data (preserve existing + add imported)
+        // Merge favorites (validate each item is a number)
         if (Array.isArray(data.favorites)) {
-            state.favorites = [...new Set([...state.favorites, ...data.favorites])];
+            const validFavorites = data.favorites.filter(id => typeof id === 'number');
+            state.favorites = [...new Set([...state.favorites, ...validFavorites])];
             localStorage.setItem('ai-tool-hub-favorites', JSON.stringify(state.favorites));
         }
 
         if (data.ratings && typeof data.ratings === 'object') {
-            state.ratings = { ...state.ratings, ...data.ratings };
+            const validRatings = {};
+            for (const [key, value] of Object.entries(data.ratings)) {
+                if (typeof value === 'number' && value >= 1 && value <= 5) {
+                    validRatings[key] = value;
+                }
+            }
+            state.ratings = { ...state.ratings, ...validRatings };
             localStorage.setItem('ai-tool-hub-ratings', JSON.stringify(state.ratings));
         }
 
         if (data.clickStats && typeof data.clickStats === 'object') {
-            state.clickStats = { ...state.clickStats, ...data.clickStats };
+            const validStats = {};
+            for (const [key, value] of Object.entries(data.clickStats)) {
+                if (typeof value === 'number' && value >= 0) {
+                    validStats[key] = value;
+                }
+            }
+            state.clickStats = { ...state.clickStats, ...validStats };
             localStorage.setItem('ai-tool-hub-click-stats', JSON.stringify(state.clickStats));
         }
 

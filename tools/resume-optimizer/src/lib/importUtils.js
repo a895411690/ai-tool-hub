@@ -129,7 +129,6 @@ class ImportUtils {
         try {
             this.isProcessing = true;
             
-            // 验证文件
             if (!this.isFileSupported(file)) {
                 throw new Error(`不支持的文件格式。支持格式: ${this.supportedFormats.join(', ')}`);
             }
@@ -138,29 +137,47 @@ class ImportUtils {
                 throw new Error(`文件大小超过限制 (最大10MB)`);
             }
 
-            // 读取文件
             const fileData = await this.readFile(file);
             
-            // 根据文件类型选择解析器
-            let parsedData;
+            // Step 1: Extract raw text from file
+            let rawText = '';
             switch (fileData.fileType) {
                 case 'pdf':
-                    parsedData = await this.parsePDF(fileData);
+                    rawText = await this.extractTextFromPDF(fileData.content);
                     break;
                 case 'docx':
-                    parsedData = await this.parseDOCX(fileData);
+                    rawText = await this.extractTextFromDOCXDoc(fileData.content);
                     break;
                 case 'txt':
-                    parsedData = await this.parseTXT(fileData);
+                    rawText = fileData.content;
                     break;
                 case 'html':
-                    parsedData = await this.parseHTML(fileData);
+                    rawText = this.extractTextFromHTML(fileData.content);
                     break;
                 case 'markdown':
-                    parsedData = await this.parseMarkdown(fileData);
+                    rawText = this.extractTextFromMarkdown(fileData.content);
                     break;
                 default:
                     throw new Error(`不支持的文件类型: ${fileData.fileType}`);
+            }
+
+            // Step 2: Try LLM-based parsing first (more accurate)
+            let parsedData = null;
+            if (rawText && rawText.trim().length > 10 && window.apiClient && window.apiClient.isAuthenticated()) {
+                try {
+                    const llmResult = await window.apiClient.parseResume(rawText);
+                    if (llmResult && llmResult.profile) {
+                        parsedData = this.normalizeLLMResult(llmResult);
+                    }
+                } catch (e) {
+                    console.warn('[Import] LLM解析失败，回退到本地解析:', e.message);
+                }
+            }
+
+            // Step 3: Fallback to local regex parsing
+            if (!parsedData) {
+                const cleanedText = this.cleanPDFText(rawText);
+                parsedData = this.parseTextContent(cleanedText || rawText);
             }
 
             // 标准化数据格式
@@ -272,7 +289,7 @@ class ImportUtils {
     /**
      * 从DOCX提取文本（使用mammoth.js库）
      */
-    async extractTextFromDOCX(content) {
+async extractTextFromDOCX(content) {
         try {
             if (typeof mammoth !== 'undefined') {
                 const result = await mammoth.extractRawText({ arrayBuffer: content });
@@ -282,9 +299,43 @@ class ImportUtils {
             }
         } catch (error) {
             console.error('DOCX解析失败:', error);
-            // 失败时返回空文本，让后续的文本解析逻辑处理
             return '';
         }
+    }
+
+    async extractTextFromDOCXDoc(content) {
+        return await this.extractTextFromDOCX(content);
+    }
+
+    normalizeLLMResult(llmResult) {
+        const profile = {
+            name: llmResult.profile?.name || '',
+            title: llmResult.profile?.title || '',
+            email: llmResult.profile?.email || '',
+            phone: llmResult.profile?.phone || '',
+            location: llmResult.profile?.location || '',
+            summary: llmResult.profile?.summary || ''
+        };
+
+        const experience = (llmResult.experience || []).map(exp => ({
+            company: exp.company || '',
+            position: exp.position || '',
+            period: [exp.startDate, exp.endDate].filter(Boolean).join(' - ') || exp.period || '',
+            startDate: exp.startDate || '',
+            endDate: exp.endDate || '',
+            description: exp.description || ''
+        }));
+
+        const education = (llmResult.education || []).map(edu => ({
+            school: edu.school || '',
+            degree: edu.degree || '',
+            major: edu.major || '',
+            period: [edu.startDate, edu.endDate].filter(Boolean).join(' - ') || edu.period || ''
+        }));
+
+        const skills = llmResult.skills || [];
+
+        return { profile, experience, education, skills };
     }
 
     /**
@@ -297,33 +348,28 @@ class ImportUtils {
             return '';
         }
 
-        // 移除危险标签（不区分大小写）
-        const dangerousTags = /<(script|iframe|object|embed|form|input|button|textarea|select)[^>]*>.*?<\/\1>/gi;
+        // 移除危险标签（不区分大小写，包括多行内容）
+        const dangerousTags = /<(script|iframe|object|embed|form|input|button|textarea|select)[^>]*>[\s\S]*?<\/\1>/gi;
         let sanitized = html.replace(dangerousTags, '');
 
         // 移除自闭合的危险标签
         const dangerousSelfClosingTags = /<(script|iframe|object|embed|input|button|textarea|select|img|link|style|meta)[^>]*\/?>/gi;
         sanitized = sanitized.replace(dangerousSelfClosingTags, '');
 
-        // 移除事件处理器 (onclick, onload, onerror等)
-        const eventHandlers = /\s(on\w+)\s*=\s*(['"])[^\2]*\2/gi;
-        sanitized = sanitized.replace(eventHandlers, '');
+        // 移除事件处理器 (onclick, onload, onerror等) — 使用DOM解析方式
+        sanitized = sanitized.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, '');
 
         // 移除javascript:伪协议
-        const jsPseudoProtocol = /(href|src|action)\s*=\s*(['"])\s*javascript:[^\2]*\2/gi;
-        sanitized = sanitized.replace(jsPseudoProtocol, '$1=$2#$2');
+        sanitized = sanitized.replace(/(href|src|action)\s*=\s*(["'])\s*javascript:[^\2]*?\2/gi, '$1=$2#$2');
 
         // 移除data:伪协议（可能导致XSS）
-        const dataPseudoProtocol = /(href|src|action)\s*=\s*(['"])\s*data:[^\2]*\2/gi;
-        sanitized = sanitized.replace(dataPseudoProtocol, '$1=$2#$2');
+        sanitized = sanitized.replace(/(href|src|action)\s*=\s*(["'])\s*data:[^\2]*?\2/gi, '$1=$2#$2');
 
         // 移除vbscript:伪协议
-        const vbPseudoProtocol = /(href|src|action)\s*=\s*(['"])\s*vbscript:[^\2]*\2/gi;
-        sanitized = sanitized.replace(vbPseudoProtocol, '$1=$2#$2');
+        sanitized = sanitized.replace(/(href|src|action)\s*=\s*(["'])\s*vbscript:[^\2]*?\2/gi, '$1=$2#$2');
 
         // 移除expression: (CSS表达式，IE特有)
-        const cssExpression = /expression\s*\(/gi;
-        sanitized = sanitized.replace(cssExpression, '');
+        sanitized = sanitized.replace(/expression\s*\(/gi, '');
 
         return sanitized;
     }
@@ -732,8 +778,10 @@ class ImportUtils {
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
         text = lines.join('\n');
         
-        // 修复断行单词（在单行内）
-        text = text.replace(/([a-zA-Z])(\s+)([a-zA-Z])/g, '$1$3');
+        // 修复PDF中单个字母被空格分割的断词（仅限单个字母后跟单个字母的情况）
+        text = text.replace(/\b([a-zA-Z])\s+([a-zA-Z])\b/g, '$1$2');
+        // 修复连字符断行（如 "Java-\nScript" -> "JavaScript"）
+        text = text.replace(/(\w)-\s*\n\s*(\w)/g, '$1$2');
         
         
         return text;
@@ -1356,7 +1404,7 @@ class ImportUtils {
                 const eduKey = `${school}-${major}-${degree}`;
 
                 // 避免重复添加，且必须有有效信息
-                if (!existingEdu.has(eduKey) && school !== '某高校' || major !== '未明确专业') {
+                if (!existingEdu.has(eduKey) && (school !== '某高校' || major !== '未明确专业')) {
                     result.education.push({
                         school: school,
                         degree: degree,

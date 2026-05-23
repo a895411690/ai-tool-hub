@@ -723,7 +723,7 @@ class ImportResume {
         // 更新UI显示文件名
         const startImportBtn = document.getElementById('startImportBtn');
         startImportBtn.disabled = false;
-        startImportBtn.innerHTML = `<i class="fas fa-upload mr-2"></i>导入 ${file.name}`;
+        startImportBtn.innerHTML = `<i class="fas fa-upload mr-2"></i>导入 ${escapeHtml(file.name)}`;
         
         // 显示文件信息
         const uploadZone = document.getElementById('uploadZone');
@@ -732,7 +732,7 @@ class ImportResume {
                 <i class="fas fa-file text-indigo-400 text-4xl"></i>
             </div>
             <div class="upload-text">
-                <p class="text-lg font-medium">${file.name}</p>
+                <p class="text-lg font-medium">${escapeHtml(file.name)}</p>
                 <p class="text-sm text-gray-400 mt-1">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
         `;

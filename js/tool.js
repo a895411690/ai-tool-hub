@@ -104,7 +104,7 @@ function showToolDetail(id) {
         .filter(t => t.category === tool.category && t.id !== tool.id)
         .slice(0, 3);
     const relatedToolsHtml = relatedTools.map(t => `
-        <div class="related-tool-item" onclick="showToolDetail(${t.id})">
+        <div class="related-tool-item" data-tool-id="${t.id}">
             <i class="fas ${escapeAttr(t.icon)}"></i>
             <span>${escapeHtml(t.name)}</span>
         </div>

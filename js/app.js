@@ -1,12 +1,12 @@
 // Import functions
-import { showToast, escapeHtml, escapeAttr } from './utils.js';
+import { showToast, escapeHtml } from './utils.js';
 import state, { updateData } from './state.js';
 
 // Load Tools
 async function loadTools() {
     try {
-        const response = await fetch('tools.json?t=' + Date.now());
-        
+        const response = await fetch('tools.json');
+
         if (!response.ok) {
             throw new Error(`网络请求失败: ${response.status}`);
         }
@@ -17,6 +17,9 @@ async function loadTools() {
             throw new Error('工具数据结构不正确');
         }
         
+        // Update global tool count for share image
+        window.__AI_TOOL_HUB_COUNT__ = data.tools.length;
+
         // Update global state
         updateData(data.tools, data.categories);
         
