@@ -858,14 +858,15 @@ class ImportResume {
         experiencePreview.innerHTML = '';
         if (data.experience && data.experience.length > 0) {
             data.experience.forEach(exp => {
+                const dateRange = [exp.startDate, exp.endDate].filter(Boolean).join(' - ') || exp.period || '时间';
                 const expHtml = `
                     <div class="data-item">
                         <div class="data-item-header">
                             <span class="data-item-title">${escapeHtml(exp.position || '职位')}</span>
-                            <span class="data-item-period">${escapeHtml(exp.period || '时间')}</span>
+                            <span class="data-item-period">${escapeHtml(dateRange)}</span>
                         </div>
                         <div class="data-item-company">${escapeHtml(exp.company || '公司')}</div>
-                        <div class="data-item-desc">${escapeHtml(exp.description || '工作描述')}</div>
+                        ${exp.description ? `<div class="data-item-desc">${escapeHtml(exp.description)}</div>` : ''}
                     </div>
                 `;
                 experiencePreview.insertAdjacentHTML('beforeend', expHtml);
@@ -879,14 +880,16 @@ class ImportResume {
         educationPreview.innerHTML = '';
         if (data.education && data.education.length > 0) {
             data.education.forEach(edu => {
+                const dateRange = [edu.startDate, edu.endDate].filter(Boolean).join(' - ') || edu.period || '时间';
+                const majorStr = edu.major || edu.field ? ` · ${escapeHtml(edu.major || edu.field)}` : '';
                 const eduHtml = `
                     <div class="data-item">
                         <div class="data-item-header">
-                            <span class="data-item-title">${escapeHtml(edu.degree || '学位')}</span>
-                            <span class="data-item-period">${escapeHtml(edu.period || '时间')}</span>
+                            <span class="data-item-title">${escapeHtml(edu.school || '学校')}</span>
+                            <span class="data-item-period">${escapeHtml(dateRange)}</span>
                         </div>
-                        <div class="data-item-school">${escapeHtml(edu.school || '学校')}</div>
-                        <div class="data-item-degree">${escapeHtml(edu.description || '教育描述')}</div>
+                        <div class="data-item-school">${escapeHtml(edu.degree || '')}${majorStr}</div>
+                        ${edu.description ? `<div class="data-item-desc">${escapeHtml(edu.description)}</div>` : ''}
                     </div>
                 `;
                 educationPreview.insertAdjacentHTML('beforeend', eduHtml);

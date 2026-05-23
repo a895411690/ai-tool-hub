@@ -322,7 +322,7 @@ async extractTextFromDOCX(content) {
             position: exp.position || '',
             period: [exp.startDate, exp.endDate].filter(Boolean).join(' - ') || exp.period || '',
             startDate: exp.startDate || '',
-            endDate: exp.endDate || '',
+            endDate: exp.endDate || '至今',
             description: exp.description || ''
         }));
 
@@ -330,10 +330,14 @@ async extractTextFromDOCX(content) {
             school: edu.school || '',
             degree: edu.degree || '',
             major: edu.major || '',
-            period: [edu.startDate, edu.endDate].filter(Boolean).join(' - ') || edu.period || ''
+            period: [edu.startDate, edu.endDate].filter(Boolean).join(' - ') || edu.period || '',
+            startDate: edu.startDate || '',
+            endDate: edu.endDate || '',
+            description: edu.description || ''
         }));
 
-        const skills = llmResult.skills || [];
+        const skills = Array.isArray(llmResult.skills) ? llmResult.skills : 
+            (typeof llmResult.skills === 'string' ? llmResult.skills.split(/[,，、]/).map(s => s.trim()).filter(Boolean) : []);
 
         return { profile, experience, education, skills };
     }
@@ -2129,14 +2133,15 @@ async extractTextFromDOCX(content) {
      */
     standardizeData(parsedData) {
         // 确保数据结构一致
+        const summary = parsedData.profile?.summary || '';
         return {
             profile: {
                 name: parsedData.profile?.name || '',
-                title: parsedData.profile?.title || '求职者',
+                title: parsedData.profile?.title || '',
                 email: parsedData.profile?.email || '',
                 phone: parsedData.profile?.phone || '',
                 location: parsedData.profile?.location || '',
-                summary: parsedData.profile?.summary || '从简历中导入的个人信息',
+                summary: summary,
                 gender: parsedData.profile?.gender || '',
                 experience_years: parsedData.profile?.experience_years || ''
             },

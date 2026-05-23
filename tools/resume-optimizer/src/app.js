@@ -258,12 +258,44 @@ function addExperienceItem(experience) {
     }
 
     try {
+        // Helper: parse date string to normalized format
+        const parseDate = (dateStr) => {
+            if (!dateStr || dateStr.trim() === '') return '';
+            let d = dateStr.trim();
+            // "至今" or "现在" → keep as is
+            if (d === '至今' || d === '现在' || d.toLowerCase() === 'present') return d;
+            // "2020年03月" → "2020.03"
+            d = d.replace(/年/g, '.').replace(/月/g, '');
+            // "2020.3" → "2020.03"
+            const m = d.match(/^(\d{4})[.\-/](\d{1,2})$/);
+            if (m) return `${m[1]}.${m[2].padStart(2, '0')}`;
+            return d;
+        };
+
+        // Extract startDate/endDate from various formats
+        let startDate = parseDate(experience.startDate);
+        let endDate = parseDate(experience.endDate);
+
+        // If startDate/endDate are empty, try parsing from period
+        if (!startDate && !endDate && experience.period) {
+            const p = experience.period;
+            // Try splitting on ' - ', '-', '至', '到'
+            const parts = p.split(/\s*[-–—至到]\s*/);
+            if (parts.length >= 2) {
+                startDate = parseDate(parts[0]);
+                endDate = parseDate(parts.slice(1).join('-')); // handle "2020.03 - 2023.12 - 备注"
+            } else if (parts.length === 1) {
+                startDate = parseDate(parts[0]);
+                endDate = '至今';
+            }
+        }
+
         const expData = {
-            company: experience.company || '公司名称',
-            position: experience.position || experience.title || '职位',
-            startDate: experience.startDate || (experience.period ? experience.period.split('-')[0]?.trim() : ''),
-            endDate: experience.endDate || (experience.period ? experience.period.split('-').slice(1).join('-').trim() : ''),
-            description: experience.description || '工作描述'
+            company: experience.company || '',
+            position: experience.position || experience.title || '',
+            startDate: startDate,
+            endDate: endDate || '至今',
+            description: experience.description || ''
         };
 
         window.resumeForm.addExperience(expData);
@@ -280,12 +312,33 @@ function addEducationItem(education) {
     }
 
     try {
+        // Helper: parse date string to normalized format
+        const parseDate = (dateStr) => {
+            if (!dateStr || dateStr.trim() === '') return '';
+            let d = dateStr.trim();
+            d = d.replace(/年/g, '.').replace(/月/g, '');
+            const m = d.match(/^(\d{4})[.\-/](\d{1,2})$/);
+            if (m) return `${m[1]}.${m[2].padStart(2, '0')}`;
+            return d;
+        };
+
+        // Determine graduationDate: prefer endDate, then parse from period
+        let graduationDate = '';
+        if (education.endDate) {
+            graduationDate = parseDate(education.endDate);
+        } else if (education.period) {
+            const parts = education.period.split(/\s*[-–—至到]\s*/);
+            graduationDate = parts.length >= 2 ? parseDate(parts[parts.length - 1]) : parseDate(parts[0]);
+        } else if (education.graduationDate) {
+            graduationDate = parseDate(education.graduationDate);
+        }
+
         const eduData = {
-            school: education.school || '学校名称',
-            degree: education.degree || '学位',
+            school: education.school || '',
+            degree: education.degree || '',
             major: education.major || education.field || '',
-            graduationDate: education.graduationDate || education.period || '',
-            description: education.description || '教育描述'
+            graduationDate: graduationDate,
+            description: education.description || ''
         };
 
         window.resumeForm.addEducation(eduData);

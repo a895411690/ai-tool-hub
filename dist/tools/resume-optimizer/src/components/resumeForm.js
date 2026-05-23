@@ -200,7 +200,8 @@ class ResumeForm {
             school: data.school || '',
             degree: data.degree || '',
             field: data.field || data.major || '',
-            graduationDate: data.graduationDate || data.period || ''
+            graduationDate: data.graduationDate || data.period || '',
+            description: data.description || ''
         });
         this.renderEducationList(store.getState().education);
     }
@@ -222,12 +223,13 @@ class ResumeForm {
                     <input type="text" class="form-input" placeholder="毕业时间"
                            value="${escapeAttr(edu.graduationDate)}" onchange="resumeForm.updateEducation(${edu.id}, 'graduationDate', this.value)">
                 </div>
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-3 mb-3">
                     <input type="text" class="form-input" placeholder="学位（如：本科）"
                            value="${escapeAttr(edu.degree)}" onchange="resumeForm.updateEducation(${edu.id}, 'degree', this.value)">
                     <input type="text" class="form-input" placeholder="专业"
                            value="${escapeAttr(edu.field)}" onchange="resumeForm.updateEducation(${edu.id}, 'field', this.value)">
                 </div>
+                ${edu.description ? `<p class="text-xs text-gray-500 mt-1">${escapeHtml(edu.description)}</p>` : ''}
             </div>
         `).join('');
     }

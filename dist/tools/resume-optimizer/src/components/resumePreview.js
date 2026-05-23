@@ -123,6 +123,7 @@ class ResumePreview {
                             </div>
                             <div class="resume-item-date">${escapeHtml(edu.graduationDate || '')}</div>
                         </div>
+                        ${edu.description ? `<p class="resume-item-description">${escapeHtml(edu.description)}</p>` : ''}
                     </div>
                 `).join('');
                 educationSection.style.display = 'block';
