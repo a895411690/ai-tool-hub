@@ -266,9 +266,9 @@ const resumeData = window.store ? window.store.getState() : {};
             changes: this._extractChanges(resumeData, optimizedData),
             optimizedData,
             suggestions: [
-                { type: 'language', message: '已优化语言表达，使其更加专业流畅' },
-                { type: 'grammar', message: '修正了语法错误和错别字' },
-                { type: 'format', message: '统一了格式和标点符号' }
+                { icon: 'fa-check-circle', title: '语言润色', desc: '已优化语言表达，使其更加专业流畅', priority: 'medium' },
+                { icon: 'fa-check-circle', title: '语法修正', desc: '修正了语法错误和错别字', priority: 'medium' },
+                { icon: 'fa-check-circle', title: '格式规范', desc: '统一了格式和标点符号', priority: 'medium' }
             ],
             summary: '轻度优化完成！主要改进了语言表达的流畅性和专业性，保持了原始内容的完整性。',
             model: '规则引擎（离线模式）'
@@ -858,7 +858,7 @@ ${star.result}`
         }
     }
 
-    // 显示优化结果
+    // 显示优化结果 - 字段级对比
     _displayResult(result) {
         const container = document.getElementById('optimizationResult');
         if (!container) return;
@@ -866,24 +866,35 @@ ${star.result}`
         container.classList.remove('hidden');
 
         const levelConfig = this.optimizationLevels[result.level];
+        const hasStructuredData = result.optimizedData && result.optimizedData.profile;
+
+        if (hasStructuredData) {
+            this._displayStructuredResult(container, result, levelConfig);
+        } else {
+            this._displayFallbackResult(container, result, levelConfig);
+        }
+    }
+
+    _displayStructuredResult(container, result, levelConfig) {
+        const currentData = window.store ? window.store.getState() : {};
+        const optimized = result.optimizedData;
+        const changes = this._computeFieldChanges(currentData, optimized);
 
         container.innerHTML = `
-            <!-- 评分卡片 -->
-            <div class="result-header" style="background: linear-gradient(135deg, ${this._getColor(levelConfig.color)}20, #1f2937); padding: 24px; border-radius: 16px; margin-bottom: 20px; border: 1px solid ${this._getColor(levelConfig.color)}30;">
+            <div style="background: linear-gradient(135deg, ${this._getColor(levelConfig.color)}20, #1f2937); padding: 24px; border-radius: 16px; margin-bottom: 20px; border: 1px solid ${this._getColor(levelConfig.color)}30;">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="text-xl font-bold text-white mb-1">
                             <i class="fas ${levelConfig.icon} mr-2" style="color: ${this._getColor(levelConfig.color)}"></i>
                             ${levelConfig.name}完成
                         </h3>
-                        <p class="text-sm text-gray-400">${result.summary}</p>
+                        <p class="text-sm text-gray-400">AI已优化 ${changes.length} 个字段</p>
                     </div>
                     <div class="text-right">
-                        <div class="text-3xl font-bold" style="color: ${this._getColor(levelConfig.color)}">${result.score}分</div>
+                        <div class="text-3xl font-bold" style="color: ${this._getColor(levelConfig.color)}">${result.score || '--'}分</div>
                         <div class="text-xs text-gray-500">综合评分</div>
                     </div>
                 </div>
-                
                 ${result.jdMatch !== undefined ? `
                 <div class="grid grid-cols-2 gap-4 mt-4">
                     <div class="bg-gray-800/50 rounded-lg p-3">
@@ -900,48 +911,30 @@ ${star.result}`
                 ` : ''}
             </div>
 
-            <!-- 优化建议 -->
-            <div class="mb-6">
-                <h4 class="font-semibold text-white mb-3 flex items-center gap-2">
-                    <i class="fas fa-lightbulb text-yellow-400"></i>
-                    优化要点
-                </h4>
-                <div class="space-y-3">
-                    ${(result.suggestions || []).map(s => `
-                        <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                            <div class="flex items-start gap-3">
-                                <i class="fas ${s.icon || 'fa-check-circle'} mt-1" style="color: ${s.priority === 'high' ? '#ef4444' : '#3b82f6'}"></i>
-                                <div class="flex-1">
-                                    <div class="font-medium text-white mb-1">${s.title}</div>
-                                    <div class="text-sm text-gray-400">${s.desc}</div>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-
-            ${result.changes && result.changes.length > 0 ? `
-            <!-- 主要修改 -->
+            ${changes.length > 0 ? `
             <div class="mb-6">
                 <h4 class="font-semibold text-white mb-3 flex items-center gap-2">
                     <i class="fas fa-exchange-alt text-purple-400"></i>
-                    主要修改 (${result.changes.length}处)
+                    优化对比 (${changes.length}处修改)
                 </h4>
-                <div class="space-y-4">
-                    ${result.changes.slice(0, 3).map(change => `
+                <div class="space-y-3" style="max-height: 400px; overflow-y: auto;">
+                    ${changes.map(change => `
                         <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                             <div class="text-xs text-gray-500 mb-2 uppercase tracking-wide">
-                                ${change.section === 'profile' ? '个人简介' : `${change.company || ''} ${change.position || ''}`.trim()}
+                                ${this._getSectionLabel(change.section)} ${change.label ? '· ' + change.label : ''}
                             </div>
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <div class="text-xs text-red-400 mb-1">原文</div>
-                                    <div class="text-sm text-gray-400 line-through bg-gray-900/50 p-2 rounded">${escapeHtml((change.original || '').slice(0, 150))}</div>
+                                    <div class="text-xs text-red-400 mb-1 flex items-center gap-1">
+                                        <i class="fas fa-minus-circle"></i> 原文
+                                    </div>
+                                    <div class="text-sm text-gray-400 bg-red-900/20 p-2 rounded border border-red-900/30 line-through">${escapeHtml((change.original || '(空)').slice(0, 200))}</div>
                                 </div>
                                 <div>
-                                    <div class="text-xs text-green-400 mb-1">优化后</div>
-                                    <div class="text-sm text-gray-300 bg-green-900/20 p-2 rounded border border-green-900/30">${escapeHtml((change.optimized || '').slice(0, 150))}</div>
+                                    <div class="text-xs text-green-400 mb-1 flex items-center gap-1">
+                                        <i class="fas fa-plus-circle"></i> 优化后
+                                    </div>
+                                    <div class="text-sm text-gray-300 bg-green-900/20 p-2 rounded border border-green-900/30">${escapeHtml((change.optimized || '(空)').slice(0, 200))}</div>
                                 </div>
                             </div>
                         </div>
@@ -951,7 +944,6 @@ ${star.result}`
             ` : ''}
 
             ${result.keywordsAdded && result.keywordsAdded.length > 0 ? `
-            <!-- 新增关键词 -->
             <div class="mb-6">
                 <h4 class="font-semibold text-white mb-3 flex items-center gap-2">
                     <i class="fas fa-tags text-blue-400"></i>
@@ -965,7 +957,30 @@ ${star.result}`
             </div>
             ` : ''}
 
-            <!-- 操作按钮 -->
+            ${result.suggestions && result.suggestions.length > 0 ? `
+            <div class="mb-6">
+                <h4 class="font-semibold text-white mb-3 flex items-center gap-2">
+                    <i class="fas fa-lightbulb text-yellow-400"></i>
+                    优化要点
+                </h4>
+                <div class="space-y-3">
+                    ${(Array.isArray(result.suggestions) ? result.suggestions : []).map(s => {
+                        const sug = typeof s === 'string' ? { icon: '✓', title: s, desc: '' } : s;
+                        return `
+                        <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                            <div class="flex items-start gap-3">
+                                <i class="fas ${sug.icon || 'fa-check-circle'} mt-1" style="color: ${sug.priority === 'high' ? '#ef4444' : '#3b82f6'}"></i>
+                                <div class="flex-1">
+                                    <div class="font-medium text-white mb-1">${escapeHtml(sug.title || sug)}</div>
+                                    ${sug.desc ? `<div class="text-sm text-gray-400">${escapeHtml(sug.desc)}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `}).join('')}
+                </div>
+            </div>
+            ` : ''}
+
             <div class="flex gap-3 pt-4 border-t border-gray-700">
                 <button onclick="aiOptimizer.applyOptimization()" class="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 transition-all">
                     <i class="fas fa-check mr-2"></i>应用优化结果
@@ -977,7 +992,144 @@ ${star.result}`
         `;
     }
 
-    // 应用优化
+    _displayFallbackResult(container, result, levelConfig) {
+        container.innerHTML = `
+            <div style="background: linear-gradient(135deg, ${this._getColor(levelConfig.color)}20, #1f2937); padding: 24px; border-radius: 16px; margin-bottom: 20px; border: 1px solid ${this._getColor(levelConfig.color)}30;">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-white mb-1">
+                            <i class="fas ${levelConfig.icon} mr-2" style="color: ${this._getColor(levelConfig.color)}"></i>
+                            ${levelConfig.name}完成
+                        </h3>
+                        <p class="text-sm text-gray-400">${levelConfig.description}</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-3xl font-bold" style="color: ${this._getColor(levelConfig.color)}">${result.score || '--'}分</div>
+                        <div class="text-xs text-gray-500">综合评分</div>
+                    </div>
+                </div>
+            </div>
+
+            ${result.suggestions && result.suggestions.length > 0 ? `
+            <div class="mb-6">
+                <h4 class="font-semibold text-white mb-3 flex items-center gap-2">
+                    <i class="fas fa-lightbulb text-yellow-400"></i>
+                    优化要点
+                </h4>
+                <div class="space-y-3">
+                    ${result.suggestions.map(s => `
+                        <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                            <div class="flex items-start gap-3">
+                                <span class="text-lg">${typeof s === 'object' ? s.icon : '✓'}</span>
+                                <div class="flex-1">
+                                    <div class="font-medium text-white mb-1">${typeof s === 'object' ? escapeHtml(s.title) : escapeHtml(s)}</div>
+                                    ${typeof s === 'object' && s.desc ? `<div class="text-sm text-gray-400">${escapeHtml(s.desc)}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+
+            ${result.optimizedContent ? `
+            <div class="mb-6">
+                <h4 class="font-semibold text-white mb-3 flex items-center gap-2">
+                    <i class="fas fa-file-alt text-blue-400"></i>
+                    优化后内容
+                </h4>
+                <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700 max-h-96 overflow-y-auto">
+                    <pre class="text-sm text-gray-300 whitespace-pre-wrap">${escapeHtml(result.optimizedContent.slice(0, 2000))}</pre>
+                </div>
+            </div>
+            ` : ''}
+
+            <div class="flex gap-3 pt-4 border-t border-gray-700">
+                <button onclick="aiOptimizer.closePanel()" class="flex-1 py-3 bg-gray-700 rounded-lg font-medium hover:bg-gray-600 transition-colors">
+                    <i class="fas fa-times mr-2"></i>关闭
+                </button>
+                <button onclick="aiOptimizer.exportOptimized()" class="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 transition-all">
+                    <i class="fas fa-download mr-2"></i>导出结果
+                </button>
+            </div>
+        `;
+    }
+
+    _computeFieldChanges(original, optimized) {
+        const changes = [];
+
+        if (optimized.profile) {
+            const origProfile = original.profile || {};
+            const profileFields = [
+                { key: 'title', label: '职位头衔' },
+                { key: 'summary', label: '个人简介' },
+                { key: 'location', label: '所在地' }
+            ];
+            profileFields.forEach(({ key, label }) => {
+                const orig = (origProfile[key] || '').trim();
+                const opt = (optimized.profile[key] || '').trim();
+                if (opt && opt !== orig) {
+                    changes.push({ section: 'profile', label, original: orig, optimized: opt });
+                }
+            });
+        }
+
+        if (optimized.experience && original.experience) {
+            optimized.experience.forEach((optExp, i) => {
+                const origExp = original.experience[i] || {};
+                if (optExp.description && optExp.description !== (origExp.description || '')) {
+                    changes.push({
+                        section: 'experience',
+                        label: `${origExp.company || optExp.company || '经历' + (i + 1)} · ${origExp.position || optExp.position || ''}`,
+                        original: origExp.description || '',
+                        optimized: optExp.description
+                    });
+                }
+            });
+        }
+
+        if (optimized.education && original.education) {
+            optimized.education.forEach((optEdu, i) => {
+                const origEdu = original.education[i] || {};
+                if (optEdu.description && optEdu.description !== (origEdu.description || '')) {
+                    changes.push({
+                        section: 'education',
+                        label: `${origEdu.school || optEdu.school || '教育' + (i + 1)}`,
+                        original: origEdu.description || '',
+                        optimized: optEdu.description
+                    });
+                }
+            });
+        }
+
+        if (optimized.skills && original.skills) {
+            const origSkills = original.skills.map(s => typeof s === 'string' ? s : s.name || s);
+            const optSkills = optimized.skills.map(s => typeof s === 'string' ? s : s.name || s);
+            const added = optSkills.filter(s => !origSkills.includes(s));
+            if (added.length > 0) {
+                changes.push({
+                    section: 'skills',
+                    label: '技能新增',
+                    original: origSkills.join('、'),
+                    optimized: optSkills.join('、')
+                });
+            }
+        }
+
+        return changes;
+    }
+
+    _getSectionLabel(section) {
+        const labels = {
+            profile: '👤 个人信息',
+            experience: '💼 工作经历',
+            education: '🎓 教育背景',
+            skills: '🛠 专业技能'
+        };
+        return labels[section] || section;
+    }
+
+    // 应用优化 - 字段级回填
     applyOptimization() {
         if (!this._lastOptimizedData) {
             showNotification('没有可应用的优化结果', 'error');
@@ -987,9 +1139,9 @@ ${star.result}`
         try {
             const optimized = this._lastOptimizedData;
 
-            // 更新store中的数据
             if (window.store) {
-                // 更新个人简介
+                const currentData = window.store.getState();
+
                 if (optimized.profile) {
                     if (optimized.profile.summary) {
                         window.store.updatePath('profile.summary', optimized.profile.summary);
@@ -1000,38 +1152,69 @@ ${star.result}`
                     if (optimized.profile.title) {
                         window.store.updatePath('profile.title', optimized.profile.title);
                     }
+                    if (optimized.profile.email) {
+                        window.store.updatePath('profile.email', optimized.profile.email);
+                    }
+                    if (optimized.profile.phone) {
+                        window.store.updatePath('profile.phone', optimized.profile.phone);
+                    }
+                    if (optimized.profile.location) {
+                        window.store.updatePath('profile.location', optimized.profile.location);
+                    }
                 }
 
-                // 更新工作经历
-                if (optimized.experience) {
-                    window.store.updatePath('experience', optimized.experience);
+                if (optimized.experience && optimized.experience.length > 0) {
+                    window.store.updatePath('experience', optimized.experience.map((exp, i) => ({
+                        ...(currentData.experience?.[i] || {}),
+                        ...exp,
+                        id: currentData.experience?.[i]?.id || Date.now() + i
+                    })));
                 }
 
-                // 更新技能
-                if (optimized.skills) {
+                if (optimized.education && optimized.education.length > 0) {
+                    window.store.updatePath('education', optimized.education.map((edu, i) => ({
+                        ...(currentData.education?.[i] || {}),
+                        ...edu,
+                        id: currentData.education?.[i]?.id || Date.now() + i + 100
+                    })));
+                }
+
+                if (optimized.skills && optimized.skills.length > 0) {
                     window.store.updatePath('skills', optimized.skills);
                 }
 
                 window.store.save();
             }
 
-            // 更新表单字段
-            if (optimized.profile?.summary) {
-                const summaryField = document.getElementById('profileSummary');
-                if (summaryField) {
-                    summaryField.value = optimized.profile.summary;
-                    summaryField.dispatchEvent(new Event('input', { bubbles: true }));
-                }
-            }
-
-            // 关闭面板
+            this._syncFormFromStore();
             this.closePanel();
-
             showNotification('✅ 优化结果已应用到简历！', 'success');
         } catch (error) {
             console.error('应用优化结果失败:', error);
             showNotification('应用优化结果失败: ' + error.message, 'error');
         }
+    }
+
+    _syncFormFromStore() {
+        if (!window.store) return;
+        const data = window.store.getState();
+
+        const fieldMap = {
+            'profileName': data.profile?.name,
+            'profileTitle': data.profile?.title,
+            'profileEmail': data.profile?.email,
+            'profilePhone': data.profile?.phone,
+            'profileLocation': data.profile?.location,
+            'profileSummary': data.profile?.summary
+        };
+
+        Object.entries(fieldMap).forEach(([id, value]) => {
+            const el = document.getElementById(id);
+            if (el && value) {
+                el.value = value;
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        });
     }
 
     // 导出优化结果
@@ -1062,6 +1245,159 @@ ${star.result}`
         }
     }
 
+    async analyzeJD() {
+        const jobDescription = document.getElementById('jobDescription')?.value.trim();
+        if (!jobDescription) {
+            showNotification('请先输入职位描述（JD）', 'error');
+            return;
+        }
+
+        if (this.useRemoteAI && !apiClient.isAuthenticated()) {
+            const { authModal } = await import('../components/authModal.js');
+            authModal.show();
+            return;
+        }
+
+        const btn = document.getElementById('analyzeJDBtn');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2 text-blue-400"></i>分析中...';
+            btn.disabled = true;
+        }
+
+        try {
+            const result = await apiClient.analyzeJD(jobDescription);
+            this._displayJDAnalysis(result);
+            showNotification('📊 职位匹配分析完成！', 'success');
+        } catch (error) {
+            const msg = error.message || '分析失败';
+            showNotification(`JD分析失败: ${msg}`, 'error');
+        } finally {
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-search-plus mr-2 text-blue-400"></i>分析职位匹配度';
+                btn.disabled = false;
+            }
+        }
+    }
+
+    _displayJDAnalysis(result) {
+        const container = document.getElementById('jdAnalysisResult');
+        if (!container) return;
+
+        container.classList.remove('hidden');
+
+        const resumeData = window.store ? window.store.getState() : {};
+        const resumeSkills = (resumeData.skills || []).map(s => typeof s === 'string' ? s : s.name || s);
+        const requiredSkills = result.requiredSkills || [];
+        const preferredSkills = result.preferredSkills || [];
+        const allJDSkills = [...requiredSkills, ...preferredSkills];
+        const matched = allJDSkills.filter(s =>
+            resumeSkills.some(rs => rs.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(rs.toLowerCase()))
+        );
+        const missing = allJDSkills.filter(s =>
+            !resumeSkills.some(rs => rs.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(rs.toLowerCase()))
+        );
+        const matchRate = allJDSkills.length > 0 ? Math.round((matched.length / allJDSkills.length) * 100) : 0;
+
+        const matchColor = matchRate >= 70 ? '#10b981' : matchRate >= 40 ? '#f59e0b' : '#ef4444';
+        const circumference = 2 * Math.PI * 40;
+        const offset = circumference - (matchRate / 100) * circumference;
+
+        container.innerHTML = `
+            <div style="background: linear-gradient(135deg, #0ea5e920, #1f2937); padding: 24px; border-radius: 16px; margin-bottom: 16px; border: 1px solid #0ea5e930;">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-1">
+                            <i class="fas fa-search-plus mr-2" style="color: #0ea5e9"></i>
+                            职位匹配分析
+                        </h3>
+                        <p class="text-sm text-gray-400">${escapeHtml(result.jobTitle || '目标职位')}</p>
+                    </div>
+                    <div class="relative" style="width: 90px; height: 90px;">
+                        <svg viewBox="0 0 100 100" class="transform -rotate-90">
+                            <circle cx="50" cy="50" r="40" stroke="#374151" stroke-width="8" fill="none"/>
+                            <circle cx="50" cy="50" r="40" stroke="${matchColor}" stroke-width="8" fill="none"
+                                stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
+                                stroke-linecap="round" style="transition: stroke-dashoffset 1s ease-out"/>
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-xl font-bold" style="color: ${matchColor}">${matchRate}%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mt-4">
+                    <div class="bg-gray-800/50 rounded-lg p-3">
+                        <div class="text-xs text-gray-500 mb-1">经验要求</div>
+                        <div class="text-sm font-medium text-white">${result.experienceYears ? result.experienceYears + '年' : '未指定'}</div>
+                    </div>
+                    <div class="bg-gray-800/50 rounded-lg p-3">
+                        <div class="text-xs text-gray-500 mb-1">学历要求</div>
+                        <div class="text-sm font-medium text-white">${escapeHtml(result.education || '未指定')}</div>
+                    </div>
+                    <div class="bg-gray-800/50 rounded-lg p-3">
+                        <div class="text-xs text-gray-500 mb-1">职位类型</div>
+                        <div class="text-sm font-medium text-white">${escapeHtml(result.jobType || result.industry || '通用')}</div>
+                    </div>
+                    <div class="bg-gray-800/50 rounded-lg p-3">
+                        <div class="text-xs text-gray-500 mb-1">匹配难度</div>
+                        <div class="text-sm font-medium text-white">${escapeHtml(result.matchDifficulty || '中等')}</div>
+                    </div>
+                </div>
+            </div>
+
+            ${matched.length > 0 ? `
+            <div class="mb-4">
+                <h4 class="font-semibold text-white mb-2 flex items-center gap-2">
+                    <i class="fas fa-check-circle text-green-400"></i>
+                    已匹配技能 (${matched.length})
+                </h4>
+                <div class="flex flex-wrap gap-2">
+                    ${matched.map(s => `
+                        <span class="px-3 py-1 bg-green-500/20 text-green-400 text-sm rounded-full border border-green-500/30">${escapeHtml(s)}</span>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+
+            ${missing.length > 0 ? `
+            <div class="mb-4">
+                <h4 class="font-semibold text-white mb-2 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                    缺失技能 (${missing.length})
+                </h4>
+                <div class="flex flex-wrap gap-2">
+                    ${missing.slice(0, 10).map(s => `
+                        <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 text-sm rounded-full border border-yellow-500/30">${escapeHtml(s)}</span>
+                    `).join('')}
+                    ${missing.length > 10 ? `<span class="px-3 py-1 bg-gray-700 text-gray-400 text-sm rounded-full">+${missing.length - 10}项</span>` : ''}
+                </div>
+            </div>
+            ` : ''}
+
+            ${result.responsibilities && result.responsibilities.length > 0 ? `
+            <div class="mb-4">
+                <h4 class="font-semibold text-white mb-2 flex items-center gap-2">
+                    <i class="fas fa-briefcase text-blue-400"></i>
+                    主要职责
+                </h4>
+                <div class="space-y-2">
+                    ${result.responsibilities.slice(0, 5).map(r => `
+                        <div class="bg-gray-800/50 rounded px-3 py-2 text-sm text-gray-300">
+                            <i class="fas fa-angle-right text-blue-400 mr-2"></i>${escapeHtml(r)}
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+
+            <div class="pt-3 border-t border-gray-700">
+                <button onclick="document.getElementById('jobDescription').focus()" class="w-full py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg font-medium text-sm hover:from-purple-700 hover:to-indigo-700 transition-all">
+                    <i class="fas fa-wand-magic-sparkles mr-2"></i>基于分析结果优化简历
+                </button>
+            </div>
+        `;
+    }
+
     // 免费简历诊断
     diagnoseResume() {
         const resumeData = window.store ? window.store.getState() : {};
@@ -1071,16 +1407,36 @@ ${star.result}`
         }
 
         const analysis = this._analyzeResume(resumeData);
-        const jdKeywords = [];
-        const keywordMatch = this._matchKeywords(jdKeywords, analysis.skills);
-
-        const jdAnalysis = this._analyzeJD('');
         const diagnosis = this._diagnoseResume(resumeData, null);
 
         const container = document.getElementById('optimizationResult');
         if (!container) return;
 
         container.classList.remove('hidden');
+
+        const radarData = [
+            { label: '完整度', value: diagnosis.completeness, color: '#3b82f6' },
+            { label: '匹配度', value: diagnosis.matchScore || 0, color: '#8b5cf6' },
+            { label: '内容质量', value: diagnosis.qualityScore, color: '#10b981' },
+            { label: 'ATS通过率', value: diagnosis.atsScore, color: '#f59e0b' },
+            { label: '综合评分', value: diagnosis.overallScore, color: '#ef4444' }
+        ];
+
+        const centerX = 100, centerY = 100, radius = 70;
+        const points = radarData.map((d, i) => {
+            const angle = (Math.PI * 2 * i / radarData.length) - Math.PI / 2;
+            const r = (d.value / 100) * radius;
+            return `${centerX + r * Math.cos(angle)},${centerY + r * Math.sin(angle)}`;
+        });
+        const axisPoints = radarData.map((d, i) => {
+            const angle = (Math.PI * 2 * i / radarData.length) - Math.PI / 2;
+            return `${centerX + radius * Math.cos(angle)},${centerY + radius * Math.sin(angle)}`;
+        });
+        const labelPositions = radarData.map((d, i) => {
+            const angle = (Math.PI * 2 * i / radarData.length) - Math.PI / 2;
+            const labelR = radius + 25;
+            return { x: centerX + labelR * Math.cos(angle), y: centerY + labelR * Math.sin(angle), ...d };
+        });
 
         container.innerHTML = `
             <div style="background: linear-gradient(135deg, #3b82f620, #1f2937); padding: 24px; border-radius: 16px; margin-bottom: 20px; border: 1px solid #3b82f630;">
@@ -1098,19 +1454,32 @@ ${star.result}`
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-4 mt-4">
-                    <div class="bg-gray-800/50 rounded-lg p-3">
-                        <div class="text-xs text-gray-500 mb-1">完整度</div>
-                        <div class="text-lg font-semibold text-blue-400">${diagnosis.completeness}%</div>
-                    </div>
-                    <div class="bg-gray-800/50 rounded-lg p-3">
-                        <div class="text-xs text-gray-500 mb-1">内容质量</div>
-                        <div class="text-lg font-semibold text-green-400">${diagnosis.qualityScore}%</div>
-                    </div>
-                    <div class="bg-gray-800/50 rounded-lg p-3">
-                        <div class="text-xs text-gray-500 mb-1">ATS通过率</div>
-                        <div class="text-lg font-semibold text-purple-400">${diagnosis.atsScore}%</div>
-                    </div>
+                <div class="flex justify-center my-6">
+                    <svg viewBox="0 0 200 200" width="220" height="220">
+                        <polygon points="${axisPoints.join(' ')}" fill="none" stroke="#374151" stroke-width="1"/>
+                        ${[0.25, 0.5, 0.75, 1].map(scale => {
+                            const scaledPoints = radarData.map((d, i) => {
+                                const angle = (Math.PI * 2 * i / radarData.length) - Math.PI / 2;
+                                return `${centerX + (radius * scale) * Math.cos(angle)},${centerY + (radius * scale) * Math.sin(angle)}`;
+                            });
+                            return `<polygon points="${scaledPoints.join(' ')}" fill="none" stroke="#37415180" stroke-width="0.5"/>`;
+                        }).join('')}
+                        ${radarData.map((d, i) => {
+                            const angle = (Math.PI * 2 * i / radarData.length) - Math.PI / 2;
+                            return `<line x1="${centerX}" y1="${centerY}" x2="${centerX + radius * Math.cos(angle)}" y2="${centerY + radius * Math.sin(angle)}" stroke="#37415180" stroke-width="0.5"/>`;
+                        }).join('')}
+                        <polygon points="${points.join(' ')}" fill="#3b82f630" stroke="#3b82f6" stroke-width="2"/>
+                        ${points.map(p => `<circle cx="${p.split(',')[0]}" cy="${p.split(',')[1]}" r="3" fill="#3b82f6"/>`).join('')}
+                    </svg>
+                </div>
+
+                <div class="grid grid-cols-5 gap-2 text-center text-xs">
+                    ${labelPositions.map(lp => `
+                        <div>
+                            <div class="font-bold" style="color: ${lp.color}">${lp.value}</div>
+                            <div class="text-gray-500">${lp.label}</div>
+                        </div>
+                    `).join('')}
                 </div>
             </div>
 

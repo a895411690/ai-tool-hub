@@ -499,6 +499,16 @@ function setupSearch() {
     suggestionsContainer.addEventListener('click', function handleSuggestionClick(e) {
         const item = e.target.closest('.search-suggestion-item');
         if (item) {
+            // 如果建议项关联了具体工具，直接打开详情弹窗
+            const toolId = item.dataset.toolId;
+            if (toolId) {
+                hideSearchSuggestions(suggestionsContainer);
+                if (searchHistoryContainer) searchHistoryContainer.classList.remove('show');
+                searchInput.blur();
+                // 由全局事件委托处理 showToolDetail
+                return;
+            }
+
             const searchText = item.dataset.searchText;
             if (searchText) {
                 hideSearchSuggestions(suggestionsContainer);
@@ -625,7 +635,7 @@ function showSearchSuggestions(term, container) {
         const toolDetail = typeof s.id === 'number' ? state.tools.find(t => t.id === s.id) : null;
         const firstLetter = s.text && s.text.length > 0 ? s.text.charAt(0).toUpperCase() : '?';
         return `
-        <div class="search-suggestion-item" data-search-text="${escapeAttr(s.text)}">
+        <div class="search-suggestion-item" data-search-text="${escapeAttr(s.text)}" ${typeof s.id === 'number' ? `data-tool-id="${s.id}"` : ''}>
             <div class="search-suggestion-icon">${firstLetter}</div>
             <div class="search-suggestion-content">
                 <div class="search-suggestion-title">${highlightText(escapeHtml(s.text), term)}</div>

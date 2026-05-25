@@ -7,13 +7,14 @@
     <meta name="description" content="AI驱动的简历优化工具，支持实时预览和一键导出">
 
     <!-- Content Security Policy (CSP) - 防止XSS和代码注入攻击 -->
-    <meta http-equiv="Content-Security-Policy" content="
+    <meta http-equiv=1779709759"Content-Security-Policy" content="
         default-src 'self';
-        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com;
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com blob:;
         style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
         font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
         img-src 'self' data: https: http: blob:;
-        connect-src 'self' https://cdnjs.cloudflare.com;
+        connect-src 'self' https://cdnjs.cloudflare.com blob: data:;
+        worker-src 'self' blob:;
         frame-src 'none';
         object-src 'none';
         base-uri 'self';
@@ -25,9 +26,9 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     
-    <!-- 预加载关键资源 -->
-    <link rel="preload" href="./src/app.js" as="script" crossorigin>
-    <link rel="preload" href="./src/styles/main.css" as="style" crossorigin>
+    <!-- 预加载关键资源 (同源资源不加 crossorigin) -->
+    <link rel="preload" href="./src/app.js" as="script">
+    <link rel="preload" href="./src/styles/main.css" as="style">
     <!-- 生产环境Tailwind CSS - 预编译最小化版本（14KB vs CDN 3MB）-->
     <link rel="stylesheet" href="./src/styles/tailwind.min.css">
     <!-- 备用：本地Tailwind CSS -->
@@ -155,8 +156,13 @@
                         <i class="fas fa-wand-magic-sparkles mr-2"></i>
                         开始优化
                     </button>
+                    <button onclick="aiOptimizer.analyzeJD()" id="analyzeJDBtn" class="w-full py-2.5 bg-gray-800 border border-gray-600 rounded-lg font-medium hover:bg-gray-700 hover:border-gray-500 transition-all text-sm">
+                        <i class="fas fa-search-plus mr-2 text-blue-400"></i>
+                        分析职位匹配度
+                    </button>
+                    <div id="jdAnalysisResult" class="hidden space-y-4">
+                    </div>
                     <div id="optimizationResult" class="hidden space-y-4">
-                        <!-- AI suggestions will appear here -->
                     </div>
                 </div>
             </div>
@@ -167,17 +173,17 @@
     <div id="importResumeContainer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4"></div>
 
     <!-- Scripts (ES6 Modules - 确保所有脚本都作为模块加载) -->
-    <script type="module" src="./src/lib/store.js?v=1779555130" defer></script>
-    <script type="module" src="./src/lib/pdfGenerator.js?v=1779555130" defer></script>
-    <script type="module" src="./src/lib/apiClient.js?v=1779555130" defer></script>
-    <script type="module" src="./src/lib/aiOptimizer.js?v=1779555130" defer></script>
-    <script type="module" src="./src/lib/shareUtils.js?v=1779555130" defer></script>
-    <script type="module" src="./src/lib/importUtils.js?v=1779555130" defer></script>
-    <script type="module" src="./src/components/importResume.js?v=1779555130" defer></script>
-    <script type="module" src="./src/components/resumeForm.js?v=1779555130" defer></script>
-    <script type="module" src="./src/components/resumePreview.js?v=1779555130" defer></script>
-    <script type="module" src="./src/components/authModal.js?v=1779555130" defer></script>
+    <script type="module" src="./src/lib/store.js?v=1779709759" defer></script>
+    <script type="module" src="./src/lib/pdfGenerator.js?v=1779709759" defer></script>
+    <script type="module" src="./src/lib/apiClient.js?v=1779709759" defer></script>
+    <script type="module" src="./src/lib/aiOptimizer.js?v=1779709759" defer></script>
+    <script type="module" src="./src/lib/shareUtils.js?v=1779709759" defer></script>
+    <script type="module" src="./src/lib/importUtils.js?v=1779709759" defer></script>
+    <script type="module" src="./src/components/importResume.js?v=1779709759" defer></script>
+    <script type="module" src="./src/components/resumeForm.js?v=1779709759" defer></script>
+    <script type="module" src="./src/components/resumePreview.js?v=1779709759" defer></script>
+    <script type="module" src="./src/components/authModal.js?v=1779709759" defer></script>
 
-    <script type="module" src="./src/app.js?v=1779555130" defer></script>
+    <script type="module" src="./src/app.js?v=1779709759" defer></script>
 </body>
 </html>

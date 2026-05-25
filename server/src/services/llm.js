@@ -11,9 +11,47 @@ const PROMPTS = {
 4. 统一格式和标点符号
 5. 不添加不存在的信息
 
-【输出要求】
-请直接输出优化后的完整简历内容（Markdown格式），不要包含任何解释性文字。`,
-        user: '请对以上简历进行轻度语言润色优化：',
+【输出格式 - 必须严格遵守】
+请输出JSON格式，包含优化后的完整简历数据。不要输出任何markdown标记、代码块标记或解释性文字，只输出纯JSON：
+
+{
+  "profile": {
+    "name": "姓名（保持原样）",
+    "title": "职位头衔（润色后）",
+    "email": "邮箱（保持原样）",
+    "phone": "电话（保持原样）",
+    "location": "所在地（保持原样）",
+    "summary": "个人简介（润色后，更专业流畅）"
+  },
+  "experience": [
+    {
+      "company": "公司名（保持原样）",
+      "position": "职位名（润色后）",
+      "startDate": "起始日期（保持原样）",
+      "endDate": "结束日期（保持原样）",
+      "description": "工作描述（润色后，修正语法和表达）"
+    }
+  ],
+  "education": [
+    {
+      "school": "学校（保持原样）",
+      "degree": "学历（保持原样）",
+      "major": "专业（保持原样）",
+      "startDate": "起始日期（保持原样）",
+      "endDate": "结束日期（保持原样）",
+      "description": "描述（如有则润色）"
+    }
+  ],
+  "skills": ["技能1", "技能2", "...（保持原样，格式统一）"],
+  "optimizationNotes": {
+    "level": "light",
+    "score": 85,
+    "changes": ["修改说明1", "修改说明2"],
+    "keywordsAdded": [],
+    "suggestions": ["建议1：xxx", "建议2：xxx"]
+  }
+}`,
+        user: '请对以上简历进行轻度语言润色优化，严格按照JSON格式输出：',
         temperature: 0.5,
         maxTokens: 2048
     },
@@ -27,22 +65,55 @@ const PROMPTS = {
 - 了解各行业招聘标准和偏好
 
 【优化策略】
-1. **关键词对齐**：从JD中提取核心技能关键词，自然融入简历
-2. **成果量化**：将定性描述改为定量描述
-3. **行为动词强化**：使用更有力的动词
-4. **ATS优化**：确保关键技能词出现频率适中
-5. **保持真实性**：不编造经历，只优化表达方式
+1. 关键词对齐：从JD中提取核心技能关键词，自然融入简历
+2. 成果量化：将定性描述改为定量描述
+3. 行为动词强化：使用更有力的动词
+4. ATS优化：确保关键技能词出现频率适中
+5. 保持真实性：不编造经历，只优化表达方式
 
-【输出格式】
-直接输出优化后的完整简历（Markdown格式），并在末尾附上：
-\`\`\`
----
-## 📊 优化说明
-- **新增关键词**: [列出新增的关键词]
-- **量化数据**: [列出新增加的数据指标]
-- **匹配度预估**: [XX%]
-\`\`\``,
-        user: '请根据以上JD对简历进行中度优化：',
+【输出格式 - 必须严格遵守】
+请输出JSON格式，包含优化后的完整简历数据。不要输出任何markdown标记、代码块标记或解释性文字，只输出纯JSON：
+
+{
+  "profile": {
+    "name": "姓名（保持原样）",
+    "title": "职位头衔（根据JD优化，如"资深前端工程师"）",
+    "email": "邮箱（保持原样）",
+    "phone": "电话（保持原样）",
+    "location": "所在地（保持原样）",
+    "summary": "个人简介（重写为JD对齐版，突出匹配技能和经验年限）"
+  },
+  "experience": [
+    {
+      "company": "公司名（保持原样）",
+      "position": "职位名（根据JD调整表述）",
+      "startDate": "起始日期（保持原样）",
+      "endDate": "结束日期（保持原样）",
+      "description": "工作描述（STAR法则改写，量化成果，融入JD关键词）"
+    }
+  ],
+  "education": [
+    {
+      "school": "学校（保持原样）",
+      "degree": "学历（保持原样）",
+      "major": "专业（保持原样）",
+      "startDate": "起始日期（保持原样）",
+      "endDate": "结束日期（保持原样）",
+      "description": "描述（如有则优化）"
+    }
+  ],
+  "skills": ["从JD中提取并对齐的技能关键词", "原有技能", "...补充JD相关技能"],
+  "optimizationNotes": {
+    "level": "medium",
+    "score": 85,
+    "matchRate": 75,
+    "changes": ["修改说明1", "修改说明2", "..."],
+    "keywordsAdded": ["新增的JD关键词1", "新增的JD关键词2"],
+    "quantifiedItems": ["量化的成果1", "量化的成果2"],
+    "suggestions": ["建议1：xxx", "建议2：xxx"]
+  }
+}`,
+        user: '请根据以上JD对简历进行中度优化，严格按照JSON格式输出：',
         temperature: 0.6,
         maxTokens: 3072
     },
@@ -62,25 +133,51 @@ const PROMPTS = {
 4. 终极ATS优化 - 关键词密度、格式兼容性
 5. 差异化亮点挖掘 - 独特成就提炼
 
-【输出要求】
-请输出完整的深度优化后简历（Markdown格式），结构如下：
+【输出格式 - 必须严格遵守】
+请输出JSON格式，包含深度优化后的完整简历数据。不要输出任何markdown标记、代码块标记或解释性文字，只输出纯JSON：
 
-# [姓名] - [差异化标签]
-
-## 🎯 Professional Summary（个人品牌宣言）
-## 💼 Core Competencies（核心竞争力）
-## 🚀 Professional Experience（STAR法则重构）
-每个经历包含Context、Challenge、Solution、Impact
-## 🛠 Technical Skills
-
----
-## 📋 Optimization Report
-- **Brand Position**: [品牌定位]
-- **STAR Applications**: [X个经历完成STAR重构]
-- **Keywords Optimized**: [X个关键词]
-- **Predicted Match Rate**: [XX%]
-- **ATS Score**: [XX/100]`,
-        user: '请对简历进行深度优化重构：',
+{
+  "profile": {
+    "name": "姓名（保持原样）",
+    "title": "差异化标签式头衔（如"全栈架构师 | 8年深耕 | 技术布道者"）",
+    "email": "邮箱（保持原样）",
+    "phone": "电话（保持原样）",
+    "location": "所在地（保持原样）",
+    "summary": "个人品牌宣言（重写，包含核心竞争力、差异化优势、价值主张）"
+  },
+  "experience": [
+    {
+      "company": "公司名（保持原样）",
+      "position": "职位名（强化表述，如"高级前端架构师"优于"前端开发"）",
+      "startDate": "起始日期（保持原样）",
+      "endDate": "结束日期（保持原样）",
+      "description": "STAR法则重构的工作描述：情境(S)-任务(T)-行动(A)-结果(R)，每条成果必须量化"
+    }
+  ],
+  "education": [
+    {
+      "school": "学校（保持原样）",
+      "degree": "学历（保持原样）",
+      "major": "专业（保持原样）",
+      "startDate": "起始日期（保持原样）",
+      "endDate": "结束日期（保持原样）",
+      "description": "简短描述（如有则优化）"
+    }
+  ],
+  "skills": ["分类整理的技能矩阵", "前端: React, Vue, TypeScript", "后端: Node.js, Python", "..."],
+  "optimizationNotes": {
+    "level": "deep",
+    "score": 90,
+    "matchRate": 85,
+    "atsScore": 88,
+    "brandPosition": "品牌定位描述",
+    "starApplications": 3,
+    "keywordsOptimized": 8,
+    "changes": ["修改说明1：个人品牌重塑", "修改说明2：STAR法则重构", "..."],
+    "suggestions": ["建议1：xxx", "建议2：xxx", "建议3：xxx", "建议4：xxx"]
+  }
+}`,
+        user: '请对简历进行深度优化重构，严格按照JSON格式输出：',
         temperature: 0.75,
         maxTokens: 5000
     }
@@ -360,6 +457,42 @@ ${text}
     }
 
     _parseResult(level, content) {
+        const jsonResult = this._extractJSON(content);
+
+        if (jsonResult && (jsonResult.profile || jsonResult.experience || jsonResult.skills)) {
+            const notes = jsonResult.optimizationNotes || {};
+            const result = {
+                level,
+                optimizedData: {
+                    profile: jsonResult.profile || {},
+                    experience: Array.isArray(jsonResult.experience) ? jsonResult.experience : [],
+                    education: Array.isArray(jsonResult.education) ? jsonResult.education : [],
+                    skills: Array.isArray(jsonResult.skills) ? jsonResult.skills : [],
+                    projects: Array.isArray(jsonResult.projects) ? jsonResult.projects : []
+                },
+                optimizedContent: content,
+                score: notes.score || (level === 'light' ? 85 : level === 'medium' ? 82 : 90),
+                model: 'DeepSeek-V3'
+            };
+
+            if (notes.matchRate !== undefined) result.jdMatch = notes.matchRate;
+            if (notes.atsScore !== undefined) result.atsScore = notes.atsScore;
+            if (notes.brandPosition) result.brandPosition = notes.brandPosition;
+            if (notes.starApplications) result.starApplications = notes.starApplications;
+            if (notes.keywordsOptimized) result.keywordsOptimized = notes.keywordsOptimized;
+            if (notes.keywordsAdded && notes.keywordsAdded.length > 0) result.keywordsAdded = notes.keywordsAdded;
+            if (notes.quantifiedItems && notes.quantifiedItems.length > 0) result.quantifiedItems = notes.quantifiedItems;
+            if (notes.changes && notes.changes.length > 0) result.changes = notes.changes;
+            if (notes.suggestions && notes.suggestions.length > 0) result.suggestions = notes.suggestions;
+
+            if (!result.suggestions || result.suggestions.length === 0) {
+                result.suggestions = this._getDefaultSuggestions(level, result);
+            }
+
+            return result;
+        }
+
+        // Backward compatibility: markdown fallback
         const parts = content.split('---');
         const optimizedContent = parts[0]?.trim() || content;
         const reportSection = parts.length > 1 ? parts.slice(1).join('---').trim() : '';
@@ -400,6 +533,59 @@ ${text}
         }
 
         return result;
+    }
+
+    _extractJSON(content) {
+        if (!content || typeof content !== 'string') return null;
+
+        const codeBlockMatch = content.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+        if (codeBlockMatch) {
+            try { return JSON.parse(codeBlockMatch[1].trim()); } catch {}
+        }
+
+        try {
+            const trimmed = content.trim();
+            if (trimmed.startsWith('{') && trimmed.endsWith('}')) return JSON.parse(trimmed);
+        } catch {}
+
+        const profileMatch = content.match(/\{[\s\S]*"profile"[\s\S]*\}/);
+        if (profileMatch) {
+            try { return JSON.parse(profileMatch[0]); } catch {}
+        }
+
+        const anyMatch = content.match(/\{[\s\S]*\}/);
+        if (anyMatch) {
+            try {
+                const parsed = JSON.parse(anyMatch[0]);
+                if (parsed && typeof parsed === 'object') return parsed;
+            } catch {}
+        }
+
+        return null;
+    }
+
+    _getDefaultSuggestions(level, result) {
+        if (level === 'light') {
+            return [
+                { icon: '✨', title: '语言润色', desc: '已优化表达方式，更专业流畅' },
+                { icon: '📝', title: '格式规范', desc: '统一了格式和标点符号' },
+                { icon: '✅', title: '语法检查', desc: '修正了潜在的语法问题' }
+            ];
+        }
+        if (level === 'medium') {
+            return [
+                { icon: '🔑', title: '关键词对齐', desc: `已对齐${result.keywordsAdded?.length || 0}个JD核心关键词` },
+                { icon: '📊', title: '成果量化', desc: '为工作经历添加了具体的数字和指标' },
+                { icon: '💪', title: '行为动词强化', desc: '使用了更强有力的动词' },
+                { icon: '📄', title: 'ATS优化', desc: '排版和关键词密度已优化' }
+            ];
+        }
+        return [
+            { icon: '⭐', title: 'STAR法则重构', desc: '所有经历都按照情境-任务-行动-结果重组' },
+            { icon: '👔', title: '个人品牌塑造', desc: '打造独特的职业定位和价值主张' },
+            { icon: '🔍', title: '终极ATS优化', desc: '关键词密度和格式都已优化到极致' },
+            { icon: '💡', title: '差异化亮点', desc: '突出了独特成就和竞争优势' }
+        ];
     }
 
     _parseMediumNotes(text) {

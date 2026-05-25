@@ -149,7 +149,7 @@ class ApiClient {
                                 onProgress(parsed);
                             } else if (parsed.content && onToken) {
                                 onToken(parsed);
-                            } else if (parsed.quotaRemaining !== undefined) {
+                            } else if (parsed.level || parsed.optimizedData || parsed.quotaRemaining !== undefined) {
                                 finalResult = parsed;
                                 if (onDone) onDone(parsed);
                             }

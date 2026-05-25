@@ -31,6 +31,8 @@
   "author": "a895411690",
   "license": "MIT",
   "dependencies": {
-    "html2canvas": "^1.4.1"
+    "html2canvas": "^1.4.1",
+    "pdf-parse": "^2.4.5",
+    "playwright": "^1.60.0"
   }
 }

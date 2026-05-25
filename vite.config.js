@@ -10,7 +10,8 @@ function copyToolsPlugin() {
       try {
         cpSync('tools', 'dist/tools', { recursive: true, force: true })
         cpSync('src/tools.json', 'dist/tools.json', { force: true })
-        console.log('✓ Tools directory and tools.json copied to dist/')
+        copyFileSync('sw.js', 'dist/sw.js')
+        console.log('✓ Tools directory, tools.json and sw.js copied to dist/')
       } catch (err) {
         console.error('Failed to copy tools:', err)
       }
