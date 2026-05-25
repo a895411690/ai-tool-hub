@@ -1426,6 +1426,9 @@ ${star.result}`
         const analysis = this._analyzeResume(resumeData);
         const diagnosis = this._diagnoseResume(resumeData, null);
 
+        // 打开AI面板以显示诊断结果
+        this.openPanel();
+
         const container = document.getElementById('optimizationResult');
         if (!container) return;
 
@@ -1679,7 +1682,9 @@ ${star.result}`
             }
 
             versionOriginal.className = 'px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white font-medium transition-all';
-            versionOpt1.className = 'px-3 py-1.5 text-xs rounded-md text-gray-400 hover:text-white hover:bg-gray-700 font-medium transition-all hidden';
+            if (this._lastOptimizedData) {
+                versionOpt1.className = 'px-3 py-1.5 text-xs rounded-md text-gray-400 hover:text-white hover:bg-gray-700 font-medium transition-all';
+            }
             showNotification('已切换到原始版本', 'info');
         } else {
             if (this._lastOptimizedData) {
