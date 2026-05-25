@@ -16,6 +16,7 @@
 
 import { escapeHtml, escapeAttr, showNotification } from './utils.js';
 import { apiClient } from './apiClient.js';
+import { ResumeTemplates, getAllTemplates } from './templates.js';
 
 class AIOptimizer {
     constructor() {
@@ -53,6 +54,79 @@ class AIOptimizer {
         };
         
         this.currentLevel = 'medium';
+        this._initTemplateDropdown();
+    }
+
+    _initTemplateDropdown() {
+        const dropdown = document.getElementById('templateDropdown');
+        if (!dropdown) return;
+
+        const templates = getAllTemplates();
+        dropdown.innerHTML = templates.map(t => `
+            <button onclick="window.aiOptimizer.applyTemplate('${t.id}')" class="w-full px-3 py-2 text-left text-sm hover:bg-gray-700 flex items-center gap-2 transition-colors">
+                <i class="fas fa-${t.style === 'modern' ? 'laptop-code' : t.style === 'professional' ? 'briefcase' : t.style === 'creative' ? 'paint-brush' : 'university'} text-purple-400 text-xs"></i>
+                <div>
+                    <div class="font-medium">${escapeHtml(t.name)}</div>
+                    <div class="text-xs text-gray-500">${escapeHtml(t.description)}</div>
+                </div>
+            </button>
+        `).join('');
+
+        document.addEventListener('click', (e) => {
+            const wrap = document.getElementById('templateDropdownWrap');
+            if (wrap && !wrap.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    toggleTemplateDropdown() {
+        const dropdown = document.getElementById('templateDropdown');
+        if (dropdown) dropdown.classList.toggle('hidden');
+    }
+
+    applyTemplate(templateId) {
+        const template = ResumeTemplates[Object.keys(ResumeTemplates).find(k => ResumeTemplates[k].id === templateId)];
+        if (!template) return;
+
+        const dropdown = document.getElementById('templateDropdown');
+        if (dropdown) dropdown.classList.add('hidden');
+
+        const nameEl = document.getElementById('currentTemplateName');
+        if (nameEl) nameEl.textContent = template.name;
+
+        if (window.store) {
+            const currentData = window.store.getState();
+            if (!currentData.profile?.summary && template.fields.profile?.placeholder) {
+                window.store.updatePath('profile', {
+                    ...currentData.profile,
+                    title: currentData.profile?.title || ''
+                });
+            }
+
+            const currentSkills = currentData.skills || [];
+            const templateSkills = template.fields.skills || [];
+
+            if (currentSkills.length === 0 && templateSkills.length > 0) {
+                window.store.updatePath('skills', templateSkills);
+            }
+
+            if (currentData.experience?.length === 0 && template.fields.experience?.length > 0) {
+                window.store.updatePath('experience', template.fields.experience.map((exp, i) => ({
+                    id: Date.now() + i,
+                    company: '',
+                    position: '',
+                    startDate: '',
+                    endDate: '',
+                    description: ''
+                })));
+            }
+
+            window.store.save();
+            this._syncFormFromStore();
+        }
+
+        showNotification(`已应用"${template.name}"模板`, 'success');
     }
 
     // 打开AI面板
@@ -169,6 +243,7 @@ const resumeData = window.store ? window.store.getState() : {};
 
         // 如果启用远程AI且未登录，弹出登录框
         if (this.useRemoteAI && !apiClient.isAuthenticated()) {
+            showNotification('AI优化需要登录，请先登录或注册', 'warning');
             const { authModal } = await import('../components/authModal.js');
             authModal.show();
             return;
@@ -1270,6 +1345,7 @@ ${star.result}`
         }
 
         if (this.useRemoteAI && !apiClient.isAuthenticated()) {
+            showNotification('JD分析需要登录，请先登录或注册', 'warning');
             const { authModal } = await import('../components/authModal.js');
             authModal.show();
             return;
@@ -1597,6 +1673,7 @@ ${star.result}`
         }
 
         if (this.useRemoteAI && !apiClient.isAuthenticated()) {
+            showNotification('AI代写需要登录，请先登录或注册', 'warning');
             const { authModal } = await import('../components/authModal.js');
             authModal.show();
             return;

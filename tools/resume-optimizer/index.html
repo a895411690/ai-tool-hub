@@ -8,7 +8,7 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%84%3C/text%3E%3C/svg%3E">
 
     <!-- Content Security Policy (CSP) - 防止XSS和代码注入攻击 -->
-    <meta http-equiv=1779712284"Content-Security-Policy" content="
+    <meta http-equiv=1779712980"Content-Security-Policy" content="
         default-src 'self';
         script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com blob:;
         style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
@@ -79,13 +79,24 @@
                             <i class="fas fa-edit text-indigo-400"></i>
                             简历编辑
                         </h2>
-                        <div id="versionTabs" class="flex gap-1 bg-gray-800 rounded-lg p-1">
-                            <button onclick="window.aiOptimizer.switchVersion(-1)" id="versionOriginal" class="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white font-medium transition-all">
-                                原始版本
-                            </button>
-                            <button onclick="window.aiOptimizer.switchVersion(0)" id="versionOpt1" class="px-3 py-1.5 text-xs rounded-md text-gray-400 hover:text-white hover:bg-gray-700 font-medium transition-all hidden">
-                                优化后
-                            </button>
+                        <div class="flex items-center gap-2">
+                            <div class="relative" id="templateDropdownWrap">
+                                <button onclick="window.aiOptimizer.toggleTemplateDropdown()" id="templateDropdownBtn" class="px-3 py-1.5 text-xs rounded-md bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white font-medium transition-all flex items-center gap-1 border border-gray-700">
+                                    <i class="fas fa-palette text-purple-400"></i>
+                                    <span id="currentTemplateName">行业模板</span>
+                                    <i class="fas fa-chevron-down text-[10px] ml-1"></i>
+                                </button>
+                                <div id="templateDropdown" class="hidden absolute right-0 top-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 min-w-[180px] py-1">
+                                </div>
+                            </div>
+                            <div id="versionTabs" class="flex gap-1 bg-gray-800 rounded-lg p-1">
+                                <button onclick="window.aiOptimizer.switchVersion(-1)" id="versionOriginal" class="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white font-medium transition-all">
+                                    原始版本
+                                </button>
+                                <button onclick="window.aiOptimizer.switchVersion(0)" id="versionOpt1" class="px-3 py-1.5 text-xs rounded-md text-gray-400 hover:text-white hover:bg-gray-700 font-medium transition-all hidden">
+                                    优化后
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -247,17 +258,17 @@
     <div id="importResumeContainer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4"></div>
 
     <!-- Scripts (ES6 Modules - 确保所有脚本都作为模块加载) -->
-    <script type="module" src="./src/lib/store.js?v=1779712284" defer></script>
-    <script type="module" src="./src/lib/pdfGenerator.js?v=1779712284" defer></script>
-    <script type="module" src="./src/lib/apiClient.js?v=1779712284" defer></script>
-    <script type="module" src="./src/lib/aiOptimizer.js?v=1779712284" defer></script>
-    <script type="module" src="./src/lib/shareUtils.js?v=1779712284" defer></script>
-    <script type="module" src="./src/lib/importUtils.js?v=1779712284" defer></script>
-    <script type="module" src="./src/components/importResume.js?v=1779712284" defer></script>
-    <script type="module" src="./src/components/resumeForm.js?v=1779712284" defer></script>
-    <script type="module" src="./src/components/resumePreview.js?v=1779712284" defer></script>
-    <script type="module" src="./src/components/authModal.js?v=1779712284" defer></script>
+    <script type="module" src="./src/lib/store.js?v=1779712980" defer></script>
+    <script type="module" src="./src/lib/pdfGenerator.js?v=1779712980" defer></script>
+    <script type="module" src="./src/lib/apiClient.js?v=1779712980" defer></script>
+    <script type="module" src="./src/lib/aiOptimizer.js?v=1779712980" defer></script>
+    <script type="module" src="./src/lib/shareUtils.js?v=1779712980" defer></script>
+    <script type="module" src="./src/lib/importUtils.js?v=1779712980" defer></script>
+    <script type="module" src="./src/components/importResume.js?v=1779712980" defer></script>
+    <script type="module" src="./src/components/resumeForm.js?v=1779712980" defer></script>
+    <script type="module" src="./src/components/resumePreview.js?v=1779712980" defer></script>
+    <script type="module" src="./src/components/authModal.js?v=1779712980" defer></script>
 
-    <script type="module" src="./src/app.js?v=1779712284" defer></script>
+    <script type="module" src="./src/app.js?v=1779712980" defer></script>
 </body>
 </html>
