@@ -185,6 +185,11 @@ function showToolDetail(id) {
     // Show modal
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+
+    const closeBtn = modal.querySelector('.modal-close-btn-modern');
+    if (closeBtn) {
+        closeBtn.onclick = (e) => { e.stopPropagation(); closeToolDetail(); };
+    }
 }
 
 /**
@@ -196,6 +201,8 @@ function closeToolDetail() {
         modal.classList.remove('active');
         document.body.style.overflow = '';
     }
+    const backdrop = document.querySelector('.modal-backdrop');
+    if (backdrop) backdrop.remove();
 }
 
 /**

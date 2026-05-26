@@ -102,7 +102,7 @@ const actionHandlers = {
     'close-share-modal': (e) => closeShareModal(e),
     'close-update-modal': () => closeUpdateModal(),
     'close-theme-modal': (e) => closeThemeModal(e),
-    'clear-all-filters': () => clearAllFilters(),
+    'clear-all-filters': () => { clearAllFilters(); clearSearch(); },
     'toggle-advanced-filters': () => toggleAdvancedFilters(),
     'export-favorites': () => exportFavorites(),
     'import-favorites': () => importFavorites(),
@@ -122,7 +122,7 @@ document.addEventListener('click', function globalClickHandler(e) {
             return;
         }
         const toolId = el.dataset?.toolId;
-        if (toolId && !e.target.closest('button,[data-action]')) {
+        if (toolId && !e.target.closest('button,[data-action],#searchSuggestions,#searchHistory')) {
             showToolDetail(parseInt(toolId));
             return;
         }

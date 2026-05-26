@@ -247,6 +247,24 @@ function createToolCard(tool) {
 function renderTools(tools) {
     const grid = document.getElementById('toolsGrid');
     if (!grid) return;
+
+    const searchTerm = document.getElementById('mainSearch')?.value.trim() || '';
+
+    if (tools.length === 0 && searchTerm) {
+        grid.innerHTML = '';
+        grid.setAttribute('role', 'grid');
+        grid.setAttribute('aria-label', 'AI工具列表');
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        emptyState.innerHTML = `
+            <div class="empty-state-icon">🔍</div>
+            <h3 class="empty-state-title">未找到相关工具</h3>
+            <p class="empty-state-desc">没有与 "${escapeHtml(searchTerm)}" 匹配的 AI 工具</p>
+            <button class="empty-state-btn" data-action="clear-all-filters">查看全部工具</button>
+        `;
+        grid.appendChild(emptyState);
+        return;
+    }
     
     grid.setAttribute('role', 'grid');
     grid.setAttribute('aria-label', 'AI工具列表');
@@ -397,9 +415,20 @@ function loadSavedFilters() {
  */
 function showSearchHistory() {
     const container = document.getElementById('searchHistory');
-    if (!container || state.searchHistory.length === 0) return;
+    if (!container) return;
 
-    container.innerHTML = state.searchHistory.slice(0, 8).map(term => `
+    if (state.searchHistory.length === 0) {
+        container.innerHTML = '<div class="search-history-empty"><i class="fas fa-clock"></i> 暂无搜索历史</div>';
+        container.classList.add('show');
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="search-history-header">
+            <span>搜索历史</span>
+            <button class="search-history-clear-all" data-action="clear-search-history">清空</button>
+        </div>
+    ` + state.searchHistory.slice(0, 8).map(term => `
         <div class="search-suggestion-item" data-search-text="${escapeAttr(term)}">
             <div class="search-suggestion-icon">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(-10deg)">
@@ -408,9 +437,10 @@ function showSearchHistory() {
             </div>
             <div class="search-suggestion-content">
                 <div class="search-suggestion-title">${escapeHtml(term)}</div>
-                <div class="search-suggestion-subtitle">搜索历史</div>
             </div>
-            <span class="search-suggestion-badge">最近</span>
+            <button class="search-history-delete" data-delete-history="${escapeAttr(term)}" aria-label="删除">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
         </div>
     `).join('');
 
@@ -460,6 +490,22 @@ function setupSearch() {
     // Track last searched term to avoid recording intermediate states
     let lastRecordedSearch = '';
 
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    if (clearSearchBtn) {
+        clearSearchBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            searchInput.value = '';
+            currentSearchTerm = '';
+            clearSearchBtn.classList.add('hidden');
+            hideSearchSuggestions(suggestionsContainer);
+            if (searchHistoryContainer) searchHistoryContainer.classList.remove('show');
+            applyFiltersAndSort();
+            updateResultsCounter('');
+            searchInput.focus();
+        });
+    }
+
     searchInput.addEventListener('input', (e) => {
         const term = e.target.value.trim().toLowerCase();
         currentSearchTerm = term;
@@ -499,13 +545,13 @@ function setupSearch() {
     suggestionsContainer.addEventListener('click', function handleSuggestionClick(e) {
         const item = e.target.closest('.search-suggestion-item');
         if (item) {
-            // 如果建议项关联了具体工具，直接打开详情弹窗
+            e.stopPropagation();
             const toolId = item.dataset.toolId;
             if (toolId) {
                 hideSearchSuggestions(suggestionsContainer);
                 if (searchHistoryContainer) searchHistoryContainer.classList.remove('show');
                 searchInput.blur();
-                // 由全局事件委托处理 showToolDetail
+                setSearch(item.dataset.searchText || '');
                 return;
             }
 
@@ -566,6 +612,25 @@ function setupSearch() {
     const historyContainer = document.getElementById('searchHistory');
     if (historyContainer) {
         historyContainer.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.search-history-delete');
+            if (deleteBtn) {
+                e.stopPropagation();
+                const term = deleteBtn.dataset.deleteHistory;
+                if (term) {
+                    state.searchHistory = state.searchHistory.filter(h => h !== term);
+                    localStorage.setItem('ai-tool-hub-search-history', JSON.stringify(state.searchHistory));
+                    showSearchHistory();
+                }
+                return;
+            }
+            const clearAllBtn = e.target.closest('.search-history-clear-all');
+            if (clearAllBtn) {
+                e.stopPropagation();
+                state.searchHistory = [];
+                localStorage.setItem('ai-tool-hub-search-history', JSON.stringify(state.searchHistory));
+                historyContainer.classList.remove('show');
+                return;
+            }
             const item = e.target.closest('.search-suggestion-item');
             if (item) {
                 const searchText = item.dataset.searchText;
@@ -730,7 +795,12 @@ function clearSearch() {
     searchInput.value = '';
     const clearSearchBtn = document.getElementById('clearSearchBtn');
     if (clearSearchBtn) clearSearchBtn.classList.add('hidden');
+    const searchHistoryEl = document.getElementById('searchHistory');
+    if (searchHistoryEl) searchHistoryEl.classList.remove('show');
+    const suggestionsEl = document.getElementById('searchSuggestions');
+    if (suggestionsEl) suggestionsEl.classList.remove('show');
     applyFiltersAndSort();
+    updateResultsCounter('');
 }
 
 /**
