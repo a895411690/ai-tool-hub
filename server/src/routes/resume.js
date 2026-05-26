@@ -44,6 +44,18 @@ router.post('/optimize', authMiddleware, async (req, res) => {
         'X-Accel-Buffering': 'no'
     });
 
+    const SSE_TIMEOUT = 60000;
+    req.setTimeout(SSE_TIMEOUT);
+    res.setTimeout(SSE_TIMEOUT);
+
+    const connectionStart = Date.now();
+    let timeoutHandle = setTimeout(() => {
+        if (!res.writableEnded && !res.destroyed) {
+            sendSSE('error', { message: '连接超时，SSE流已超过60秒限制，请稍后重试' });
+            res.end();
+        }
+    }, SSE_TIMEOUT);
+
     const sendSSE = (type, data) => {
         try {
             res.write(`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`);
@@ -74,6 +86,8 @@ router.post('/optimize', authMiddleware, async (req, res) => {
         console.error('[Resume] Optimize error:', error);
         sendSSE('error', { message: error.message || 'AI优化服务暂时不可用，请稍后重试' });
     }
+
+    clearTimeout(timeoutHandle);
 
     if (!res.writableEnded) {
         res.end();
