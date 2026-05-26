@@ -5,15 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI 简历优化 - AI Tool Hub</title>
     <meta name="description" content="AI驱动的简历优化工具，支持实时预览和一键导出">
-    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%84%3C/text%3E%3C/svg%3E">
+
+    <!-- Content Security Policy (CSP) - 防止XSS和代码注入攻击 -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com blob:;
+        style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com;
+        font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com;
+        img-src 'self' data: https: http: blob:;
+        connect-src 'self' https://cdnjs.cloudflare.com blob: data:;
+        worker-src 'self' blob:;
+        frame-src 'none';
+        object-src 'none';
+        base-uri 'self';
+        form-action 'self';
+        upgrade-insecure-requests;
+    ">
+
     <!-- DNS 预解析 -->
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-    <link rel="preconnect" href="https://qianfan.baidubce.com" crossorigin>
     
-    <!-- 预加载关键资源 -->
-    <link rel="preload" href="./src/app.js" as="script" crossorigin>
-    <link rel="preload" href="./src/styles/main.css" as="style" crossorigin>
+    <!-- 预加载关键资源 (同源资源不加 crossorigin) -->
+    <link rel="preload" href="./src/app.js" as="script">
+    <link rel="preload" href="./src/styles/main.css" as="style">
     <!-- 生产环境Tailwind CSS - 预编译最小化版本（14KB vs CDN 3MB）-->
     <link rel="stylesheet" href="./src/styles/tailwind.min.css">
     <!-- 备用：本地Tailwind CSS -->
@@ -57,10 +73,60 @@
             <!-- Left: Editor -->
             <div class="h-full overflow-y-auto border-r border-gray-800">
                 <div class="p-6">
-                    <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-                        <i class="fas fa-edit text-indigo-400"></i>
-                        简历编辑
-                    </h2>
+                    <!-- Version Tabs -->
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <i class="fas fa-edit text-indigo-400"></i>
+                            简历编辑
+                        </h2>
+                        <div class="flex items-center gap-2">
+                            <div class="relative" id="templateDropdownWrap">
+                                <button onclick="window.aiOptimizer.toggleTemplateDropdown()" id="templateDropdownBtn" class="px-3 py-1.5 text-xs rounded-md bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white font-medium transition-all flex items-center gap-1 border border-gray-700">
+                                    <i class="fas fa-palette text-purple-400"></i>
+                                    <span id="currentTemplateName">行业模板</span>
+                                    <i class="fas fa-chevron-down text-[10px] ml-1"></i>
+                                </button>
+                                <div id="templateDropdown" class="hidden absolute right-0 top-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 min-w-[180px] py-1">
+                                </div>
+                            </div>
+                            <div id="versionTabs" class="flex gap-1 bg-gray-800 rounded-lg p-1">
+                                <button onclick="window.aiOptimizer.switchVersion(-1)" id="versionOriginal" class="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white font-medium transition-all">
+                                    原始版本
+                                </button>
+                                <button onclick="window.aiOptimizer.switchVersion(0)" id="versionOpt1" class="px-3 py-1.5 text-xs rounded-md text-gray-400 hover:text-white hover:bg-gray-700 font-medium transition-all hidden">
+                                    优化后
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Job Tags -->
+                    <div class="mb-6 p-4 bg-gray-800/30 rounded-lg border border-gray-700/50">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-sm font-medium text-gray-300">
+                                <i class="fas fa-magic text-purple-400 mr-1"></i>
+                                AI代写简历 — 选择目标职位
+                            </label>
+                            <button onclick="window.aiOptimizer.aiWriteResume()" id="aiWriteBtn" class="px-3 py-1 text-xs bg-gradient-to-r from-green-500 to-emerald-600 rounded-md font-medium hover:opacity-90 transition-opacity">
+                                <i class="fas fa-robot mr-1"></i>AI代写
+                            </button>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5" id="quickJobTags">
+                            <button onclick="window.aiOptimizer.selectJob('软件开发工程师')" class="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded hover:bg-indigo-600/30 hover:text-indigo-300 transition-all">软件开发</button>
+                            <button onclick="window.aiOptimizer.selectJob('前端开发工程师')" class="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded hover:bg-indigo-600/30 hover:text-indigo-300 transition-all">前端开发</button>
+                            <button onclick="window.aiOptimizer.selectJob('后端开发工程师')" class="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded hover:bg-indigo-600/30 hover:text-indigo-300 transition-all">后端开发</button>
+                            <button onclick="window.aiOptimizer.selectJob('数据分析师')" class="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded hover:bg-indigo-600/30 hover:text-indigo-300 transition-all">数据分析</button>
+                            <button onclick="window.aiOptimizer.selectJob('产品经理')" class="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded hover:bg-indigo-600/30 hover:text-indigo-300 transition-all">产品经理</button>
+                            <button onclick="window.aiOptimizer.selectJob('测试工程师')" class="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded hover:bg-indigo-600/30 hover:text-indigo-300 transition-all">测试工程师</button>
+                            <button onclick="window.aiOptimizer.selectJob('UI设计师')" class="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded hover:bg-indigo-600/30 hover:text-indigo-300 transition-all">UI设计师</button>
+                            <button onclick="window.aiOptimizer.selectJob('项目经理')" class="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded hover:bg-indigo-600/30 hover:text-indigo-300 transition-all">项目经理</button>
+                            <button onclick="window.aiOptimizer.selectJob('人工智能工程师')" class="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded hover:bg-indigo-600/30 hover:text-indigo-300 transition-all">AI工程师</button>
+                            <button onclick="window.aiOptimizer.selectJob('运维工程师')" class="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded hover:bg-indigo-600/30 hover:text-indigo-300 transition-all">运维工程师</button>
+                            <button onclick="window.aiOptimizer.selectJob('市场营销专员')" class="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded hover:bg-indigo-600/30 hover:text-indigo-300 transition-all">市场营销</button>
+                            <button onclick="window.aiOptimizer.selectJob('人力资源专员')" class="px-2 py-1 text-xs bg-gray-700/50 text-gray-300 rounded hover:bg-indigo-600/30 hover:text-indigo-300 transition-all">人力资源</button>
+                        </div>
+                    </div>
+
                     <div id="resumeForm" class="space-y-6">
                         <!-- Form content will be loaded here -->
                     </div>
@@ -113,81 +179,75 @@
                     </button>
                 </div>
                 <div class="flex-1 overflow-y-auto space-y-4">
-                    <!-- API 设置 -->
-                    <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                        <div class="flex items-center justify-between mb-3">
-                            <label class="text-sm font-medium flex items-center gap-2">
-                                <i class="fas fa-key text-yellow-400"></i>
-                                百度千帆 API 设置
-                            </label>
-                            <button onclick="aiOptimizer.toggleApiSettings()" id="apiSettingsToggle" class="text-xs text-gray-400 hover:text-white transition-colors">
-                                <i class="fas fa-chevron-down"></i> 展开
-                            </button>
-                        </div>
-                        <div id="apiSettingsPanel" class="hidden space-y-3">
-                            <div>
-                                <label class="block text-xs text-gray-400 mb-1">API Key</label>
-                                <input type="password" id="qianfanApiKey" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-indigo-500 focus:outline-none" placeholder="输入百度千帆 API Key">
-                            </div>
-                            <div>
-                                <label class="block text-xs text-gray-400 mb-1">模型</label>
-                                <select id="qianfanModel" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm focus:border-indigo-500 focus:outline-none">
-                                    <option value="ernie-4.0-8k">ERNIE 4.0 8K（推荐）</option>
-                                    <option value="ernie-4.0-turbo-8k">ERNIE 4.0 Turbo 8K</option>
-                                    <option value="ernie-3.5-8k">ERNIE 3.5 8K（经济）</option>
-                                    <option value="ernie-speed-128k">ERNIE Speed 128K</option>
-                                    <option value="ernie-lite-8k">ERNIE Lite 8K（免费）</option>
-                                    <option value="deepseek-v3">DeepSeek V3</option>
-                                </select>
-                            </div>
-                            <div class="flex gap-2">
-                                <button onclick="aiOptimizer.saveAndTestApi()" class="flex-1 py-2 bg-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
-                                    <i class="fas fa-save mr-1"></i> 保存并测试
-                                </button>
-                                <button onclick="aiOptimizer.clearApiSettings()" class="px-3 py-2 bg-gray-700 rounded-lg text-sm hover:bg-gray-600 transition-colors">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                            <div id="apiStatus" class="hidden text-xs"></div>
-                            <p class="text-xs text-gray-500">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                API Key 仅存储在本地浏览器中，不会上传到任何服务器。
-                                <a href="https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application" target="_blank" rel="noopener noreferrer" class="text-indigo-400 hover:underline">获取 API Key →</a>
-                            </p>
-                        </div>
+                    <!-- 用户认证状态 -->
+                    <div id="authSection">
+                        <!-- 由 authModal.js 动态渲染 -->
                     </div>
-                    <!-- 职位类型选择器 -->
-                    <div id="jobTypeSelector" class="p-4 bg-gray-800/50 rounded-lg border border-gray-700"></div>
 
-                    <!-- 优化级别选择器（借鉴求职方舟3档优化） -->
-                    <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                    <!-- 优化模式Tab：通用优化 vs 专岗优化 -->
+                    <div class="flex gap-1 bg-gray-800 rounded-lg p-1">
+                        <button onclick="window.aiOptimizer.switchMode('general')" id="modeGeneral" class="flex-1 px-3 py-2 text-sm rounded-md bg-indigo-600 text-white font-medium transition-all">
+                            <i class="fas fa-wand-magic-sparkles mr-1"></i>通用优化
+                        </button>
+                        <button onclick="window.aiOptimizer.switchMode('ats')" id="modeATS" class="flex-1 px-3 py-2 text-sm rounded-md text-gray-400 hover:text-white hover:bg-gray-700 font-medium transition-all">
+                            <i class="fas fa-filter mr-1"></i>专岗优化(ATS)
+                        </button>
+                    </div>
+
+                    <!-- 通用优化级别选择器 -->
+                    <div id="generalOptPanel" class="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
                         <label class="block text-sm font-medium mb-3 flex items-center gap-2">
                             <i class="fas fa-sliders-h text-purple-400"></i>
                             优化级别
-                            <span class="text-xs text-gray-500 ml-auto">参考求职方舟AI</span>
                         </label>
                         <div id="optimizationLevelSelector" class="grid grid-cols-3 gap-2">
-                            <!-- 将由JS动态渲染 -->
                         </div>
                         <p class="text-xs text-gray-500 mt-2">
                             <i class="fas fa-info-circle mr-1"></i>
-                            轻度：润色语言 | 中度：增强关键词+量化成果 | 深度：全面重构定制
+                            轻度：润色语言 | 中度：增强关键词 | 深度：全面重构
                         </p>
                     </div>
 
-                    <!-- 多视角切换 -->
-                    <div id="viewToggle" class="p-4 bg-gray-800/50 rounded-lg border border-gray-700"></div>
-                    
+                    <!-- 专岗优化面板 -->
+                    <div id="atsOptPanel" class="hidden p-4 bg-gray-800/50 rounded-lg border border-orange-500/30">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i class="fas fa-fire text-orange-400"></i>
+                            <span class="text-sm font-medium text-orange-300">过机筛优化模式</span>
+                        </div>
+                        <p class="text-xs text-gray-400 mb-3">根据目标岗位JD，针对性优化简历关键词和表述，最大化通过ATS筛选系统。</p>
+                        <div id="atsLevelSelector" class="grid grid-cols-2 gap-2">
+                            <div class="p-3 bg-gray-900 rounded-lg border border-orange-500/30 cursor-pointer hover:border-orange-400 transition-all" onclick="window.aiOptimizer.selectATSLevel('medium')">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <i class="fas fa-arrow-trend-up text-orange-400"></i>
+                                    <span class="font-medium text-white">关键词对齐</span>
+                                </div>
+                                <p class="text-xs text-gray-400">对齐JD关键词+量化成果</p>
+                            </div>
+                            <div class="p-3 bg-gray-900 rounded-lg border border-orange-500/30 cursor-pointer hover:border-orange-400 transition-all" onclick="window.aiOptimizer.selectATSLevel('deep')">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <i class="fas fa-fire text-orange-400"></i>
+                                    <span class="font-medium text-white">终极ATS优化</span>
+                                </div>
+                                <p class="text-xs text-gray-400">STAR重构+ATS全覆盖</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                        <label class="block text-sm font-medium mb-2">职位描述</label>
+                        <label class="block text-sm font-medium mb-2">职位描述（JD）</label>
                         <textarea id="jobDescription" rows="6" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-sm focus:border-indigo-500 focus:outline-none resize-none" placeholder="粘贴目标职位的职位描述，AI将据此优化您的简历..."></textarea>
                     </div>
                     <button onclick="aiOptimizer.optimize()" id="optimizeBtn" class="w-full py-3 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg font-medium hover:opacity-90 transition-opacity">
                         <i class="fas fa-wand-magic-sparkles mr-2"></i>
                         开始优化
                     </button>
+                    <button onclick="aiOptimizer.analyzeJD()" id="analyzeJDBtn" class="w-full py-2.5 bg-gray-800 border border-gray-600 rounded-lg font-medium hover:bg-gray-700 hover:border-gray-500 transition-all text-sm">
+                        <i class="fas fa-search-plus mr-2 text-blue-400"></i>
+                        分析职位匹配度
+                    </button>
+                    <div id="jdAnalysisResult" class="hidden space-y-4">
+                    </div>
                     <div id="optimizationResult" class="hidden space-y-4">
-                        <!-- AI suggestions will appear here -->
                     </div>
                 </div>
             </div>
@@ -198,15 +258,17 @@
     <div id="importResumeContainer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4"></div>
 
     <!-- Scripts (ES6 Modules - 确保所有脚本都作为模块加载) -->
-    <script type="module" src="./src/lib/store.js" defer></script>
-    <script type="module" src="./src/lib/pdfGenerator.js" defer></script>
-    <script type="module" src="./src/lib/aiOptimizer.js" defer></script>
-    <script type="module" src="./src/lib/shareUtils.js" defer></script>
-    <script type="module" src="./src/lib/importUtils.js" defer></script>
-    <script type="module" src="./src/components/importResume.js" defer></script>
-    <script type="module" src="./src/components/resumeForm.js" defer></script>
-    <script type="module" src="./src/components/resumePreview.js" defer></script>
+    <script type="module" src="./src/lib/store.js?v=1779793722" defer></script>
+    <script type="module" src="./src/lib/pdfGenerator.js?v=1779793722" defer></script>
+    <script type="module" src="./src/lib/apiClient.js?v=1779793722" defer></script>
+    <script type="module" src="./src/lib/aiOptimizer.js?v=1779793722" defer></script>
+    <script type="module" src="./src/lib/shareUtils.js?v=1779793722" defer></script>
+    <script type="module" src="./src/lib/importUtils.js?v=1779793722" defer></script>
+    <script type="module" src="./src/components/importResume.js?v=1779793722" defer></script>
+    <script type="module" src="./src/components/resumeForm.js?v=1779793722" defer></script>
+    <script type="module" src="./src/components/resumePreview.js?v=1779793722" defer></script>
+    <script type="module" src="./src/components/authModal.js?v=1779793722" defer></script>
 
-    <script type="module" src="./src/app.js" defer></script>
+    <script type="module" src="./src/app.js?v=1779793722" defer></script>
 </body>
 </html>

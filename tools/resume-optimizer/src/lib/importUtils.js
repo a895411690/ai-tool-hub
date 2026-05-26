@@ -129,7 +129,6 @@ class ImportUtils {
         try {
             this.isProcessing = true;
             
-            // 验证文件
             if (!this.isFileSupported(file)) {
                 throw new Error(`不支持的文件格式。支持格式: ${this.supportedFormats.join(', ')}`);
             }
@@ -138,29 +137,90 @@ class ImportUtils {
                 throw new Error(`文件大小超过限制 (最大10MB)`);
             }
 
-            // 读取文件
             const fileData = await this.readFile(file);
             
-            // 根据文件类型选择解析器
-            let parsedData;
+            // Step 1: Extract raw text from file
+            let rawText = '';
             switch (fileData.fileType) {
                 case 'pdf':
-                    parsedData = await this.parsePDF(fileData);
+                    rawText = await this.extractTextFromPDF(fileData.content);
                     break;
                 case 'docx':
-                    parsedData = await this.parseDOCX(fileData);
+                    rawText = await this.extractTextFromDOCXDoc(fileData.content);
                     break;
                 case 'txt':
-                    parsedData = await this.parseTXT(fileData);
+                    rawText = fileData.content;
                     break;
                 case 'html':
-                    parsedData = await this.parseHTML(fileData);
+                    rawText = this.extractTextFromHTML(fileData.content);
                     break;
                 case 'markdown':
-                    parsedData = await this.parseMarkdown(fileData);
+                    rawText = this.extractTextFromMarkdown(fileData.content);
                     break;
                 default:
                     throw new Error(`不支持的文件类型: ${fileData.fileType}`);
+            }
+
+// Step 2: Try LLM-based parsing first (more accurate)
+            let parsedData = null;
+            if (rawText && rawText.trim().length > 10 && window.apiClient && window.apiClient.isAuthenticated()) {
+                try {
+                    const llmResult = await window.apiClient.parseResume(rawText);
+                    if (llmResult && llmResult.profile) {
+                        parsedData = this.normalizeLLMResult(llmResult);
+                    }
+                } catch (e) {
+                    console.warn('[Import] LLM解析失败，回退到本地解析:', e.message);
+                }
+            }
+
+            // Step 3: Fallback to local regex parsing, or enhance LLM result
+            if (!parsedData) {
+                const cleanedText = this.cleanPDFText(rawText);
+                parsedData = this.parseTextContent(cleanedText || rawText);
+            } else {
+                // Even with LLM result, run local parsing to fill in any gaps
+                // LLM often misses fields or returns wrong defaults like "张三"
+                const cleanedText = this.cleanPDFText(rawText);
+                const localResult = this.parseTextContent(cleanedText || rawText);
+                
+                // Use local result to fill in missing LLM fields
+                if (parsedData.profile && localResult.profile) {
+                    if (!parsedData.profile.name || parsedData.profile.name === '张三' || parsedData.profile.name === '未识别') {
+                        parsedData.profile.name = localResult.profile.name;
+                    }
+                    if (!parsedData.profile.phone || parsedData.profile.phone === '13800138000') {
+                        parsedData.profile.phone = localResult.profile.phone;
+                    }
+                    if (!parsedData.profile.email || parsedData.profile.email === 'zhangsan@example.com') {
+                        parsedData.profile.email = localResult.profile.email;
+                    }
+                    if (!parsedData.profile.location || parsedData.profile.location === '北京市') {
+                        parsedData.profile.location = localResult.profile.location;
+                    }
+                    if (!parsedData.profile.title) {
+                        parsedData.profile.title = localResult.profile.title;
+                    }
+                }
+                
+                // If LLM returned fewer experiences than local, use local results
+                if (localResult.experience && localResult.experience.length > 0) {
+                    if (!parsedData.experience || parsedData.experience.length === 0) {
+                        parsedData.experience = localResult.experience;
+                    }
+                }
+                
+                // Always use local skills if available (more accurate from structured text)
+                if (localResult.skills && localResult.skills.length > parsedData.skills.length) {
+                    parsedData.skills = localResult.skills;
+                }
+                
+                // Use local education if LLM didn't provide any
+                if (localResult.education && localResult.education.length > 0) {
+                    if (!parsedData.education || parsedData.education.length === 0) {
+                        parsedData.education = localResult.education;
+                    }
+                }
             }
 
             // 标准化数据格式
@@ -245,7 +305,6 @@ class ImportUtils {
      */
     async extractTextFromPDF(arrayBuffer) {
         try {
-            // 使用统一的PDF.js初始化方法
             if (!this.initPDFJS()) {
                 throw new Error('PDF.js库未加载');
             }
@@ -257,22 +316,66 @@ class ImportUtils {
             for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
                 const page = await pdfDocument.getPage(pageNum);
                 const content = await page.getTextContent();
-                const pageText = content.items.map(item => item.str).join(' ');
+                const pageText = this._reconstructPDFFromItems(content.items);
                 text += pageText + '\n';
             }
 
+console.log('[Import] PDF提取完成，文本长度:', text.length);
             return text;
         } catch (error) {
             console.error('PDF解析失败:', error);
-            // 失败时返回空文本，让后续的文本解析逻辑处理
             return '';
         }
+    }
+
+    _reconstructPDFFromItems(items) {
+        if (!items || items.length === 0) return '';
+
+        const filtered = items.filter(item => item.str && item.str.trim().length > 0);
+        if (filtered.length === 0) return '';
+
+        filtered.sort((a, b) => {
+            const ay = Math.round(a.transform[5]);
+            const by = Math.round(b.transform[5]);
+            if (Math.abs(ay - by) > 3) return by - ay;
+            return a.transform[4] - b.transform[4];
+        });
+
+        const lines = [];
+        let currentLine = [];
+        let lastY = null;
+        const LINE_THRESHOLD = 5;
+
+        for (const item of filtered) {
+            const y = Math.round(item.transform[5]);
+            if (lastY === null || Math.abs(y - lastY) > LINE_THRESHOLD) {
+                if (currentLine.length > 0) {
+                    lines.push(currentLine.map(i => i.str).join(''));
+                }
+                currentLine = [item];
+            } else {
+                if (currentLine.length > 0) {
+                    const prevItem = currentLine[currentLine.length - 1];
+                    const gap = item.transform[4] - (prevItem.transform[4] + prevItem.width);
+                    if (gap > 8) {
+                        currentLine.push({ str: ' ', transform: item.transform, width: 0 });
+                    }
+                }
+                currentLine.push(item);
+            }
+            lastY = y;
+        }
+        if (currentLine.length > 0) {
+            lines.push(currentLine.map(i => i.str).join(''));
+        }
+
+        return lines.join('\n');
     }
 
     /**
      * 从DOCX提取文本（使用mammoth.js库）
      */
-    async extractTextFromDOCX(content) {
+async extractTextFromDOCX(content) {
         try {
             if (typeof mammoth !== 'undefined') {
                 const result = await mammoth.extractRawText({ arrayBuffer: content });
@@ -282,18 +385,95 @@ class ImportUtils {
             }
         } catch (error) {
             console.error('DOCX解析失败:', error);
-            // 失败时返回空文本，让后续的文本解析逻辑处理
             return '';
         }
+    }
+
+    async extractTextFromDOCXDoc(content) {
+        return await this.extractTextFromDOCX(content);
+    }
+
+    normalizeLLMResult(llmResult) {
+        const profile = {
+            name: llmResult.profile?.name || '',
+            title: llmResult.profile?.title || '',
+            email: llmResult.profile?.email || '',
+            phone: llmResult.profile?.phone || '',
+            location: llmResult.profile?.location || '',
+            summary: llmResult.profile?.summary || ''
+        };
+
+        const experience = (llmResult.experience || []).map(exp => ({
+            company: exp.company || '',
+            position: exp.position || '',
+            period: [exp.startDate, exp.endDate].filter(Boolean).join(' - ') || exp.period || '',
+            startDate: exp.startDate || '',
+            endDate: exp.endDate || '至今',
+            description: exp.description || ''
+        }));
+
+        const education = (llmResult.education || []).map(edu => ({
+            school: edu.school || '',
+            degree: edu.degree || '',
+            major: edu.major || '',
+            period: [edu.startDate, edu.endDate].filter(Boolean).join(' - ') || edu.period || '',
+            startDate: edu.startDate || '',
+            endDate: edu.endDate || '',
+            description: edu.description || ''
+        }));
+
+        const skills = Array.isArray(llmResult.skills) ? llmResult.skills : 
+            (typeof llmResult.skills === 'string' ? llmResult.skills.split(/[,，、]/).map(s => s.trim()).filter(Boolean) : []);
+
+        return { profile, experience, education, skills };
+    }
+
+    /**
+     * HTML内容净化 - 移除危险标签和属性，防止XSS攻击
+     * @param {string} html - 原始HTML内容
+     * @returns {string} - 净化后的安全HTML
+     */
+    sanitizeHtml(html) {
+        if (!html || typeof html !== 'string') {
+            return '';
+        }
+
+        // 移除危险标签（不区分大小写，包括多行内容）
+        const dangerousTags = /<(script|iframe|object|embed|form|input|button|textarea|select)[^>]*>[\s\S]*?<\/\1>/gi;
+        let sanitized = html.replace(dangerousTags, '');
+
+        // 移除自闭合的危险标签
+        const dangerousSelfClosingTags = /<(script|iframe|object|embed|input|button|textarea|select|img|link|style|meta)[^>]*\/?>/gi;
+        sanitized = sanitized.replace(dangerousSelfClosingTags, '');
+
+        // 移除事件处理器 (onclick, onload, onerror等) — 使用DOM解析方式
+        sanitized = sanitized.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, '');
+
+        // 移除javascript:伪协议
+        sanitized = sanitized.replace(/(href|src|action)\s*=\s*(["'])\s*javascript:[^\2]*?\2/gi, '$1=$2#$2');
+
+        // 移除data:伪协议（可能导致XSS）
+        sanitized = sanitized.replace(/(href|src|action)\s*=\s*(["'])\s*data:[^\2]*?\2/gi, '$1=$2#$2');
+
+        // 移除vbscript:伪协议
+        sanitized = sanitized.replace(/(href|src|action)\s*=\s*(["'])\s*vbscript:[^\2]*?\2/gi, '$1=$2#$2');
+
+        // 移除expression: (CSS表达式，IE特有)
+        sanitized = sanitized.replace(/expression\s*\(/gi, '');
+
+        return sanitized;
     }
 
     /**
      * 从HTML提取文本
      */
     extractTextFromHTML(html) {
+        // 先净化HTML内容，防止XSS攻击
+        const sanitizedHtml = this.sanitizeHtml(html);
+
         // 创建临时DOM元素提取文本
         const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = html;
+        tempDiv.innerHTML = sanitizedHtml;
         const text = tempDiv.textContent || tempDiv.innerText || '';
         tempDiv.remove(); // 清理临时DOM元素，防止内存泄漏
         return text;
@@ -341,7 +521,7 @@ class ImportUtils {
         text = this.cleanTextPreserveNewlines(text);
         
         const lines = text.split('\n').filter(line => line.trim());
-        
+
         const result = {
             profile: {
                 name: '',
@@ -360,74 +540,115 @@ class ImportUtils {
         };
 
         // 增强版中文简历分段标识
-        const sectionKeywords = {
+        // sectionHeaders: 仅用于匹配分段标题行（如"工作经历"、"教育背景"）
+        // sectionContentHints: 用于推断未分段内容属于哪个区段
+        const sectionHeaders = {
             personal: [
-                '个人信息', '个人资料', '基本资料', '个人简历', '个人简介',
-                '姓名', '电话', '手机', '邮箱', '电子邮箱', 'email',
-                '地址', '住址', 'location', '地址', 'address',
-                '性别', 'gender', '男', '女',
-                '工作经验', '工作年限', 'experience years', '年经验',
-                '求职意向', '应聘职位', '期望职位', 'objective', '求职目标'
+                '个人信息', '个人资料', '基本资料', '个人简介'
             ],
             experience: [
-                '工作经历', '工作经验', '工作背景', '职业经历', 'employment history',
-                '工作履历', '职业背景', '工作历史', 'experience', 'work experience',
-                '实习经历', '实习经验', '实习工作', 'internship'
+                '工作经历', '工作经验', '工作背景', '职业经历',
+                '工作履历', '职业背景', '工作历史',
+                '实习经历', '实习经验', '实习工作'
             ],
             education: [
-                '教育经历', '教育背景', '学历背景', 'education', 'academic',
-                '教育履历', '学历', '学位', '学校', '大学', '学院',
-                '学习经历', '学习背景', 'academic history'
+                '教育经历', '教育背景', '学历背景',
+                '教育履历', '学习经历', '学习背景'
             ],
             skills: [
-                '专业技能', '技术技能', '能力特长', 'skills', 'competencies',
-                '技术能力', '核心技能', 'skill set', 'technical skills',
-                '语言能力', '外语能力', 'language skills',
-                '工具技能', '软件技能', 'software skills'
+                '专业技能', '技术技能', '能力特长',
+                '技术能力', '核心技能',
+                '语言能力', '外语能力',
+                '工具技能', '软件技能'
             ],
             projects: [
-                '项目经验', '项目经历', '项目背景', 'projects', 'portfolio',
-                '项目履历', '项目历史', 'project history',
-                '项目成果', '项目作品', 'project achievements'
+                '项目经验', '项目经历', '项目背景',
+                '项目履历', '项目历史',
+                '项目成果', '项目作品'
             ],
             summary: [
-                '个人总结', '自我评价', '职业目标', 'summary', 'objective',
-                '个人优势', '核心优势', 'strengths', '个人特点',
-                '职业规划', 'career goal', '职业愿景'
+                '个人总结', '自我评价', '职业目标',
+                '个人优势', '核心优势', '个人特点',
+                '职业规划', '职业愿景'
             ]
+        };
+
+        const sectionContentHints = {
+            personal: ['姓名', '电话', '手机', '邮箱', '电子邮箱', '求职意向', '应聘职位', '期望职位'],
+            experience: ['employment history', 'work experience', 'internship'],
+            education: ['education', 'academic'],
+            skills: ['skills', 'competencies', 'skill set', 'technical skills', 'software skills'],
+            projects: ['projects', 'portfolio', 'project history', 'project achievements'],
+            summary: ['summary', 'objective', 'strengths', 'career goal']
         };
 
         let currentSection = '';
         let sectionContent = '';
+
+        // 判断一行是否为分段标题行（而非内容行）
+        // 标题行特征：短行、不包含详细内容、通常是独立的关键词
+        const isSectionTitleLine = (line) => {
+            const trimmed = line.trim();
+            // 标题行通常较短（<=20字符），或以分隔线为主
+            if (trimmed.length <= 20) return true;
+            // 包含分隔线（如 "--------"）
+            if (/^[-=]{3,}$/.test(trimmed)) return true;
+            // "XXX经历" 或 "XXX背景" 格式的标题可能较长，但不超过30字符
+            if (trimmed.length <= 30 && /经历|背景|经验|技能|总结|评价|意向/.test(trimmed)) return true;
+            return false;
+        };
 
         // 分段解析
         lines.forEach((line, index) => {
             const lineLower = line.toLowerCase();
             const lineTrimmed = line.trim();
             
-            // 检测分段
-            for (const [section, keywords] of Object.entries(sectionKeywords)) {
-                for (const keyword of keywords) {
-                    if (lineLower.includes(keyword.toLowerCase()) || lineTrimmed.includes(keyword)) {
-                        if (currentSection && sectionContent) {
-                            this.parseSectionContent(currentSection, sectionContent, result);
+            // 跳过纯分隔线
+            if (/^[-=]{3,}$/.test(lineTrimmed)) return;
+
+            // 检测分段切换 — 仅在标题行匹配 sectionHeaders
+            let detectedSection = '';
+            if (isSectionTitleLine(line)) {
+                for (const [section, keywords] of Object.entries(sectionHeaders)) {
+                    for (const keyword of keywords) {
+                        if (lineLower.includes(keyword.toLowerCase()) || lineTrimmed.includes(keyword)) {
+                            detectedSection = section;
+                            break;
                         }
-                        currentSection = section;
-                        sectionContent = '';
-                        break;
                     }
+                    if (detectedSection) break;
                 }
+            }
+
+            // 如果检测到新分段，切换
+            if (detectedSection && detectedSection !== currentSection) {
+                if (currentSection && sectionContent) {
+                    this.parseSectionContent(currentSection, sectionContent, result);
+                }
+                currentSection = detectedSection;
+                sectionContent = '';
             }
 
             // 如果不在任何分段中，尝试根据内容推断
             if (!currentSection) {
-                // 推断个人信息分段
-                if (this.isPersonalInfoLine(lineTrimmed)) {
-                    currentSection = 'personal';
+                // 用 sectionContentHints 推断
+                for (const [section, keywords] of Object.entries(sectionContentHints)) {
+                    for (const keyword of keywords) {
+                        if (lineLower.includes(keyword.toLowerCase())) {
+                            currentSection = section;
+                            break;
+                        }
+                    }
+                    if (currentSection) break;
                 }
-                // 推断工作经历分段
-                else if (this.isExperienceLine(lineTrimmed)) {
-                    currentSection = 'experience';
+
+                // 还没推断出来，用 isPersonalInfoLine / isExperienceLine
+                if (!currentSection) {
+                    if (this.isPersonalInfoLine(lineTrimmed)) {
+                        currentSection = 'personal';
+                    } else if (this.isExperienceLine(lineTrimmed)) {
+                        currentSection = 'experience';
+                    }
                 }
             }
 
@@ -460,25 +681,36 @@ class ImportUtils {
     applySmartParsingEnhancement(lines, result) {
         const fullText = lines.join('\n');
 
-        // 1. 智能提取工作经历
-        this.smartExtractExperience(fullText, result);
+        // 1. 智能提取工作经历（仅在分段解析结果为空时运行，避免重复）
+        if (result.experience.length === 0) {
+            this.smartExtractExperience(fullText, result);
+        }
 
-        // 2. 智能提取教育经历
+        // 2. 智能提取教育经历 — 始终运行，用全文精确匹配补充/修正分段解析结果
+        // 原因：PDF 提取的文本中，"教育经历"标题可能在内容之后，导致分段解析遗漏或产生低质量结果
+        // 先清空分段解析的教育经历，让 smartExtractEducation 重新从全文提取
+        result.education = [];
         this.smartExtractEducation(fullText, result);
 
-        // 3. 智能提取技能
+        // 3. 教育经历去重和修正
+        this.deduplicateEducation(result);
+
+        // 4. 智能提取技能
         this.smartExtractSkills(fullText, result);
 
-        // 4. 智能提取个人信息（增强版）
+        // 5. 智能提取个人信息（增强版）
         this.smartExtractPersonalInfo(fullText, result);
 
-        // 5. 增强版技能提取 - 完整技能库
+        // 6. 增强版技能提取 - 完整技能库
         this.enhanceSkillsExtraction(fullText, result);
 
-        // 6. 其他个人信息增强提取
+        // 7. 其他个人信息增强提取
         this.enhancePersonalInfoExtraction(fullText, result);
 
-        // 7. 最终验证和默认值补充
+        // 8. 工作经历去重和质量提升
+        this.deduplicateExperience(result);
+
+        // 9. 最终验证和默认值补充
         this.ensureRequiredFields(result);
     }
     
@@ -527,11 +759,16 @@ class ImportUtils {
                 }
             }
             
-            // 提取工作经验年限
+            // 提取工作经验年限（排除工作经历中的年份如"2020年至今"）
             if (!result.profile.experience_years) {
-                const yearsMatch = line.match(/(\d+)\s*年[以]?[上]?/);
+                const yearsMatch = line.match(/(?:工作经验|工作年限|从业经验)[：:]\s*(\d{1,2})\s*年/);
                 if (yearsMatch) {
                     result.profile.experience_years = yearsMatch[1];
+                } else {
+                    const reverseMatch = line.match(/(?<!\d)(\d{1,2})\s*年\s*(?:工作|从业)?经验/);
+                    if (reverseMatch) {
+                        result.profile.experience_years = reverseMatch[1];
+                    }
                 }
             }
             
@@ -688,8 +925,10 @@ class ImportUtils {
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
         text = lines.join('\n');
         
-        // 修复断行单词（在单行内）
-        text = text.replace(/([a-zA-Z])(\s+)([a-zA-Z])/g, '$1$3');
+        // 修复PDF中单个字母被空格分割的断词（仅限单个字母后跟单个字母的情况）
+        text = text.replace(/\b([a-zA-Z])\s+([a-zA-Z])\b/g, '$1$2');
+        // 修复连字符断行（如 "Java-\nScript" -> "JavaScript"）
+        text = text.replace(/(\w)-\s*\n\s*(\w)/g, '$1$2');
         
         
         return text;
@@ -795,15 +1034,56 @@ class ImportUtils {
     }
     
     /**
+     * 教育经历去重和修正
+     * 策略：按学校去重，保留信息最完整的条目
+     */
+    deduplicateEducation(result) {
+        if (!result.education || result.education.length <= 1) return;
+
+        // 对每条教育经历计算质量分
+        const scoreEdu = (edu) => {
+            let score = 0;
+            if (edu.school && edu.school !== '某高校' && edu.school !== '未知学校') score += 3;
+            if (edu.major && edu.major !== '未明确专业' && edu.major !== '' && edu.major !== '本科' && edu.major !== '专科') score += 2;
+            if (edu.degree && edu.degree !== '') score += 1;
+            if (edu.period && edu.period !== '时间待确认' && edu.period !== '') score += 2;
+            return score;
+        };
+
+        // 按学校分组，保留每组中质量分最高的
+        const groups = new Map();
+        for (const edu of result.education) {
+            const key = edu.school || '';
+            if (!groups.has(key)) {
+                groups.set(key, edu);
+            } else {
+                const existing = groups.get(key);
+                if (scoreEdu(edu) > scoreEdu(existing)) {
+                    groups.set(key, edu);
+                }
+            }
+        }
+
+        result.education = Array.from(groups.values());
+
+        // 过滤掉低质量条目（学校和专业都是默认值）
+        result.education = result.education.filter(edu => {
+            const isLowQuality = (edu.school === '某高校' || edu.school === '未知学校') &&
+                                  (!edu.major || edu.major === '未明确专业' || edu.major === '');
+            return !isLowQuality;
+        });
+    }
+
+    /**
      * 增强技能提取
      */
     enhanceSkillsExtraction(fullText, result) {
-        
+
         // 确保skills数组存在
         if (!result.skills) {
             result.skills = [];
         }
-        
+
         // 通用技能关键词库
         const skillKeywords = [
             // 前端技术
@@ -821,7 +1101,7 @@ class ImportUtils {
             '团队管理', '技术领导', '需求分析', '风险管理'
         ];
         
-        // 在全文搜索技能关键词（同时检查中英文）
+        // 在全文搜索技能关键词（同时检查中英文），使用 Set 去重
         const existingSkills = new Set(result.skills);
         skillKeywords.forEach(skill => {
             if (fullText.includes(skill) && !existingSkills.has(skill)) {
@@ -838,7 +1118,17 @@ class ImportUtils {
                 'MySQL', '团队协作', '项目管理', '问题解决', '沟通能力'
             ];
         }
-        
+
+        result.skills = result.skills.filter(skill => {
+            if (typeof skill !== 'string') return false;
+            const s = skill.trim();
+            if (s.length < 2) return false;
+            if (/^[\u4e00-\u9fa5]$/.test(s)) return false;
+            const noiseWords = ['的', '了', '在', '是', '我', '有', '和', '就', '不', '人', '都', '一', '一个', '上', '也', '很', '到', '说', '要', '去', '你', '会', '着', '没有', '看', '好', '自己', '这'];
+            if (noiseWords.includes(s)) return false;
+            return true;
+        });
+
     }
     
     /**
@@ -877,10 +1167,10 @@ class ImportUtils {
         // 工作经验提取
         if (!result.profile.experience_years) {
             const experiencePatterns = [
-                /工作经验[：:]\s*(\d+)\s*年/,          // 标准格式
-                /工作年限[：:]\s*(\d+)\s*年/,          // 年限格式
-                /(\d+)年\s*工作经验/,             // 倒置格式
-                /(\d+) years experience/           // 英文格式
+                /工作经验[：:]\s*(\d{1,2})\s*年/,          // 标准格式
+                /工作年限[：:]\s*(\d{1,2})\s*年/,          // 年限格式
+                /(?<!\d)(\d{1,2})年\s*工作经验/,             // 倒置格式
+                /(\d{1,2})\s*years?\s*experience/           // 英文格式
             ];
             
             for (const pattern of experiencePatterns) {
@@ -1074,13 +1364,19 @@ class ImportUtils {
                 if (!company) {
                     const commonCompanies = [
                         '腾讯', '阿里', '百度', '字节', '华为', '美团', '京东',
-                        '交通银行', '广发银行', '招商银行', '建设银行', '工商银行', '农业银行', '中国银行',
+                        '交通银行', '广发银行', '广发', '招商银行', '建设银行', '工商银行', '农业银行', '中国银行',
+                        '浦发银行', '民生银行', '兴业银行', '光大银行', '中信银行', '华夏银行', '平安银行',
                         '神州数码', '联想', '小米', 'OPPO', 'VIVO', '中兴',
                         '阿里巴巴', '腾讯科技', '百度在线', '字节跳动', '美团点评',
                         '谷歌', '微软', '苹果', '亚马逊', 'Facebook', 'Google', 'Microsoft', 'Apple'
                     ];
+                    // 搜索范围：描述文本 + 周围上下文
+                    const contextRange = fullText.substring(
+                        Math.max(0, match.index - 100),
+                        Math.min(fullText.length, match.index + match[0].length + 300)
+                    );
                     for (const comp of commonCompanies) {
-                        if (description.includes(comp)) {
+                        if (contextRange.includes(comp)) {
                             company = comp;
                             break;
                         }
@@ -1168,19 +1464,36 @@ class ImportUtils {
      */
     smartExtractEducation(fullText, result) {
 
+        // 优先在"教育经历"标题附近搜索，避免从工作经历中误匹配
+        let searchText = fullText;
+        const eduTitlePatterns = [/教育经历|教育背景|学历背景|教育履历|学习经历/gi];
+        for (const pattern of eduTitlePatterns) {
+            const match = pattern.exec(fullText);
+            if (match) {
+                // 教育内容可能在标题之前（PDF常见）或之后
+                // 搜索范围：标题前500字符 + 标题后200字符
+                const beforeStart = Math.max(0, match.index - 500);
+                const afterEnd = Math.min(fullText.length, match.index + match[0].length + 200);
+                searchText = fullText.substring(beforeStart, afterEnd);
+                break;
+            }
+        }
+
+        // 如果在标题附近找到了教育内容，用搜索文本；否则用全文
+        // 但如果全文中"大学/学院"出现在标题之前（如工作经历中），需要限制搜索范围
+
         // 教育经历关键词模式 - 超强版（支持多种格式）
+        // 注意：只在 searchText（教育标题附近或全文）中搜索
         const educationPatterns = [
-            // 格式0: 日期 学校 专业 学位（最常见！空格分隔）
+            // 格式0: 日期 学校 专业 学位（最常见！空格/Tab分隔）
             /(\d{4}[.\-/]\d{1,2}|\d{4}年\d{1,2}月)\s*[至\-~–到]\s*(\d{4}[.\-/]\d{1,2}|\d{4}年\d{1,2}月|至今|现在)?\s+([\u4e00-\u9fa5]{2,}(?:大学|学院|学校))\s+([\u4e00-\u9fa5]{2,}(?:专业)?)\s*(学士|硕士|博士|本科|研究生|专科|大专)?/gi,
-            // 格式1: XX大学 + XX专业 + 学位
-            /([\u4e00-\u9fa5]{2,}(?:大学|学院|学校))\s*[-·–—]?\s*([\u4e00-\u9fa5]{2,}(?:专业|系)?)?\s*(学士|硕士|博士|本科|研究生|专科)?/gi,
+            // 格式1: 学校名 + 学位 + 专业 + 时间段（Tab/空格分隔，PDF常见格式）
+            /([\u4e00-\u9fa5]{2,}(?:大学|学院|学校))\s+(本科|专科|硕士|博士|研究生|大专|学士)\s+([\u4e00-\u9fa5]{2,})\s+(\d{4}[.\-/]\d{1,2}\s*[至\-~–到]\s*\d{4}[.\-/]?\d{0,2})/gi,
             // 格式2: 时间段 + 学校名
             /(\d{4}[.\-/]\d{1,2}|\d{4}年\d{1,2}月)\s*[至\-~–到]\s*(\d{4}[.\-/]\d{1,2}|\d{4}年\d{1,2}月|至今|现在)?\s*([^\n]*(?:大学|学院|学校))/gi,
             // 格式3: 学校名 + 时间段
             /([\u4e00-\u9fa5]{2,}(?:大学|学院|学校))\s*(\d{4}[.\-/]\d{1,2}|\d{4}年\d{1,2}月)\s*[至\-~–到]\s*(\d{4}[.\-/]\d{1,2}|\d{4}年\d{1,2}月|至今|现在)?/gi,
-            // 格式4: 专业名 + 学校名
-            /(计算机科学与技术|软件工程|信息管理|电子工程|自动化|机械工程|土木工程|数学|物理|化学|生物|医学|法学|经济学|金融学|会计学|市场营销|工商管理)[\u4e00-\u9fa5]*\s*[:：]?\s*([\u4e00-\u9fa5]{2,}(?:大学|学院|学校))?/gi,
-            // 格式5: 学历描述（本科、硕士等）+ 学校
+            // 格式4: 学历描述（本科、硕士等）+ 学校
             /(?:就读|毕业于|毕业院校)[:：]?\s*([\u4e00-\u9fa5]{2,}(?:大学|学院|学校))/gi
         ];
 
@@ -1199,7 +1512,8 @@ class ImportUtils {
             '北京师范大学', '南开大学', '厦门大学',
             '山东大学', '青岛大学', '郑州大学',
             '苏州大学', '南京航空航天大学', '南京理工大学',
-            '北京邮电大学', '西安电子科技大学', '杭州电子科技大学'
+            '北京邮电大学', '西安电子科技大学', '杭州电子科技大学',
+            '上海开放大学', '北京开放大学', '国家开放大学'
         ];
 
         // 常见专业 - 扩展
@@ -1209,6 +1523,7 @@ class ImportUtils {
             '电气工程', '通信工程', '网络工程', '信息安全',
             '数据科学与大数据技术', '人工智能', '机器学习',
             '金融学', '会计学', '市场营销', '工商管理', '国际经济与贸易',
+            '行政管理', '公共管理', '人力资源',
             '数学与应用数学', '统计学', '物理学', '化学',
             '法学', '英语', '日语', '新闻学', '广告学',
             '临床医学', '护理学', '药学', '生物医学工程',
@@ -1218,37 +1533,34 @@ class ImportUtils {
         // 常见学位
         const degrees = ['博士', '硕士', '学士', '本科', '研究生', '专科', '大专', '专升本'];
 
-        // 避免重复添加
-        const existingEdu = new Set(result.education.map(e => `${e.school}-${e.major}-${e.degree}`));
+        // 避免重复添加（基于学校+专业+学位+时段）
+        const existingEdu = new Set(result.education.map(e => `${e.school}-${e.major}-${e.degree}-${e.period}`));
 
         educationPatterns.forEach(pattern => {
             let match;
             pattern.lastIndex = 0; // 重置正则索引
 
-            while ((match = pattern.exec(fullText)) !== null) {
+            while ((match = pattern.exec(searchText)) !== null) {
                 let school = '';
                 let major = '';
-                let degree = '本科';
+                let degree = '';
                 let period = '';
                 let description = match[0].trim();
 
-                // 提取学校名称
+                // 提取学校名称 — 从 description 中搜索
                 for (const sch of commonSchools) {
                     if (description.includes(sch)) {
                         school = sch;
                         break;
                     }
                 }
-
-                // 如果还没找到学校，尝试从匹配结果中提取
-                if (!school && match[1]) {
-                    const potentialSchool = match[1].trim();
-                    if (potentialSchool.match(/大学|学院|学校/) && potentialSchool.length >= 4) {
-                        school = potentialSchool;
-                    }
+                // 通用匹配：包含"大学/学院/学校"的中文词
+                if (!school) {
+                    const schoolMatch = description.match(/([\u4e00-\u9fa5]{2,}(?:大学|学院|学校))/);
+                    if (schoolMatch) school = schoolMatch[1];
                 }
 
-                // 提取专业
+                // 提取专业 — 从 description 中搜索
                 for (const maj of commonMajors) {
                     if (description.includes(maj)) {
                         major = maj;
@@ -1256,21 +1568,14 @@ class ImportUtils {
                     }
                 }
 
-                // 如果还没找到专业，尝试从匹配结果中提取
-                if (!major && match[2]) {
-                    const potentialMajor = match[2].trim().replace(/专业|系|学院/g, '');
-                    if (potentialMajor.length >= 2) {
-                        major = potentialMajor;
-                    }
-                }
-
-                // 提取学位
+                // 提取学位 — 从 description 中搜索
                 for (const deg of degrees) {
                     if (description.includes(deg)) {
                         degree = deg;
                         break;
                     }
                 }
+                if (!degree) degree = '本科'; // 默认
 
                 // 提取时间段
                 const timePatterns = [
@@ -1290,9 +1595,9 @@ class ImportUtils {
                 // 如果没有找到学位但找到了时间段，推断学位（根据时长）
                 if (!period || period === degree) {
                     // 尝试从周围文本找时间
-                    const surroundingText = fullText.substring(
+                    const surroundingText = searchText.substring(
                         Math.max(0, match.index - 50),
-                        Math.min(fullText.length, match.index + match[0].length + 100)
+                        Math.min(searchText.length, match.index + match[0].length + 100)
                     );
                     for (const timePattern of timePatterns) {
                         const timeMatch = surroundingText.match(timePattern);
@@ -1308,11 +1613,11 @@ class ImportUtils {
                 if (!major) major = '未明确专业';
                 if (!degree) degree = '本科';
 
-                // 构建唯一标识
-                const eduKey = `${school}-${major}-${degree}`;
+                // 构建唯一标识（含时段）
+                const eduKey = `${school}-${major}-${degree}-${period}`;
 
                 // 避免重复添加，且必须有有效信息
-                if (!existingEdu.has(eduKey) && school !== '某高校' || major !== '未明确专业') {
+                if (!existingEdu.has(eduKey) && (school !== '某高校' || major !== '未明确专业')) {
                     result.education.push({
                         school: school,
                         degree: degree,
@@ -1396,20 +1701,31 @@ class ImportUtils {
      * 智能提取技能
      */
     smartExtractSkills(fullText, result) {
-        // 技能关键词
         const skillKeywords = [
             'React', 'Vue', 'TypeScript', 'JavaScript', 'HTML5', 'CSS3',
             'Node.js', 'Python', 'Java', 'Go', 'C++',
             'MySQL', 'Redis', 'MongoDB', 'PostgreSQL',
             'Git', 'Docker', 'Jenkins', 'Kubernetes',
             'Postman', 'Jmeter', 'Fiddler', 'Selenium',
-            'Linux', 'Shell', 'Bash', '运维', '测试', '开发'
+            'Linux', 'Shell', 'Bash',
+            '运维', '自动化测试', '性能测试', '功能测试', '回归测试',
+            '安全测试', '测试策略', '测试计划', '需求分析',
+            '项目管理', '团队协作', '团队管理', '风险管理',
+            '问题解决', '沟通能力', '技术领导'
         ];
         
+        const existingSkills = new Set(result.skills);
         skillKeywords.forEach(skill => {
-            if (fullText.includes(skill)) {
+            if (fullText.includes(skill) && !existingSkills.has(skill)) {
                 result.skills.push(skill);
+                existingSkills.add(skill);
             }
+        });
+
+        result.skills = result.skills.filter(skill => {
+            if (typeof skill !== 'string') return false;
+            const s = skill.trim();
+            return s.length >= 2 && !/^[a-zA-Z]$/.test(s);
         });
     }
 
@@ -1418,22 +1734,42 @@ class ImportUtils {
      */
     smartExtractPersonalInfo(fullText, result) {
         
+        const nonNameWords = ['个人', '简历', '信息', '经验', '教育', '技能', '项目', '总结', '评价', '工作', '专业', '求职', '职业', '背景', '经历'];
+        
         // 姓名提取 - 增强版（支持多种常见格式）
         const namePatterns = [
             /姓名[：:]\s*([\u4e00-\u9fa5]{2,4})/,           // 格式1: "姓名：张三"
             /Name[：:]\s*([\u4e00-\u9fa5]{2,4})/,             // 格式2: "name: Zhang"
-            /^([\u4e00-\u9fa5]{2,4})的简历/,                 // 格式3: "张三的简历" (最常见！)
-            /^([\u4e00-\u9fa5]{2,4})个人简历/,                // 格式4: "张三个人简历"
-            /([\u4e00-\u9fa5]{2,4})\s*[男|女]/,              // 格式5: "张三 男"
-            /^([\u4e00-\u9fa5]{2,4})$/                       // 格式6: 独立名字（首行）
+            /个人简历[-—–]\s*([\u4e00-\u9fa5]{2,4})/,        // 格式3: "个人简历-张三"
+            /^([\u4e00-\u9fa5]{2,4})的简历/,                 // 格式4: "张三的简历"
+            /^([\u4e00-\u9fa5]{2,4})个人简历/,                // 格式5: "张三个人简历"
+            /([\u4e00-\u9fa5]{2,4})\s*[男|女]/,              // 格式6: "张三 男"
+            /^([\u4e00-\u9fa5]{2,4})$/                       // 格式7: 独立名字（首行）
         ];
         
         namePatterns.forEach(pattern => {
             const match = fullText.match(pattern);
-            if (match && match[1] && !result.profile.name) {
-                result.profile.name = match[1];
+            if (match && match[1]) {
+                if (!result.profile.name || nonNameWords.includes(result.profile.name)) {
+                    result.profile.name = match[1];
+                }
             }
         });
+        
+        if (!result.profile.name && lines.length > 0) {
+            const firstName = lines[0].trim();
+            if (/^[\u4e00-\u9fa5]{2,4}$/.test(firstName)) {
+                result.profile.name = firstName;
+            }
+        }
+        
+        // Extract title from "求职意向：xxx" pattern
+        if (!result.profile.title) {
+            const titleMatch = fullText.match(/求职意向[：:]\s*([^\n]+)/);
+            if (titleMatch) {
+                result.profile.title = titleMatch[1].trim();
+            }
+        }
         
         // 电话提取
         const phonePattern = /(1[3-9]\d{9})/;
@@ -1470,11 +1806,11 @@ class ImportUtils {
         
         // 工作经验年限提取
         const yearsPatterns = [
-            /工作经验[：:]\s*(\d+)\s*年/,
-            /工作年限[：:]\s*(\d+)\s*年/,
-            /(\d+)\s*年\s*工作经验/,
-            /(\d+)\s*年[以]?[上]?/,
-            /(\d+)\s*years?\s*experience/i
+            /工作经验[：:]\s*(\d{1,2})\s*年/,
+            /工作年限[：:]\s*(\d{1,2})\s*年/,
+            /(?<!\d)(\d{1,2})\s*年\s*工作经验/,
+            /(?<!\d)(\d{1,2})\s*年以上/,
+            /(\d{1,2})\s*years?\s*experience/i
         ];
         
         for (const pattern of yearsPatterns) {
@@ -1565,14 +1901,16 @@ class ImportUtils {
      * 工作经历开始行检测
      */
     isExperienceStartLine(line) {
-        const experiencePatterns = [
-            /\d{4}\.\d{2}-\d{4}\.\d{2}/,  // 2023.02-2025.01
-            /\d{4}-\d{4}/,                 // 2020-2023
-            /\d{4}年\d{1,2}月/             // 2023年2月
-        ];
-        
-        return experiencePatterns.some(pattern => pattern.test(line)) ||
-               line.includes('项目') || line.includes('公司');
+        // 必须包含时间段 + 公司/职位关键词，才认为是新工作经历开始行
+        const hasDateRange = /\d{4}[.\-/年]\d{1,2}[.\-/月]?\s*[-–—至到]\s*\d{4}|至今/.test(line) ||
+                             /\d{4}\s*[-–—至到]\s*\d{4}/.test(line);
+        if (!hasDateRange) return false;
+
+        // 排除纯描述行（以"-"、"•"、"*"开头的项目符号）
+        const trimmed = line.trim();
+        if (/^[-•*·▪▸▹►◅⟩]/.test(trimmed)) return false;
+
+        return true;
     }
 
     /**
@@ -1600,15 +1938,18 @@ class ImportUtils {
 
         // 提取姓名 - 增强版（支持多种格式）
         if (!result.profile.name) {
-            // 格式1: "姓名：xxx" / "name: xxx"
-            const nameMatch1 = line.match(/[姓名name\s]*[:：]?\s*([\u4e00-\u9fa5]{2,4})/);
+            // 格式1: "姓名：xxx" / "name: xxx"（精确匹配标签）
+            const nameMatch1 = line.match(/(?:姓名|Name)\s*[:：]\s*([\u4e00-\u9fa5]{2,4})/i);
             if (nameMatch1 && nameMatch1[1]) {
-                result.profile.name = nameMatch1[1];
+                const nonNameWords = ['个人', '简历', '信息', '经验', '教育', '技能', '项目', '总结', '评价', '工作', '专业', '求职', '职业', '背景', '经历'];
+                if (!nonNameWords.includes(nameMatch1[1])) {
+                    result.profile.name = nameMatch1[1];
+                }
             }
             // 格式2: 独立的中文姓名（2-4个汉字，前后无其他中文）
             else if (/^[\u4e00-\u9fa5]{2,4}$/.test(line.trim())) {
                 // 排除常见非姓名词汇
-                const nonNameWords = ['个人', '简历', '信息', '经验', '教育', '技能', '项目', '总结', '评价'];
+                const nonNameWords = ['个人', '简历', '信息', '经验', '教育', '技能', '项目', '总结', '评价', '工作', '专业', '求职', '职业', '背景', '经历', '个人信息', '个人资料', '基本资料', '个人简介'];
                 if (!nonNameWords.includes(line.trim())) {
                     result.profile.name = line.trim();
                 }
@@ -1617,6 +1958,11 @@ class ImportUtils {
             const nameMatch3 = line.match(/^([\u4e00-\u9fa5]{2,4})\s*(的|之)?\s*(简历|resume|CV)/i);
             if (nameMatch3 && nameMatch3[1]) {
                 result.profile.name = nameMatch3[1];
+            }
+            // 格式4: "个人简历-姓名"
+            const nameMatch4 = line.match(/个人简历[-—–]\s*([\u4e00-\u9fa5]{2,4})/);
+            if (nameMatch4 && nameMatch4[1]) {
+                result.profile.name = nameMatch4[1];
             }
         }
 
@@ -1642,11 +1988,17 @@ class ImportUtils {
             else if (line.includes('女') && !line.includes('男')) result.profile.gender = '女';
         }
 
-        // 提取工作经验年限
+        // 提取工作经验年限（排除电话号码等长数字序列）
         if (!result.profile.experience_years) {
-            const yearsMatch = line.match(/(\d+)\s*年?(?:经验|工作|从业)?/);
+            const yearsMatch = line.match(/(?:工作经验|工作年限|从业经验|年经验)[：:]\s*(\d+)\s*年/);
             if (yearsMatch && yearsMatch[1]) {
                 result.profile.experience_years = yearsMatch[1];
+            } else {
+                // 倒置格式: "8年工作经验"，但排除连续7位以上数字（电话号码）
+                const reverseMatch = line.match(/(?<!\d)(\d{1,2})\s*年\s*(?:工作|从业)?经验/);
+                if (reverseMatch && reverseMatch[1]) {
+                    result.profile.experience_years = reverseMatch[1];
+                }
             }
         }
 
@@ -1671,17 +2023,47 @@ class ImportUtils {
      * 后备提取个人信息
      */
     fallbackExtractPersonalInfo(lines, result) {
-        // 如果还没有找到姓名，尝试从第一行提取
         if (!result.profile.name && lines.length > 0) {
-            const firstLine = lines[0].trim();
-            // 第一行可能是姓名（不包含特殊字符，长度2-4个中文字符）
             const nameRegex = /^[\u4e00-\u9fa5]{2,4}$/;
-            if (nameRegex.test(firstLine)) {
-                result.profile.name = firstLine;
+            for (let i = 0; i < Math.min(10, lines.length); i++) {
+                const line = lines[i].trim();
+                if (nameRegex.test(line)) {
+                    result.profile.name = line;
+                    break;
+                }
+                for (const part of line.split(/[\s|·，,、]+/)) {
+                    const trimmed = part.trim();
+                    if (nameRegex.test(trimmed)) {
+                        result.profile.name = trimmed;
+                        break;
+                    }
+                }
+                if (result.profile.name) break;
+            }
+
+            if (!result.profile.name) {
+                for (let i = 0; i < Math.min(20, lines.length); i++) {
+                    const line = lines[i].trim();
+                    const nameMatch = line.match(/^[\u4e00-\u9fa5]{2,4}(?:\s|[,，、|·]|$)/);
+                    if (nameMatch) {
+                        result.profile.name = nameMatch[0].replace(/[\s,，、|·]/g, '');
+                        break;
+                    }
+                }
+            }
+
+            if (!result.profile.name) {
+                for (let i = 0; i < Math.min(5, lines.length); i++) {
+                    const line = lines[i].trim();
+                    const nameAfterLabel = line.match(/(?:姓名|名字)[：:]\s*([\u4e00-\u9fa5]{2,4})/);
+                    if (nameAfterLabel) {
+                        result.profile.name = nameAfterLabel[1];
+                        break;
+                    }
+                }
             }
         }
         
-        // 尝试从所有行中提取电话和邮箱
         lines.forEach(line => {
             if (!result.profile.phone) {
                 const phoneMatch = line.match(/(1[3-9]\d{9})/);
@@ -1694,7 +2076,6 @@ class ImportUtils {
             }
         });
         
-        // 如果还没有找到电话，尝试从简历内容中查找
         if (!result.profile.phone) {
             const fullText = lines.join(' ');
             const phoneMatch = fullText.match(/(1[3-9]\d{9})/);
@@ -1802,6 +2183,7 @@ class ImportUtils {
                 break;
             case 'projects':
                 this.parseProjectsSection(lines, result);
+                this.parseExperienceSection(lines, result);
                 break;
             case 'summary':
                 this.parseSummarySection(lines, result);
@@ -1823,14 +2205,22 @@ class ImportUtils {
      */
     parseExperienceSection(lines, result) {
         let currentExperience = null;
+        let prevLine = '';
         
         lines.forEach(line => {
             // 检测新工作经历开始
             if (this.isExperienceStartLine(line)) {
                 if (currentExperience) {
+                    // 如果公司名仍是"知名公司"，从描述中尝试提取
+                    if (currentExperience.company === '知名公司' && currentExperience.description) {
+                        const extractedCompany = this.extractCompany(currentExperience.description);
+                        if (extractedCompany !== '知名公司') {
+                            currentExperience.company = extractedCompany;
+                        }
+                    }
                     result.experience.push(currentExperience);
                 }
-                currentExperience = this.parseExperienceLine(line);
+                currentExperience = this.parseExperienceLine(line, prevLine);
             } else if (currentExperience) {
                 // 添加到描述中
                 if (currentExperience.description) {
@@ -1839,9 +2229,17 @@ class ImportUtils {
                     currentExperience.description = line.trim();
                 }
             }
+            prevLine = line;
         });
         
         if (currentExperience) {
+            // 最后一条也尝试从描述中提取公司名
+            if (currentExperience.company === '知名公司' && currentExperience.description) {
+                const extractedCompany = this.extractCompany(currentExperience.description);
+                if (extractedCompany !== '知名公司') {
+                    currentExperience.company = extractedCompany;
+                }
+            }
             result.experience.push(currentExperience);
         }
     }
@@ -1912,7 +2310,20 @@ class ImportUtils {
      * 解析个人总结分段
      */
     parseSummarySection(lines, result) {
-        const summary = lines.join(' ').trim();
+        const sectionTitles = ['自我评价', '个人总结', '个人简介', '自我介绍', '个人优势'];
+        const filteredLines = lines.filter(line => {
+            const trimmed = line.trim();
+            return trimmed.length > 0 && !sectionTitles.includes(trimmed);
+        });
+        const subTitles = ['工作背景', '团队管理', '团队合作', '工作荣誉', '核心优势',
+                           '专业技能', '自我驱动', '沟通能力', '学习能力'];
+        const summary = filteredLines.map(line => {
+            let cleaned = line;
+            for (const title of subTitles) {
+                cleaned = cleaned.replace(new RegExp(`^${title}[：:]\\s*`), '');
+            }
+            return cleaned;
+        }).join(' ').trim();
         if (summary) {
             result.profile.summary = summary;
         }
@@ -1942,6 +2353,7 @@ class ImportUtils {
     parseEducationLine(line) {
         return {
             school: this.extractSchool(line),
+            major: this.extractMajor(line),
             degree: this.extractDegree(line),
             period: this.extractPeriod(line),
             description: line.trim()
@@ -1951,7 +2363,10 @@ class ImportUtils {
     /**
      * 解析工作经历行
      */
-    parseExperienceLine(line) {
+    parseExperienceLine(line, prevLine) {
+        if (prevLine && /^(测试|开发|高级|资深|初级|中级)$/i.test(prevLine.trim())) {
+            line = prevLine.trim() + line;
+        }
         return {
             company: this.extractCompany(line),
             position: this.extractPosition(line),
@@ -1964,11 +2379,48 @@ class ImportUtils {
      * 提取学校名称
      */
     extractSchool(line) {
-        const schools = ['清华大学', '北京大学', '复旦大学', '上海交通大学', '浙江大学', '南京大学'];
+        const schools = [
+            '清华大学', '北京大学', '复旦大学', '上海交通大学',
+            '浙江大学', '南京大学', '中山大学', '武汉大学',
+            '同济大学', '华东师范大学', '华东理工大学',
+            '上海大学', '上海财经大学', '上海外国语大学',
+            '西安交通大学', '哈尔滨工业大学', '华中科技大学',
+            '中国科学技术大学', '中国人民大学', '东南大学',
+            '北京航空航天大学', '北京理工大学', '天津大学',
+            '华南理工大学', '西北工业大学', '大连理工大学',
+            '电子科技大学', '中南大学', '湖南大学',
+            '吉林大学', '山东大学', '四川大学', '重庆大学',
+            '北京师范大学', '南开大学', '厦门大学',
+            '北京邮电大学', '西安电子科技大学', '杭州电子科技大学'
+        ];
         for (const school of schools) {
             if (line.includes(school)) return school;
         }
+        // 通用匹配：包含"大学/学院/学校"的中文词
+        const schoolMatch = line.match(/([\u4e00-\u9fa5]{2,}(?:大学|学院|学校))/);
+        if (schoolMatch) return schoolMatch[1];
         return '未知学校';
+    }
+
+    /**
+     * 提取专业
+     */
+    extractMajor(line) {
+        const majors = [
+            '计算机科学与技术', '软件工程', '信息管理与信息系统',
+            '电子信息工程', '自动化', '机械工程', '土木工程',
+            '电气工程', '通信工程', '网络工程', '信息安全',
+            '数据科学与大数据技术', '人工智能', '机器学习',
+            '金融学', '会计学', '市场营销', '工商管理', '国际经济与贸易',
+            '数学与应用数学', '统计学', '物理学', '化学',
+            '法学', '英语', '日语', '新闻学', '广告学',
+            '临床医学', '护理学', '药学', '生物医学工程',
+            '环境工程', '材料科学与工程', '工业设计'
+        ];
+        for (const major of majors) {
+            if (line.includes(major)) return major;
+        }
+        return '';
     }
 
     /**
@@ -1986,10 +2438,23 @@ class ImportUtils {
      * 提取公司名称
      */
     extractCompany(line) {
-        const companies = ['腾讯', '阿里', '百度', '字节', '华为', '美团', '京东'];
+        // 优先匹配常见公司（含银行、金融机构等）
+        const companies = [
+            // 银行
+            '交通银行', '广发银行', '广发', '招商银行', '建设银行', '工商银行', '农业银行', '中国银行',
+            '浦发银行', '民生银行', '兴业银行', '光大银行', '中信银行', '华夏银行', '平安银行',
+            // 互联网
+            '腾讯', '阿里', '百度', '字节', '华为', '美团', '京东', '小米', 'OPPO', 'VIVO', '中兴',
+            '阿里巴巴', '腾讯科技', '百度在线', '字节跳动', '美团点评', '神州数码', '联想',
+            // 外企
+            '谷歌', '微软', '苹果', '亚马逊', 'Facebook', 'Google', 'Microsoft', 'Apple'
+        ];
         for (const company of companies) {
-            if (line.includes(company)) return company + '公司';
+            if (line.includes(company)) return company;
         }
+        // 通用模式：匹配包含公司/集团/银行/科技等后缀的中文词
+        const companyMatch = line.match(/([\u4e00-\u9fa5]{2,}(?:有限)?(?:股份)?(?:公司|集团|银行|科技|网络|软件|数据|信息|数码|技术|互联网|电子商务|通信|电子|半导体|医药|教育|金融|保险|证券|控股|投资))/);
+        if (companyMatch) return companyMatch[1];
         return '知名公司';
     }
 
@@ -1997,7 +2462,15 @@ class ImportUtils {
      * 提取职位
      */
     extractPosition(line) {
-        const positions = ['工程师', '经理', '总监', '主管', '开发', '产品', '设计'];
+        // 优先匹配长职位名（如"高级测试工程师"优先于"工程师"）
+        const positions = [
+            '高级测试工程师', '资深测试工程师', '测试工程师', '测试组长', '测试经理', '测试总监', '测试主管',
+            '高级开发工程师', '资深开发工程师', '开发工程师', '开发组长', '开发经理',
+            '高级产品经理', '产品经理', '产品专员',
+            '高级设计师', '设计师',
+            '项目经理', '技术经理', '技术总监', '架构师',
+            '工程师', '经理', '总监', '主管', '开发', '产品', '设计', '运营', '市场', '销售', '人事', '财务', '会计', '顾问', '专家', '组长', '负责人', '分析师', '程序员'
+        ];
         for (const position of positions) {
             if (line.includes(position)) return position;
         }
@@ -2008,9 +2481,35 @@ class ImportUtils {
      * 提取时间段
      */
     extractPeriod(line) {
-        const periodRegex = /(\d{4}[年\-]\d{1,2}[月\-])|(\d{4}[年\-]\s*至今)|(\d{4}[年\-]\s*至\s*\d{4}[年\-])/g;
-        const matches = line.match(periodRegex);
-        return matches ? matches[0].replace(/[年月]/g, '.').replace('至', '-') : '2020-至今';
+        // 匹配多种时间段格式
+        const periodPatterns = [
+            // 2020年至今 / 2020年-至今
+            /(\d{4})\s*年?\s*[至\-~–到]\s*至今/i,
+            // 2020.02-2025.01 / 2020-2025
+            /(\d{4})[.\-/]\s*(\d{1,2})?\s*[至\-~–到]\s*(\d{4})[.\-/]?\s*(\d{1,2})?/,
+            // 2020年2月-2025年1月
+            /(\d{4})\s*年\s*(\d{1,2})?\s*月?\s*[至\-~–到]\s*(\d{4})\s*年?\s*(\d{1,2})?\s*月?/,
+            // 2020-2025 (纯年份范围)
+            /(\d{4})\s*[至\-~–到]\s*(\d{4})/,
+            // 单年份
+            /(\d{4})/
+        ];
+
+        for (const pattern of periodPatterns) {
+            const match = line.match(pattern);
+            if (match) {
+                // 根据匹配结果构建时间段字符串
+                const full = match[0];
+                // 标准化：年月分隔符统一为 .
+                return full
+                    .replace(/年/g, '.')
+                    .replace(/月/g, '')
+                    .replace(/[至~–]/g, '-')
+                    .replace(/\s+/g, '')
+                    .replace(/\.-/g, '-');
+            }
+        }
+        return '';
     }
 
     /**
@@ -2037,14 +2536,15 @@ class ImportUtils {
      */
     standardizeData(parsedData) {
         // 确保数据结构一致
+        const summary = parsedData.profile?.summary || '';
         return {
             profile: {
                 name: parsedData.profile?.name || '',
-                title: parsedData.profile?.title || '求职者',
+                title: parsedData.profile?.title || '',
                 email: parsedData.profile?.email || '',
                 phone: parsedData.profile?.phone || '',
                 location: parsedData.profile?.location || '',
-                summary: parsedData.profile?.summary || '从简历中导入的个人信息',
+                summary: summary,
                 gender: parsedData.profile?.gender || '',
                 experience_years: parsedData.profile?.experience_years || ''
             },
@@ -2089,6 +2589,55 @@ class ImportUtils {
             success: missingFields.length === 0,
             missingFields
         };
+    }
+
+    deduplicateExperience(result) {
+        if (!result.experience || result.experience.length <= 1) return;
+
+        const projectKeywords = ['项目描述', '项目背景', '项目名称', '项目经验'];
+        const seen = new Map();
+
+        result.experience = result.experience.filter(exp => {
+            const desc = exp.description || '';
+            if (projectKeywords.some(kw => desc.includes(kw))) {
+                return false;
+            }
+
+            if (desc.length > 200 && (!exp.company || exp.company === '某公司') && (!exp.position || exp.position.length <= 2)) {
+                return false;
+            }
+
+            if (exp.position && /^[\u4e00-\u9fa5]{1}$/.test(exp.position)) {
+                return false;
+            }
+
+            if (exp.company && exp.company.length <= 1) {
+                return false;
+            }
+
+            const key = `${(exp.company || '').replace(/\s/g, '')}-${(exp.position || '').replace(/\s/g, '')}`;
+            if (seen.has(key)) {
+                const existing = seen.get(key);
+                if ((exp.description || '').length > (existing.description || '').length) {
+                    const idx = result.experience.indexOf(existing);
+                    if (idx > -1) result.experience.splice(idx, 1);
+                    seen.set(key, exp);
+                    return true;
+                }
+                return false;
+            }
+            seen.set(key, exp);
+            return true;
+        });
+
+        if (result.experience.length > 5) {
+            result.experience.sort((a, b) => {
+                const aHasCompany = a.company && a.company !== '某公司' && a.company.length > 2 ? 1 : 0;
+                const bHasCompany = b.company && b.company !== '某公司' && b.company.length > 2 ? 1 : 0;
+                return bHasCompany - aHasCompany;
+            });
+            result.experience = result.experience.slice(0, 5);
+        }
     }
 }
 
