@@ -2205,6 +2205,7 @@ async extractTextFromDOCX(content) {
      */
     parseExperienceSection(lines, result) {
         let currentExperience = null;
+        let prevLine = '';
         
         lines.forEach(line => {
             // 检测新工作经历开始
@@ -2219,7 +2220,7 @@ async extractTextFromDOCX(content) {
                     }
                     result.experience.push(currentExperience);
                 }
-                currentExperience = this.parseExperienceLine(line);
+                currentExperience = this.parseExperienceLine(line, prevLine);
             } else if (currentExperience) {
                 // 添加到描述中
                 if (currentExperience.description) {
@@ -2228,6 +2229,7 @@ async extractTextFromDOCX(content) {
                     currentExperience.description = line.trim();
                 }
             }
+            prevLine = line;
         });
         
         if (currentExperience) {
@@ -2308,7 +2310,20 @@ async extractTextFromDOCX(content) {
      * 解析个人总结分段
      */
     parseSummarySection(lines, result) {
-        const summary = lines.join(' ').trim();
+        const sectionTitles = ['自我评价', '个人总结', '个人简介', '自我介绍', '个人优势'];
+        const filteredLines = lines.filter(line => {
+            const trimmed = line.trim();
+            return trimmed.length > 0 && !sectionTitles.includes(trimmed);
+        });
+        const subTitles = ['工作背景', '团队管理', '团队合作', '工作荣誉', '核心优势',
+                           '专业技能', '自我驱动', '沟通能力', '学习能力'];
+        const summary = filteredLines.map(line => {
+            let cleaned = line;
+            for (const title of subTitles) {
+                cleaned = cleaned.replace(new RegExp(`^${title}[：:]\\s*`), '');
+            }
+            return cleaned;
+        }).join(' ').trim();
         if (summary) {
             result.profile.summary = summary;
         }
@@ -2348,7 +2363,10 @@ async extractTextFromDOCX(content) {
     /**
      * 解析工作经历行
      */
-    parseExperienceLine(line) {
+    parseExperienceLine(line, prevLine) {
+        if (prevLine && /^(测试|开发|高级|资深|初级|中级)$/i.test(prevLine.trim())) {
+            line = prevLine.trim() + line;
+        }
         return {
             company: this.extractCompany(line),
             position: this.extractPosition(line),

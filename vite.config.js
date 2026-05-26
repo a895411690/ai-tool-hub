@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
-import { copyFileSync, mkdirSync, readdirSync, statSync, cpSync } from 'fs'
+import { copyFileSync, cpSync } from 'fs'
 
 // Plugin to copy tools directory and tools.json to dist
 function copyToolsPlugin() {

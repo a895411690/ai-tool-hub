@@ -16,13 +16,16 @@
 
 import { escapeHtml, escapeAttr, showNotification } from './utils.js';
 import { apiClient } from './apiClient.js';
+import { ResumeTemplates, getAllTemplates } from './templates.js';
 
 class AIOptimizer {
     constructor() {
         this.isOptimizing = false;
         this.useRemoteAI = true;
+        this.currentMode = 'general';
+        this.atsLevel = 'deep';
+        this.selectedJob = '';
         
-        // 三档优化配置（参考求职方舟）
         this.optimizationLevels = {
             light: {
                 name: '轻度优化',
@@ -51,6 +54,79 @@ class AIOptimizer {
         };
         
         this.currentLevel = 'medium';
+        this._initTemplateDropdown();
+    }
+
+    _initTemplateDropdown() {
+        const dropdown = document.getElementById('templateDropdown');
+        if (!dropdown) return;
+
+        const templates = getAllTemplates();
+        dropdown.innerHTML = templates.map(t => `
+            <button onclick="window.aiOptimizer.applyTemplate('${t.id}')" class="w-full px-3 py-2 text-left text-sm hover:bg-gray-700 flex items-center gap-2 transition-colors">
+                <i class="fas fa-${t.style === 'modern' ? 'laptop-code' : t.style === 'professional' ? 'briefcase' : t.style === 'creative' ? 'paint-brush' : 'university'} text-purple-400 text-xs"></i>
+                <div>
+                    <div class="font-medium">${escapeHtml(t.name)}</div>
+                    <div class="text-xs text-gray-500">${escapeHtml(t.description)}</div>
+                </div>
+            </button>
+        `).join('');
+
+        document.addEventListener('click', (e) => {
+            const wrap = document.getElementById('templateDropdownWrap');
+            if (wrap && !wrap.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    }
+
+    toggleTemplateDropdown() {
+        const dropdown = document.getElementById('templateDropdown');
+        if (dropdown) dropdown.classList.toggle('hidden');
+    }
+
+    applyTemplate(templateId) {
+        const template = ResumeTemplates[Object.keys(ResumeTemplates).find(k => ResumeTemplates[k].id === templateId)];
+        if (!template) return;
+
+        const dropdown = document.getElementById('templateDropdown');
+        if (dropdown) dropdown.classList.add('hidden');
+
+        const nameEl = document.getElementById('currentTemplateName');
+        if (nameEl) nameEl.textContent = template.name;
+
+        if (window.store) {
+            const currentData = window.store.getState();
+            if (!currentData.profile?.summary && template.fields.profile?.placeholder) {
+                window.store.updatePath('profile', {
+                    ...currentData.profile,
+                    title: currentData.profile?.title || ''
+                });
+            }
+
+            const currentSkills = currentData.skills || [];
+            const templateSkills = template.fields.skills || [];
+
+            if (currentSkills.length === 0 && templateSkills.length > 0) {
+                window.store.updatePath('skills', templateSkills);
+            }
+
+            if (currentData.experience?.length === 0 && template.fields.experience?.length > 0) {
+                window.store.updatePath('experience', template.fields.experience.map((exp, i) => ({
+                    id: Date.now() + i,
+                    company: '',
+                    position: '',
+                    startDate: '',
+                    endDate: '',
+                    description: ''
+                })));
+            }
+
+            window.store.save();
+            this._syncFormFromStore();
+        }
+
+        showNotification(`已应用"${template.name}"模板`, 'success');
     }
 
     // 打开AI面板
@@ -153,6 +229,13 @@ class AIOptimizer {
     async optimize() {
         if (this.isOptimizing) return;
 
+        if (this.useRemoteAI && !apiClient.isAuthenticated()) {
+            showNotification('AI优化需要登录，请先登录或注册', 'warning');
+            const { authModal } = await import('../components/authModal.js');
+            authModal.show();
+            return;
+        }
+
         const jobDescription = document.getElementById('jobDescription')?.value.trim();
         if (!jobDescription) {
             showNotification('请输入目标职位描述（JD）', 'error');
@@ -162,13 +245,6 @@ class AIOptimizer {
 const resumeData = window.store ? window.store.getState() : {};
         if (!resumeData.profile || !resumeData.profile.name) {
             showNotification('请先填写简历基本信息', 'error');
-            return;
-        }
-
-        // 如果启用远程AI且未登录，弹出登录框
-        if (this.useRemoteAI && !apiClient.isAuthenticated()) {
-            const { authModal } = await import('../components/authModal.js');
-            authModal.show();
             return;
         }
         this._showLoading();
@@ -226,6 +302,9 @@ const resumeData = window.store ? window.store.getState() : {};
                     onToken: (token) => {} // 流式token，静默处理
                 });
                 if (result) {
+                    if (!result.optimizedData && result.optimizedText) {
+                        result.optimizedData = this._parseOptimizedText(result.optimizedText, resumeData);
+                    }
                     result.optimizedData = result.optimizedData || resumeData;
                     return result;
                 }
@@ -286,6 +365,9 @@ const resumeData = window.store ? window.store.getState() : {};
                     onToken: (token) => {}
                 });
                 if (result) {
+                    if (!result.optimizedData && result.optimizedText) {
+                        result.optimizedData = this._parseOptimizedText(result.optimizedText, resumeData);
+                    }
                     result.optimizedData = result.optimizedData || resumeData;
                     return result;
                 }
@@ -335,6 +417,9 @@ const resumeData = window.store ? window.store.getState() : {};
                     onToken: (token) => {}
                 });
                 if (result) {
+                    if (!result.optimizedData && result.optimizedText) {
+                        result.optimizedData = this._parseOptimizedText(result.optimizedText, resumeData);
+                    }
                     result.optimizedData = result.optimizedData || resumeData;
                     return result;
                 }
@@ -382,11 +467,25 @@ const resumeData = window.store ? window.store.getState() : {};
         
         // 技能库
         const skillDB = {
-            frontend: ['react', 'vue', 'angular', 'javascript', 'typescript', 'html', 'css', 'webpack', 'vite'],
-            backend: ['node.js', 'python', 'java', 'go', 'spring boot', 'django', 'mysql', 'redis'],
-            devops: ['docker', 'kubernetes', 'ci/cd', 'linux', 'nginx', 'aws', 'jenkins'],
-            ai: ['机器学习', '深度学习', 'tensorflow', 'pytorch', 'nlp', '算法'],
-            management: ['项目管理', '团队领导', '敏捷开发', 'scrum']
+            frontend: ['react', 'vue', 'angular', 'javascript', 'typescript',
+                        'html5', 'css3', 'webpack', 'vite', 'next.js', 'nuxt'],
+            backend: ['node.js', 'python', 'java', 'go', 'spring boot', 'django',
+                       'flask', 'mysql', 'redis', 'mongodb', 'postgresql'],
+            devops: ['docker', 'kubernetes', 'ci/cd', 'linux', 'nginx', 'aws',
+                      'jenkins', 'gitlab', 'ansible', 'terraform'],
+            testing: ['自动化测试', '性能测试', '功能测试', '接口测试',
+                       '安全测试', '回归测试', 'selenium', 'jmeter', 'postman',
+                       'fiddler', 'charles', 'appium', 'pytest', 'testng', 'junit',
+                       '缺陷管理', '测试用例', '测试策略',
+                       '测试计划', '质量保证', '持续集成'],
+            ai: ['机器学习', '深度学习', 'tensorflow', 'pytorch',
+                  'nlp', '计算机视觉', '算法', '大模型', 'llm'],
+            management: ['项目管理', '团队领导', '敏捷开发', 'scrum',
+                          '团队管理', '需求分析', '风险管理',
+                          '进度管理', '资源协调'],
+            data: ['sql', 'hive', 'spark', 'hadoop', '数据分析',
+                    '数据挖掘', '数据可视化', 'tableau',
+                    'powerbi', 'pandas', 'numpy']
         };
 
         const matchedSkills = [];
@@ -404,11 +503,15 @@ const resumeData = window.store ? window.store.getState() : {};
 
         // 判断职位类型
         let jobType = '通用';
-        if (/前端|front.?end|web/i.test(text)) jobType = '前端开发';
-        else if (/后端|back.?end|server/i.test(text)) jobType = '后端开发';
+        if (/前端|front.?end|web|ui|界面/i.test(text)) jobType = '前端开发';
+        else if (/后端|back.?end|server|服务端/i.test(text)) jobType = '后端开发';
         else if (/全栈|full.?stack/i.test(text)) jobType = '全栈开发';
-        else if (/数据|data|分析/i.test(text)) jobType = '数据分析';
-        else if (/产品|product/i.test(text)) jobType = '产品经理';
+        else if (/测试|test|qa|quality|sdet/i.test(text)) jobType = '测试工程师';
+        else if (/数据|data|分析|bi/i.test(text)) jobType = '数据分析';
+        else if (/产品|product|pm/i.test(text)) jobType = '产品经理';
+        else if (/运维|devops|sre|运维工程师/i.test(text)) jobType = '运维工程师';
+        else if (/设计|design|ux|ui设计/i.test(text)) jobType = 'UI设计师';
+        else if (/项目经理|project.?manager|pmp/i.test(text)) jobType = '项目经理';
 
         return {
             keywords: [...new Set(matchedSkills.map(m => m.skill))],
@@ -511,9 +614,15 @@ const resumeData = window.store ? window.store.getState() : {};
         // 优化简介
         if (optimized.profile) {
             const years = original.profile?.experience_years || 3;
-            optimized.profile.summary = `${years > 3 ? '资深' : ''}${jdAnalysis.jobType}工程师 | ${years}年经验 | 精通${jdAnalysis.keywords.slice(0, 3).join('/')}
+            const originalSummary = (original.profile?.summary || '').trim();
+            const keywords = jdAnalysis.keywords.slice(0, 5).join('、');
+            const matchedSkills = keywordMatch.matchedSkills.slice(0, 5).join('、');
 
-具备${years}年以上${jdAnalysis.jobType}领域实战经验，擅长从0到1构建高质量解决方案。精通${jdAnalysis.keywords.slice(0, 4).join('、')}等核心技术，具有深厚的技术功底和敏锐的业务洞察力。`;
+            if (originalSummary) {
+                optimized.profile.summary = `核心能力：${keywords}。${originalSummary}`;
+            } else {
+                optimized.profile.summary = `${years > 3 ? '资深' : ''}${jdAnalysis.jobType} | ${years}年经验 | 精通${matchedSkills}等核心技术`;
+            }
         }
 
         // 量化经历
@@ -663,6 +772,25 @@ ${star.result}`
 
     _simulateProcessing(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    _parseOptimizedText(text, originalData) {
+        try {
+            const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/) ||
+                              text.match(/\{[\s\S]*"profile"[\s\S]*\}/);
+            if (jsonMatch) {
+                const jsonStr = jsonMatch[1] || jsonMatch[0];
+                return JSON.parse(jsonStr);
+            }
+        } catch (e) {
+            console.warn('[AIOptimizer] Failed to parse optimized text as JSON:', e.message);
+        }
+        const optimized = JSON.parse(JSON.stringify(originalData));
+        if (text.length > 50) {
+            optimized.profile = optimized.profile || {};
+            optimized.profile.summary = text.slice(0, 500).trim();
+        }
+        return optimized;
     }
 
     /**
@@ -1137,6 +1265,17 @@ ${star.result}`
         }
 
         try {
+            const currentData = window.store ? window.store.getState() : null;
+            if (!this._originalData && currentData) {
+                this._originalData = {
+                    profile: { ...currentData.profile },
+                    experience: [...currentData.experience],
+                    education: [...currentData.education],
+                    skills: [...currentData.skills],
+                    projects: [...(currentData.projects || [])]
+                };
+            }
+
             const optimized = this._lastOptimizedData;
 
             if (window.store) {
@@ -1187,6 +1326,10 @@ ${star.result}`
             }
 
             this._syncFormFromStore();
+
+            const versionOpt1 = document.getElementById('versionOpt1');
+            if (versionOpt1) versionOpt1.classList.remove('hidden');
+
             this.closePanel();
             showNotification('✅ 优化结果已应用到简历！', 'success');
         } catch (error) {
@@ -1218,13 +1361,22 @@ ${star.result}`
     }
 
     // 导出优化结果
-    exportOptimized() {
+    exportOptimized(format = 'json') {
         if (!this._lastOptimizedData) {
             showNotification('没有可导出的优化结果', 'error');
             return;
         }
 
         try {
+            if (format === 'pdf') {
+                if (window.generateResumePDF) {
+                    window.generateResumePDF(this._lastOptimizedData);
+                } else {
+                    showNotification('PDF 生成器未加载，请使用 JSON 导出', 'error');
+                }
+                return;
+            }
+
             const data = this._lastOptimizedData;
             const jsonStr = JSON.stringify(data, null, 2);
             const blob = new Blob([jsonStr], { type: 'application/json' });
@@ -1253,6 +1405,7 @@ ${star.result}`
         }
 
         if (this.useRemoteAI && !apiClient.isAuthenticated()) {
+            showNotification('JD分析需要登录，请先登录或注册', 'warning');
             const { authModal } = await import('../components/authModal.js');
             authModal.show();
             return;
@@ -1409,6 +1562,9 @@ ${star.result}`
         const analysis = this._analyzeResume(resumeData);
         const diagnosis = this._diagnoseResume(resumeData, null);
 
+        // 打开AI面板以显示诊断结果
+        this.openPanel();
+
         const container = document.getElementById('optimizationResult');
         if (!container) return;
 
@@ -1519,9 +1675,175 @@ ${star.result}`
         `;
 
         showNotification('📊 简历诊断完成！', 'success');
+}
+
+    switchMode(mode) {
+        this.currentMode = mode;
+        const generalPanel = document.getElementById('generalOptPanel');
+        const atsPanel = document.getElementById('atsOptPanel');
+        const modeGeneral = document.getElementById('modeGeneral');
+        const modeATS = document.getElementById('modeATS');
+
+        if (mode === 'ats') {
+            generalPanel.classList.add('hidden');
+            atsPanel.classList.remove('hidden');
+            modeGeneral.className = 'flex-1 px-3 py-2 text-sm rounded-md text-gray-400 hover:text-white hover:bg-gray-700 font-medium transition-all';
+            modeATS.className = 'flex-1 px-3 py-2 text-sm rounded-md bg-orange-600 text-white font-medium transition-all';
+            this.currentLevel = this.atsLevel;
+        } else {
+            generalPanel.classList.remove('hidden');
+            atsPanel.classList.add('hidden');
+            modeGeneral.className = 'flex-1 px-3 py-2 text-sm rounded-md bg-indigo-600 text-white font-medium transition-all';
+            modeATS.className = 'flex-1 px-3 py-2 text-sm rounded-md text-gray-400 hover:text-white hover:bg-gray-700 font-medium transition-all';
+        }
+        this._renderOptimizationLevels();
     }
 
+    selectATSLevel(level) {
+        this.atsLevel = level;
+        this.currentLevel = level;
+        this._renderOptimizationLevels();
+        showNotification(`已选择：${level === 'medium' ? '关键词对齐' : '终极ATS优化'}`, 'success');
     }
+
+    selectJob(jobTitle) {
+        this.selectedJob = jobTitle;
+        const jdTextarea = document.getElementById('jobDescription');
+        if (jdTextarea) {
+            jdTextarea.value = jobTitle + '岗位要求：\n\n任职要求：\n1. \n2. \n3. \n\n岗位职责：\n1. \n2. \n3. ';
+            jdTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+            jdTextarea.focus();
+        }
+
+        document.querySelectorAll('#quickJobTags button').forEach(btn => {
+            btn.classList.remove('bg-indigo-600/30', 'text-indigo-300');
+            btn.classList.add('bg-gray-700/50', 'text-gray-300');
+        });
+        event.currentTarget.classList.remove('bg-gray-700/50', 'text-gray-300');
+        event.currentTarget.classList.add('bg-indigo-600/30', 'text-indigo-300');
+
+        showNotification(`已选择：${jobTitle}`, 'success');
+    }
+
+    async aiWriteResume() {
+        const jobTitle = this.selectedJob || document.getElementById('jobDescription')?.value.trim();
+        if (!jobTitle) {
+            showNotification('请先选择目标职位或输入职位描述', 'error');
+            return;
+        }
+
+        if (this.useRemoteAI && !apiClient.isAuthenticated()) {
+            showNotification('AI代写需要登录，请先登录或注册', 'warning');
+            const { authModal } = await import('../components/authModal.js');
+            authModal.show();
+            return;
+        }
+
+        const btn = document.getElementById('aiWriteBtn');
+        const origHTML = btn?.innerHTML;
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>AI生成中...';
+            btn.disabled = true;
+        }
+
+        try {
+            const result = await apiClient.optimize('deep', `请为一位${jobTitle}生成一份完整的中文简历数据，包含个人信息、工作经历、教育背景和专业技能。`, jobTitle, {
+                onProgress: () => {},
+                onToken: () => {}
+            });
+
+            if (result?.optimizedData) {
+                if (window.store) {
+                    const currentData = window.store.getState();
+
+                    if (result.optimizedData.profile) {
+                        const merged = { ...currentData.profile, ...result.optimizedData.profile };
+                        if (!merged.name) merged.name = currentData.profile?.name || '请填写姓名';
+                        window.store.updatePath('profile', merged);
+                    }
+                    if (result.optimizedData.experience?.length > 0) {
+                        window.store.updatePath('experience', result.optimizedData.experience.map((exp, i) => ({
+                            id: Date.now() + i,
+                            ...exp
+                        })));
+                    }
+                    if (result.optimizedData.education?.length > 0) {
+                        window.store.updatePath('education', result.optimizedData.education.map((edu, i) => ({
+                            id: Date.now() + i + 100,
+                            ...edu
+                        })));
+                    }
+                    if (result.optimizedData.skills?.length > 0) {
+                        window.store.updatePath('skills', result.optimizedData.skills);
+                    }
+
+                    window.store.save();
+                    this._syncFormFromStore();
+                }
+
+                window.store?.save();
+                this._syncFormFromStore();
+                showNotification('✅ AI代写简历完成！', 'success');
+            } else {
+                showNotification('AI代写返回数据格式异常，请重试', 'error');
+            }
+        } catch (error) {
+            const msg = error.message || '未知错误';
+            showNotification(`AI代写失败: ${msg}`, 'error');
+        } finally {
+            if (btn) {
+                btn.innerHTML = origHTML || '<i class="fas fa-robot mr-1"></i>AI代写';
+                btn.disabled = false;
+            }
+        }
+    }
+
+    switchVersion(versionIndex) {
+        if (!window.store) return;
+
+        const versionOriginal = document.getElementById('versionOriginal');
+        const versionOpt1 = document.getElementById('versionOpt1');
+
+        if (versionIndex === -1) {
+            if (this._originalData) {
+                window.store.setState({
+                    ...window.store.getState(),
+                    profile: { ...this._originalData.profile },
+                    experience: [...this._originalData.experience],
+                    education: [...this._originalData.education],
+                    skills: [...this._originalData.skills],
+                    projects: [...(this._originalData.projects || [])]
+                });
+                window.store.save();
+                this._syncFormFromStore();
+            }
+
+            versionOriginal.className = 'px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white font-medium transition-all';
+            if (this._lastOptimizedData) {
+                versionOpt1.className = 'px-3 py-1.5 text-xs rounded-md text-gray-400 hover:text-white hover:bg-gray-700 font-medium transition-all';
+            }
+            showNotification('已切换到原始版本', 'info');
+        } else {
+            if (this._lastOptimizedData) {
+                window.store.setState({
+                    ...window.store.getState(),
+                    profile: { ...this._lastOptimizedData.profile },
+                    experience: [...this._lastOptimizedData.experience],
+                    education: [...this._lastOptimizedData.education],
+                    skills: [...this._lastOptimizedData.skills],
+                    projects: [...(this._lastOptimizedData.projects || [])]
+                });
+                window.store.save();
+                this._syncFormFromStore();
+            }
+
+            versionOriginal.className = 'px-3 py-1.5 text-xs rounded-md text-gray-400 hover:text-white hover:bg-gray-700 font-medium transition-all';
+            versionOpt1.className = 'px-3 py-1.5 text-xs rounded-md bg-green-600 text-white font-medium transition-all';
+            showNotification('已切换到优化版本', 'info');
+        }
+    }
+
+}
 
 // 创建全局实例
 const aiOptimizer = new AIOptimizer();

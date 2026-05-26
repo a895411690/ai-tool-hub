@@ -119,6 +119,8 @@ class ApiClient {
         let buffer = '';
         let finalResult = null;
         let currentEventType = '';
+        let streamedContent = '';
+        let collectedLevel = '';
 
         try {
             while (true) {
@@ -148,8 +150,10 @@ class ApiClient {
                             if (parsed.status && onProgress) {
                                 onProgress(parsed);
                             } else if (parsed.content && onToken) {
+                                streamedContent += parsed.content;
                                 onToken(parsed);
                             } else if (parsed.level || parsed.optimizedData || parsed.quotaRemaining !== undefined) {
+                                if (parsed.level) collectedLevel = parsed.level;
                                 finalResult = parsed;
                                 if (onDone) onDone(parsed);
                             }
@@ -160,6 +164,15 @@ class ApiClient {
                         currentEventType = '';
                     }
                 }
+            }
+
+            if (!finalResult) {
+                finalResult = {
+                    level: collectedLevel || '',
+                    optimizedData: null,
+                    optimizedText: streamedContent || '',
+                    message: 'AI optimization completed with unexpected response format'
+                };
             }
 
             // Process any remaining buffer

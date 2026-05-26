@@ -38,3 +38,11 @@ npm-debug.log*
 *.png
 .playwright-mcp/
 deploy-to-server.sh
+
+# Test files
+test-resume.pdf
+resume_parsed_*.json
+*.docx
+
+# Continuation
+.omo/

@@ -14,10 +14,10 @@ function renderCategories() {
     container.setAttribute('aria-label', '工具分类');
 
     const buttons = state.categories.map(cat =>
-        `<button class="category-btn px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="${escapeAttr(cat.id)}" onclick="filterCategory('${escapeAttr(cat.id)}')" aria-label="查看${escapeHtml(cat.name)}分类的工具" tabindex="0">${escapeHtml(cat.name)}</button>`
+        `<button class="category-btn px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="${escapeAttr(cat.id)}" data-action="filter-category" aria-label="查看${escapeHtml(cat.name)}分类的工具" tabindex="0">${escapeHtml(cat.name)}</button>`
     ).join('');
 
-    container.innerHTML = '<button class="category-btn active px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="all" onclick="filterCategory(\'all\')" aria-label="查看全部工具" tabindex="0">全部</button>' + buttons;
+    container.innerHTML = '<button class="category-btn active px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="all" data-action="filter-category" aria-label="查看全部工具" tabindex="0">全部</button>' + buttons;
 }
 
 /**
@@ -217,7 +217,7 @@ function createToolCard(tool) {
                     ${statusBadge}
                     ${difficultyLabel}
                 </div>
-                <button onclick="toggleFavorite(${tool.id}, event)" class="favorite-btn ${favorite ? 'active' : ''}" aria-label="${favorite ? '取消收藏' : '收藏'} ${escapeHtml(tool.name)}">
+                <button data-action="toggle-favorite" data-tool-id="${tool.id}" class="favorite-btn ${favorite ? 'active' : ''}" aria-label="${favorite ? '取消收藏' : '收藏'} ${escapeHtml(tool.name)}">
                     <i class="fas fa-star"></i>
                 </button>
             </div>
@@ -232,7 +232,7 @@ function createToolCard(tool) {
             </div>
             <div class="card-footer">
                 <span class="card-category">${escapeHtml(categoryName)}</span>
-                <button onclick="openTool(${tool.id}, '${escapeAttr(tool.url)}', event)" class="card-action-btn">
+                <button data-action="open-tool" data-tool-id="${tool.id}" data-tool-url="${escapeAttr(tool.url)}" class="card-action-btn">
                     <i class="fas fa-external-link-alt"></i> 使用
                 </button>
             </div>

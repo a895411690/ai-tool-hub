@@ -161,7 +161,7 @@ class ImportUtils {
                     throw new Error(`不支持的文件类型: ${fileData.fileType}`);
             }
 
-            // Step 2: Try LLM-based parsing first (more accurate)
+// Step 2: Try LLM-based parsing first (more accurate)
             let parsedData = null;
             if (rawText && rawText.trim().length > 10 && window.apiClient && window.apiClient.isAuthenticated()) {
                 try {
@@ -174,10 +174,53 @@ class ImportUtils {
                 }
             }
 
-            // Step 3: Fallback to local regex parsing
+            // Step 3: Fallback to local regex parsing, or enhance LLM result
             if (!parsedData) {
                 const cleanedText = this.cleanPDFText(rawText);
                 parsedData = this.parseTextContent(cleanedText || rawText);
+            } else {
+                // Even with LLM result, run local parsing to fill in any gaps
+                // LLM often misses fields or returns wrong defaults like "张三"
+                const cleanedText = this.cleanPDFText(rawText);
+                const localResult = this.parseTextContent(cleanedText || rawText);
+                
+                // Use local result to fill in missing LLM fields
+                if (parsedData.profile && localResult.profile) {
+                    if (!parsedData.profile.name || parsedData.profile.name === '张三' || parsedData.profile.name === '未识别') {
+                        parsedData.profile.name = localResult.profile.name;
+                    }
+                    if (!parsedData.profile.phone || parsedData.profile.phone === '13800138000') {
+                        parsedData.profile.phone = localResult.profile.phone;
+                    }
+                    if (!parsedData.profile.email || parsedData.profile.email === 'zhangsan@example.com') {
+                        parsedData.profile.email = localResult.profile.email;
+                    }
+                    if (!parsedData.profile.location || parsedData.profile.location === '北京市') {
+                        parsedData.profile.location = localResult.profile.location;
+                    }
+                    if (!parsedData.profile.title) {
+                        parsedData.profile.title = localResult.profile.title;
+                    }
+                }
+                
+                // If LLM returned fewer experiences than local, use local results
+                if (localResult.experience && localResult.experience.length > 0) {
+                    if (!parsedData.experience || parsedData.experience.length === 0) {
+                        parsedData.experience = localResult.experience;
+                    }
+                }
+                
+                // Always use local skills if available (more accurate from structured text)
+                if (localResult.skills && localResult.skills.length > parsedData.skills.length) {
+                    parsedData.skills = localResult.skills;
+                }
+                
+                // Use local education if LLM didn't provide any
+                if (localResult.education && localResult.education.length > 0) {
+                    if (!parsedData.education || parsedData.education.length === 0) {
+                        parsedData.education = localResult.education;
+                    }
+                }
             }
 
             // 标准化数据格式
@@ -262,7 +305,6 @@ class ImportUtils {
      */
     async extractTextFromPDF(arrayBuffer) {
         try {
-            // 使用统一的PDF.js初始化方法
             if (!this.initPDFJS()) {
                 throw new Error('PDF.js库未加载');
             }
@@ -274,16 +316,60 @@ class ImportUtils {
             for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
                 const page = await pdfDocument.getPage(pageNum);
                 const content = await page.getTextContent();
-                const pageText = content.items.map(item => item.str).join(' ');
+                const pageText = this._reconstructPDFFromItems(content.items);
                 text += pageText + '\n';
             }
 
+console.log('[Import] PDF提取完成，文本长度:', text.length);
             return text;
         } catch (error) {
             console.error('PDF解析失败:', error);
-            // 失败时返回空文本，让后续的文本解析逻辑处理
             return '';
         }
+    }
+
+    _reconstructPDFFromItems(items) {
+        if (!items || items.length === 0) return '';
+
+        const filtered = items.filter(item => item.str && item.str.trim().length > 0);
+        if (filtered.length === 0) return '';
+
+        filtered.sort((a, b) => {
+            const ay = Math.round(a.transform[5]);
+            const by = Math.round(b.transform[5]);
+            if (Math.abs(ay - by) > 3) return by - ay;
+            return a.transform[4] - b.transform[4];
+        });
+
+        const lines = [];
+        let currentLine = [];
+        let lastY = null;
+        const LINE_THRESHOLD = 5;
+
+        for (const item of filtered) {
+            const y = Math.round(item.transform[5]);
+            if (lastY === null || Math.abs(y - lastY) > LINE_THRESHOLD) {
+                if (currentLine.length > 0) {
+                    lines.push(currentLine.map(i => i.str).join(''));
+                }
+                currentLine = [item];
+            } else {
+                if (currentLine.length > 0) {
+                    const prevItem = currentLine[currentLine.length - 1];
+                    const gap = item.transform[4] - (prevItem.transform[4] + prevItem.width);
+                    if (gap > 8) {
+                        currentLine.push({ str: ' ', transform: item.transform, width: 0 });
+                    }
+                }
+                currentLine.push(item);
+            }
+            lastY = y;
+        }
+        if (currentLine.length > 0) {
+            lines.push(currentLine.map(i => i.str).join(''));
+        }
+
+        return lines.join('\n');
     }
 
     /**
@@ -435,7 +521,7 @@ async extractTextFromDOCX(content) {
         text = this.cleanTextPreserveNewlines(text);
         
         const lines = text.split('\n').filter(line => line.trim());
-        
+
         const result = {
             profile: {
                 name: '',
@@ -621,7 +707,10 @@ async extractTextFromDOCX(content) {
         // 7. 其他个人信息增强提取
         this.enhancePersonalInfoExtraction(fullText, result);
 
-        // 8. 最终验证和默认值补充
+        // 8. 工作经历去重和质量提升
+        this.deduplicateExperience(result);
+
+        // 9. 最终验证和默认值补充
         this.ensureRequiredFields(result);
     }
     
@@ -1029,6 +1118,16 @@ async extractTextFromDOCX(content) {
                 'MySQL', '团队协作', '项目管理', '问题解决', '沟通能力'
             ];
         }
+
+        result.skills = result.skills.filter(skill => {
+            if (typeof skill !== 'string') return false;
+            const s = skill.trim();
+            if (s.length < 2) return false;
+            if (/^[\u4e00-\u9fa5]$/.test(s)) return false;
+            const noiseWords = ['的', '了', '在', '是', '我', '有', '和', '就', '不', '人', '都', '一', '一个', '上', '也', '很', '到', '说', '要', '去', '你', '会', '着', '没有', '看', '好', '自己', '这'];
+            if (noiseWords.includes(s)) return false;
+            return true;
+        });
 
     }
     
@@ -1602,17 +1701,19 @@ async extractTextFromDOCX(content) {
      * 智能提取技能
      */
     smartExtractSkills(fullText, result) {
-        // 技能关键词
         const skillKeywords = [
             'React', 'Vue', 'TypeScript', 'JavaScript', 'HTML5', 'CSS3',
             'Node.js', 'Python', 'Java', 'Go', 'C++',
             'MySQL', 'Redis', 'MongoDB', 'PostgreSQL',
             'Git', 'Docker', 'Jenkins', 'Kubernetes',
             'Postman', 'Jmeter', 'Fiddler', 'Selenium',
-            'Linux', 'Shell', 'Bash', '运维', '测试', '开发'
+            'Linux', 'Shell', 'Bash',
+            '运维', '自动化测试', '性能测试', '功能测试', '回归测试',
+            '安全测试', '测试策略', '测试计划', '需求分析',
+            '项目管理', '团队协作', '团队管理', '风险管理',
+            '问题解决', '沟通能力', '技术领导'
         ];
         
-        // 使用 Set 去重
         const existingSkills = new Set(result.skills);
         skillKeywords.forEach(skill => {
             if (fullText.includes(skill) && !existingSkills.has(skill)) {
@@ -1620,12 +1721,20 @@ async extractTextFromDOCX(content) {
                 existingSkills.add(skill);
             }
         });
+
+        result.skills = result.skills.filter(skill => {
+            if (typeof skill !== 'string') return false;
+            const s = skill.trim();
+            return s.length >= 2 && !/^[a-zA-Z]$/.test(s);
+        });
     }
 
     /**
      * 智能提取个人信息（增强版）
      */
     smartExtractPersonalInfo(fullText, result) {
+        
+        const nonNameWords = ['个人', '简历', '信息', '经验', '教育', '技能', '项目', '总结', '评价', '工作', '专业', '求职', '职业', '背景', '经历'];
         
         // 姓名提取 - 增强版（支持多种常见格式）
         const namePatterns = [
@@ -1641,13 +1750,26 @@ async extractTextFromDOCX(content) {
         namePatterns.forEach(pattern => {
             const match = fullText.match(pattern);
             if (match && match[1]) {
-                // 如果已有姓名但属于低质量匹配（如"个人"），用高质量模式覆盖
-                const nonNameWords = ['个人', '简历', '信息', '经验', '教育', '技能', '项目', '总结', '评价', '工作', '专业', '求职', '职业', '背景', '经历'];
                 if (!result.profile.name || nonNameWords.includes(result.profile.name)) {
                     result.profile.name = match[1];
                 }
             }
         });
+        
+        if (!result.profile.name && lines.length > 0) {
+            const firstName = lines[0].trim();
+            if (/^[\u4e00-\u9fa5]{2,4}$/.test(firstName)) {
+                result.profile.name = firstName;
+            }
+        }
+        
+        // Extract title from "求职意向：xxx" pattern
+        if (!result.profile.title) {
+            const titleMatch = fullText.match(/求职意向[：:]\s*([^\n]+)/);
+            if (titleMatch) {
+                result.profile.title = titleMatch[1].trim();
+            }
+        }
         
         // 电话提取
         const phonePattern = /(1[3-9]\d{9})/;
@@ -1901,17 +2023,47 @@ async extractTextFromDOCX(content) {
      * 后备提取个人信息
      */
     fallbackExtractPersonalInfo(lines, result) {
-        // 如果还没有找到姓名，尝试从第一行提取
         if (!result.profile.name && lines.length > 0) {
-            const firstLine = lines[0].trim();
-            // 第一行可能是姓名（不包含特殊字符，长度2-4个中文字符）
             const nameRegex = /^[\u4e00-\u9fa5]{2,4}$/;
-            if (nameRegex.test(firstLine)) {
-                result.profile.name = firstLine;
+            for (let i = 0; i < Math.min(10, lines.length); i++) {
+                const line = lines[i].trim();
+                if (nameRegex.test(line)) {
+                    result.profile.name = line;
+                    break;
+                }
+                for (const part of line.split(/[\s|·，,、]+/)) {
+                    const trimmed = part.trim();
+                    if (nameRegex.test(trimmed)) {
+                        result.profile.name = trimmed;
+                        break;
+                    }
+                }
+                if (result.profile.name) break;
+            }
+
+            if (!result.profile.name) {
+                for (let i = 0; i < Math.min(20, lines.length); i++) {
+                    const line = lines[i].trim();
+                    const nameMatch = line.match(/^[\u4e00-\u9fa5]{2,4}(?:\s|[,，、|·]|$)/);
+                    if (nameMatch) {
+                        result.profile.name = nameMatch[0].replace(/[\s,，、|·]/g, '');
+                        break;
+                    }
+                }
+            }
+
+            if (!result.profile.name) {
+                for (let i = 0; i < Math.min(5, lines.length); i++) {
+                    const line = lines[i].trim();
+                    const nameAfterLabel = line.match(/(?:姓名|名字)[：:]\s*([\u4e00-\u9fa5]{2,4})/);
+                    if (nameAfterLabel) {
+                        result.profile.name = nameAfterLabel[1];
+                        break;
+                    }
+                }
             }
         }
         
-        // 尝试从所有行中提取电话和邮箱
         lines.forEach(line => {
             if (!result.profile.phone) {
                 const phoneMatch = line.match(/(1[3-9]\d{9})/);
@@ -1924,7 +2076,6 @@ async extractTextFromDOCX(content) {
             }
         });
         
-        // 如果还没有找到电话，尝试从简历内容中查找
         if (!result.profile.phone) {
             const fullText = lines.join(' ');
             const phoneMatch = fullText.match(/(1[3-9]\d{9})/);
@@ -2032,6 +2183,7 @@ async extractTextFromDOCX(content) {
                 break;
             case 'projects':
                 this.parseProjectsSection(lines, result);
+                this.parseExperienceSection(lines, result);
                 break;
             case 'summary':
                 this.parseSummarySection(lines, result);
@@ -2053,6 +2205,7 @@ async extractTextFromDOCX(content) {
      */
     parseExperienceSection(lines, result) {
         let currentExperience = null;
+        let prevLine = '';
         
         lines.forEach(line => {
             // 检测新工作经历开始
@@ -2067,7 +2220,7 @@ async extractTextFromDOCX(content) {
                     }
                     result.experience.push(currentExperience);
                 }
-                currentExperience = this.parseExperienceLine(line);
+                currentExperience = this.parseExperienceLine(line, prevLine);
             } else if (currentExperience) {
                 // 添加到描述中
                 if (currentExperience.description) {
@@ -2076,6 +2229,7 @@ async extractTextFromDOCX(content) {
                     currentExperience.description = line.trim();
                 }
             }
+            prevLine = line;
         });
         
         if (currentExperience) {
@@ -2156,7 +2310,20 @@ async extractTextFromDOCX(content) {
      * 解析个人总结分段
      */
     parseSummarySection(lines, result) {
-        const summary = lines.join(' ').trim();
+        const sectionTitles = ['自我评价', '个人总结', '个人简介', '自我介绍', '个人优势'];
+        const filteredLines = lines.filter(line => {
+            const trimmed = line.trim();
+            return trimmed.length > 0 && !sectionTitles.includes(trimmed);
+        });
+        const subTitles = ['工作背景', '团队管理', '团队合作', '工作荣誉', '核心优势',
+                           '专业技能', '自我驱动', '沟通能力', '学习能力'];
+        const summary = filteredLines.map(line => {
+            let cleaned = line;
+            for (const title of subTitles) {
+                cleaned = cleaned.replace(new RegExp(`^${title}[：:]\\s*`), '');
+            }
+            return cleaned;
+        }).join(' ').trim();
         if (summary) {
             result.profile.summary = summary;
         }
@@ -2196,7 +2363,10 @@ async extractTextFromDOCX(content) {
     /**
      * 解析工作经历行
      */
-    parseExperienceLine(line) {
+    parseExperienceLine(line, prevLine) {
+        if (prevLine && /^(测试|开发|高级|资深|初级|中级)$/i.test(prevLine.trim())) {
+            line = prevLine.trim() + line;
+        }
         return {
             company: this.extractCompany(line),
             position: this.extractPosition(line),
@@ -2419,6 +2589,55 @@ async extractTextFromDOCX(content) {
             success: missingFields.length === 0,
             missingFields
         };
+    }
+
+    deduplicateExperience(result) {
+        if (!result.experience || result.experience.length <= 1) return;
+
+        const projectKeywords = ['项目描述', '项目背景', '项目名称', '项目经验'];
+        const seen = new Map();
+
+        result.experience = result.experience.filter(exp => {
+            const desc = exp.description || '';
+            if (projectKeywords.some(kw => desc.includes(kw))) {
+                return false;
+            }
+
+            if (desc.length > 200 && (!exp.company || exp.company === '某公司') && (!exp.position || exp.position.length <= 2)) {
+                return false;
+            }
+
+            if (exp.position && /^[\u4e00-\u9fa5]{1}$/.test(exp.position)) {
+                return false;
+            }
+
+            if (exp.company && exp.company.length <= 1) {
+                return false;
+            }
+
+            const key = `${(exp.company || '').replace(/\s/g, '')}-${(exp.position || '').replace(/\s/g, '')}`;
+            if (seen.has(key)) {
+                const existing = seen.get(key);
+                if ((exp.description || '').length > (existing.description || '').length) {
+                    const idx = result.experience.indexOf(existing);
+                    if (idx > -1) result.experience.splice(idx, 1);
+                    seen.set(key, exp);
+                    return true;
+                }
+                return false;
+            }
+            seen.set(key, exp);
+            return true;
+        });
+
+        if (result.experience.length > 5) {
+            result.experience.sort((a, b) => {
+                const aHasCompany = a.company && a.company !== '某公司' && a.company.length > 2 ? 1 : 0;
+                const bHasCompany = b.company && b.company !== '某公司' && b.company.length > 2 ? 1 : 0;
+                return bHasCompany - aHasCompany;
+            });
+            result.experience = result.experience.slice(0, 5);
+        }
     }
 }
 

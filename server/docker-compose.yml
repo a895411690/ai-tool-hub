@@ -7,8 +7,8 @@ services:
       - "3000:3000"
     environment:
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
-      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
-      - CORS_ORIGIN=${CORS_ORIGIN:-*}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET must be set in .env}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
       - DAILY_QUOTA=${DAILY_QUOTA:-10}
       - PORT=3000
     volumes:

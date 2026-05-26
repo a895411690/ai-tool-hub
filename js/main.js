@@ -1,4 +1,3 @@
-// Import all modules
 import { loadTools } from './app.js';
 import { renderCategories, renderHotTools, renderTools, filterCategory, loadSavedFilters, setSearch, clearSearch, setupSearch, sortTools, setCurrentSort, applyFiltersAndSort, toggleAdvancedFilters, toggleAdvancedFilter, clearAllFilters } from './ui.js';
 import { openTool, toggleFavorite, showToolDetail, closeToolDetail, rateTool } from './tool.js';
@@ -6,30 +5,10 @@ import { showShareModal, closeShareModal, shareToWeChat, shareToQQ, copyShareLin
 import { setupKeyboardShortcuts, setupPullToRefresh, toggleTheme, showToast, loadAnnouncement, closeAnnouncement, checkForUpdate, closeUpdateModal, registerServiceWorker, showThemeModal, closeThemeModal, setTheme, loadSavedTheme } from './utils.js';
 import state, { exportUserData, importUserData } from './state.js';
 
-// ============================================
-// GLOBAL EVENT DELEGATION (v5.1.1 Bug Fix!)
-// Solves ES Module race condition: onclick handlers fire before window bindings
-// ============================================
-document.addEventListener('click', function globalClickHandler(e) {
-    const path = e.composedPath ? e.composedPath() : [e.target];
-    for (let i = 0; i < path.length; i++) {
-        const el = path[i];
-        if (!el || !el.getAttribute) continue;
-        const toolId = el.dataset?.toolId;
-        if (toolId) {
-            const isBtn = !!e.target.closest('button,.favorite-btn,a,.card-actions button');
-            if (!isBtn) {
-                try { showToolDetail(parseInt(toolId, 10)); } catch (err) { console.error(err); }
-            }
-            return;
-        }
-    }
-});
-
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
-    document.querySelector('.bottom-nav button[onclick="scrollToTop()"]')?.classList.add('active');
+    document.querySelector('.bottom-nav button[data-action="scroll-to-top"]')?.classList.add('active');
     showToast('已返回首页');
 }
 
@@ -38,7 +17,7 @@ function showAllTools() {
     clearSearch();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
-    document.querySelector('.bottom-nav button[onclick="showAllTools()"]')?.classList.add('active');
+    document.querySelector('.bottom-nav button[data-action="show-all-tools"]')?.classList.add('active');
     showToast('显示所有工具');
 }
 
@@ -62,29 +41,6 @@ function changeSort(sortBy) {
     showToast(`排序方式：${sortLabels[sortBy] || sortBy}`);
 }
 
-window.loadTools = loadTools;
-window.filterCategory = filterCategory;
-window.setSearch = setSearch;
-window.clearSearch = clearSearch;
-window.openTool = openTool;
-window.toggleFavorite = toggleFavorite;
-window.showToolDetail = showToolDetail;
-window.closeToolDetail = closeToolDetail;
-window.rateTool = rateTool;
-window.showShareModal = showShareModal;
-window.closeShareModal = closeShareModal;
-window.toggleTheme = toggleTheme;
-window.closeAnnouncement = closeAnnouncement;
-window.closeUpdateModal = closeUpdateModal;
-window.setTheme = setTheme;
-window.scrollToTop = scrollToTop;
-window.showAllTools = showAllTools;
-window.changeSort = changeSort;
-window.toggleAdvancedFilters = toggleAdvancedFilters;
-window.toggleAdvancedFilter = toggleAdvancedFilter;
-window.clearAllFilters = clearAllFilters;
-
-// Data Management Functions (v4.4.0)
 function exportFavorites() {
     const data = exportUserData();
     const blob = new Blob([data], { type: 'application/json' });
@@ -103,16 +59,13 @@ function importFavorites() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = async (event) => {
             const result = importUserData(event.target.result);
             showToast(result.message);
-
-            // Re-render to show imported data
             const { renderTools } = await import('./ui.js');
             renderTools(state.tools);
         };
@@ -121,24 +74,78 @@ function importFavorites() {
     input.click();
 }
 
-window.exportFavorites = exportFavorites;
-window.importFavorites = importFavorites;
+const actionHandlers = {
+    'open-tool': (e, el) => {
+        openTool(parseInt(el.dataset.toolId), el.dataset.toolUrl, e);
+    },
+    'toggle-favorite': (e, el) => {
+        toggleFavorite(parseInt(el.dataset.toolId), e);
+    },
+    'filter-category': (e, el) => {
+        filterCategory(el.dataset.category || 'all');
+    },
+    'change-sort': (e, el) => {
+        changeSort(el.dataset.sort);
+    },
+    'set-theme': (e, el) => {
+        setTheme(el.dataset.themeValue);
+    },
+    'rate-tool': (e, el) => {
+        rateTool(parseInt(el.dataset.rating));
+    },
+    'close-announcement': () => closeAnnouncement(),
+    'show-share-modal': () => showShareModal(),
+    'toggle-theme': () => toggleTheme(),
+    'scroll-to-top': () => scrollToTop(),
+    'show-all-tools': () => showAllTools(),
+    'close-tool-detail': () => closeToolDetail(),
+    'close-share-modal': (e) => closeShareModal(e),
+    'close-update-modal': () => closeUpdateModal(),
+    'close-theme-modal': (e) => closeThemeModal(e),
+    'clear-all-filters': () => clearAllFilters(),
+    'toggle-advanced-filters': () => toggleAdvancedFilters(),
+    'export-favorites': () => exportFavorites(),
+    'import-favorites': () => importFavorites(),
+    'share-to-wechat': () => shareToWeChat(),
+    'share-to-qq': () => shareToQQ(),
+    'copy-share-link': () => copyShareLink(),
+    'generate-share-image': () => generateShareImage(),
+};
 
-// Back to Top Button Visibility
+document.addEventListener('click', function globalClickHandler(e) {
+    const path = e.composedPath ? e.composedPath() : [e.target];
+    for (const el of path) {
+        if (!el?.getAttribute) continue;
+        const action = el.dataset?.action;
+        if (action && actionHandlers[action]) {
+            actionHandlers[action](e, el);
+            return;
+        }
+        const toolId = el.dataset?.toolId;
+        if (toolId && !e.target.closest('button,[data-action]')) {
+            showToolDetail(parseInt(toolId));
+            return;
+        }
+    }
+});
+
 function setupBackToTopButton() {
     const btn = document.getElementById('backToTopBtn');
     if (!btn) return;
-
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 400) {
-            btn.classList.add('visible');
-        } else {
-            btn.classList.remove('visible');
-        }
+        if (window.scrollY > 400) btn.classList.add('visible');
+        else btn.classList.remove('visible');
     }, { passive: true });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('error', (event) => {
+        console.error('Global error:', event.error);
+        showToast('出现错误，请刷新页面重试');
+    });
+    window.addEventListener('unhandledrejection', (event) => {
+        console.error('Unhandled promise rejection:', event.reason);
+    });
     loadSavedTheme();
     loadTools();
     setupSearch();
