@@ -31,9 +31,9 @@ NC='\033[0m'
 
 # 配置变量（请修改为你的实际配置）
 SERVER_USER="root"           # 服务器用户名
-SERVER_IP="your-server-ip"    # 服务器公网IP
+SERVER_IP="101.43.35.235"    # 服务器公网IP
 SERVER_PATH="/var/www/ai-tool-hub"  # 服务器项目路径
-DOMAIN_NAME="your-domain.com" # 你的域名
+DOMAIN_NAME="weihub.cloud" # 你的域名
 
 # 显示帮助信息
 show_help() {
