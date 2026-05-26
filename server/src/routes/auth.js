@@ -25,6 +25,10 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ error: `密码至少${PASSWORD_MIN}位` });
         }
 
+        if (!PASSWORD_STRENGTH_REGEX.test(password)) {
+            return res.status(400).json({ error: '密码必须包含至少一个字母和一个数字' });
+        }
+
         const result = await quotaService.register(email, password);
         if (result.error) {
             return res.status(409).json({ error: result.error });

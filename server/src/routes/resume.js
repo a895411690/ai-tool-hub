@@ -17,6 +17,14 @@ router.post('/optimize', authMiddleware, async (req, res) => {
         return res.status(400).json({ error: '无效的优化级别，可选: light, medium, deep' });
     }
 
+    if (resumeText.length > 50000) {
+        return res.status(400).json({ error: '简历文本过长，最多支持50000个字符' });
+    }
+
+    if (jobDescription && jobDescription.length > 10000) {
+        return res.status(400).json({ error: '职位描述过长，最多支持10000个字符' });
+    }
+
     if (level !== 'light' && !jobDescription) {
         return res.status(400).json({ error: '中度和深度优化需要提供目标职位描述（JD）' });
     }

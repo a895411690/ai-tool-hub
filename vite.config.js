@@ -1,6 +1,9 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
 import { copyFileSync, cpSync } from 'fs'
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+const pkg = require('./package.json')
 
 // Plugin to copy tools directory and tools.json to dist
 function copyToolsPlugin() {
@@ -51,6 +54,9 @@ export default defineConfig({
   },
   css: {
     devSourcemap: true
+  },
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version)
   },
   plugins: [copyToolsPlugin()]
 })

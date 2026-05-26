@@ -1,9 +1,11 @@
 import express from 'express';
 import cors from 'cors';
-import config from './config.js';
+import config, { validateConfig } from './config.js';
 import authRoutes from './routes/auth.js';
 import resumeRoutes from './routes/resume.js';
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
+
+validateConfig();
 
 const app = express();
 
@@ -26,15 +28,34 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
     console.error('[Server] Unhandled error:', err);
     if (res.headersSent) return;
-    res.status(500).json({ error: '服务器内部错误' });
+    res.status(err.status || 500).json({ error: '服务器内部错误' });
 });
 
-app.listen(config.PORT, () => {
+const server = app.listen(config.PORT, () => {
     console.log(`[Server] AI Tool Hub API running on port ${config.PORT}`);
     console.log(`[Server] DeepSeek API: ${config.DEEPSEEK_API_KEY ? 'configured' : 'NOT configured'}`);
     console.log(`[Server] Daily quota per user: ${config.DAILY_QUOTA}`);
     console.log(`[Server] CORS origin: ${config.CORS_ORIGIN}`);
+});
+
+function gracefulShutdown(signal) {
+    console.log(`[Server] Received ${signal}. Shutting down gracefully...`);
+    server.close(() => {
+        console.log('[Server] HTTP server closed.');
+        process.exit(0);
+    });
+    setTimeout(() => {
+        console.error('[Server] Forced shutdown after timeout.');
+        process.exit(1);
+    }, 10000);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+process.on('unhandledRejection', (reason) => {
+    console.error('[Server] Unhandled Promise Rejection:', reason);
 });

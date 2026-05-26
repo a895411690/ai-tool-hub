@@ -15,9 +15,40 @@ function safeJsonParse(key, defaultValue) {
         return raw ? JSON.parse(raw) : defaultValue;
     } catch (e) {
         console.warn(`解析 localStorage key "${key}" 失败:`, e);
+        localStorage.removeItem(key);
         return defaultValue;
     }
 }
+
+const STATE_VERSION = 2;
+const STATE_VERSION_KEY = 'ai-tool-hub-state-version';
+
+function migrateState() {
+    const storedVersion = parseInt(localStorage.getItem(STATE_VERSION_KEY)) || 0;
+    if (storedVersion < STATE_VERSION) {
+        if (storedVersion < 1) {
+            const oldFavorites = safeJsonParse('ai-tool-hub-favorites', []);
+            if (!Array.isArray(oldFavorites)) {
+                localStorage.setItem('ai-tool-hub-favorites', '[]');
+            }
+            const oldRatings = safeJsonParse('ai-tool-hub-ratings', {});
+            if (typeof oldRatings !== 'object' || Array.isArray(oldRatings)) {
+                localStorage.setItem('ai-tool-hub-ratings', '{}');
+            }
+        }
+        if (storedVersion < 2) {
+            const oldStats = safeJsonParse('ai-tool-hub-click-stats', {});
+            const cleaned = {};
+            for (const [k, v] of Object.entries(oldStats)) {
+                if (typeof v === 'number' && v >= 0) cleaned[k] = v;
+            }
+            localStorage.setItem('ai-tool-hub-click-stats', JSON.stringify(cleaned));
+        }
+        localStorage.setItem(STATE_VERSION_KEY, String(STATE_VERSION));
+    }
+}
+
+migrateState();
 
 // Private timeout references (not part of state data)
 let _clickSaveTimeout = null;
