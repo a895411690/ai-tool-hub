@@ -1,13 +1,14 @@
 import { Router } from 'express';
-import jwt from 'jsonwebtoken';
 import { generateToken, authMiddleware } from '../middleware/auth.js';
 import { quotaService } from '../services/quota.js';
 import config from '../config.js';
+import logger from '../utils/logger.js';
 
 const router = Router();
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PASSWORD_MIN = 6;
+const PASSWORD_MIN = 8;
+const PASSWORD_STRENGTH_REGEX = /^(?=.*[A-Za-z])(?=.*\d)/;
 
 router.post('/register', async (req, res) => {
     try {
@@ -38,13 +39,14 @@ router.post('/register', async (req, res) => {
         const token = generateToken({ id: user.id, email: user.email });
         const quota = quotaService.checkQuota(user.id);
 
+        logger.info(`User registered: ${email}`);
         res.status(201).json({
             token,
             user,
             quota
         });
     } catch (error) {
-        console.error('[Auth] Register error:', error);
+        logger.error('Register error:', error);
         res.status(500).json({ error: '注册失败，请稍后重试' });
     }
 });
@@ -59,19 +61,21 @@ router.post('/login', async (req, res) => {
 
         const user = await quotaService.verifyPassword(email, password);
         if (!user) {
+            logger.warn(`Failed login attempt for: ${email}`);
             return res.status(401).json({ error: '邮箱或密码不正确' });
         }
 
         const token = generateToken({ id: user.id, email: user.email });
         const quota = quotaService.checkQuota(user.id);
 
+        logger.info(`User logged in: ${email}`);
         res.json({
             token,
             user: { id: user.id, email: user.email },
             quota
         });
     } catch (error) {
-        console.error('[Auth] Login error:', error);
+        logger.error('Login error:', error);
         res.status(500).json({ error: '登录失败，请稍后重试' });
     }
 });
@@ -89,7 +93,7 @@ router.get('/me', authMiddleware, (req, res) => {
             quota
         });
     } catch (error) {
-        console.error('[Auth] Me error:', error);
+        logger.error('Get user info error:', error);
         res.status(500).json({ error: '获取用户信息失败' });
     }
 });

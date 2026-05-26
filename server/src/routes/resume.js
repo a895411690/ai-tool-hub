@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import { LLMService } from '../services/llm.js';
 import { quotaService } from '../services/quota.js';
+import logger from '../utils/logger.js';
 
 const router = Router();
 const llmService = new LLMService();
@@ -37,6 +38,7 @@ router.post('/optimize', authMiddleware, async (req, res) => {
         });
     }
 
+    logger.info(`Resume optimize started: user=${req.user.id}, level=${level}`);
     res.writeHead(200, {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
@@ -52,6 +54,7 @@ router.post('/optimize', authMiddleware, async (req, res) => {
     let timeoutHandle = setTimeout(() => {
         if (!res.writableEnded && !res.destroyed) {
             sendSSE('error', { message: '连接超时，SSE流已超过60秒限制，请稍后重试' });
+            logger.warn(`SSE timeout: user=${req.user.id}, duration=${Date.now() - connectionStart}ms`);
             res.end();
         }
     }, SSE_TIMEOUT);
@@ -80,10 +83,11 @@ router.post('/optimize', authMiddleware, async (req, res) => {
                     ...event.data,
                     quotaRemaining: newQuota.remaining
                 });
+                logger.info(`Resume optimize completed: user=${req.user.id}, level=${level}, duration=${Date.now() - connectionStart}ms`);
             }
         }
     } catch (error) {
-        console.error('[Resume] Optimize error:', error);
+        logger.error(`Resume optimize error: user=${req.user.id}`, error);
         sendSSE('error', { message: error.message || 'AI优化服务暂时不可用，请稍后重试' });
     }
 
@@ -112,10 +116,10 @@ router.post('/parse', authMiddleware, async (req, res) => {
     try {
         const result = await llmService.parseResumeText(text);
         quotaService.incrementUsage(req.user.id);
+        logger.info(`Resume parsed: user=${req.user.id}, textLength=${text.length}`);
         res.json(result);
     } catch (error) {
-        console.error('[Resume] Parse error:', error);
-        // If API key missing or balance insufficient, return specific error
+        logger.error(`Resume parse error: user=${req.user.id}`, error);
         if (error.message && (error.message.includes('not configured') || error.message.includes('Insufficient'))) {
             return res.status(503).json({ error: error.message, fallback: true });
         }
@@ -141,9 +145,10 @@ router.post('/analyze-jd', authMiddleware, async (req, res) => {
     try {
         const result = await llmService.analyzeJD(jdText);
         quotaService.incrementUsage(req.user.id);
+        logger.info(`JD analyzed: user=${req.user.id}, jdLength=${jdText.length}`);
         res.json(result);
     } catch (error) {
-        console.error('[Resume] JD analysis error:', error);
+        logger.error(`JD analyze error: user=${req.user.id}`, error);
         res.status(500).json({ error: 'JD分析失败，请稍后重试' });
     }
 });

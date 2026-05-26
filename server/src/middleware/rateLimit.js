@@ -1,4 +1,5 @@
 import config from '../config.js';
+import logger from '../utils/logger.js';
 
 const requestsPerMinute = new Map();
 
@@ -17,6 +18,7 @@ export function rateLimitMiddleware(req, res, next) {
     requestsPerMinute.set(ip, recentRequests);
 
     if (recentRequests.length >= maxRequests) {
+        logger.warn(`Rate limit exceeded: ip=${ip}, requests=${recentRequests.length}`);
         return res.status(429).json({ error: '请求过于频繁，请稍后再试' });
     }
 
@@ -26,13 +28,18 @@ export function rateLimitMiddleware(req, res, next) {
 
 setInterval(() => {
     const now = Date.now();
+    let cleanedCount = 0;
     for (const [ip, requests] of requestsPerMinute) {
         const recent = requests.filter(t => now - t < 60 * 1000);
         if (recent.length === 0) {
             requestsPerMinute.delete(ip);
+            cleanedCount++;
         } else {
             requestsPerMinute.set(ip, recent);
         }
+    }
+    if (cleanedCount > 0) {
+        logger.debug(`Rate limit cleanup: removed ${cleanedCount} IPs`);
     }
 }, 60 * 1000);
 

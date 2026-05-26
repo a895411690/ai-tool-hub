@@ -1,17 +1,41 @@
 import express from 'express';
 import cors from 'cors';
+import morgan from 'morgan';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import config, { validateConfig } from './config.js';
 import authRoutes from './routes/auth.js';
 import resumeRoutes from './routes/resume.js';
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
+import logger from './utils/logger.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const logsDir = path.join(__dirname, '../logs');
+if (!fs.existsSync(logsDir)) {
+  fs.mkdirSync(logsDir, { recursive: true });
+}
 
 validateConfig();
 
 const app = express();
 
+const morganFormat = process.env.NODE_ENV === 'production' 
+  ? ':method :url :status :res[content-length] - :response-time ms'
+  : 'dev';
+
+app.use(morgan(morganFormat, {
+  stream: {
+    write: (message) => logger.http(message.trim())
+  },
+  skip: (req) => req.url === '/api/health'
+}));
+
 app.use(cors({
-    origin: config.CORS_ORIGIN,
-    credentials: true
+  origin: config.CORS_ORIGIN,
+  credentials: true
 }));
 app.use(express.json({ limit: '100kb' }));
 app.use(rateLimitMiddleware);
@@ -20,42 +44,49 @@ app.use('/api/auth', authRoutes);
 app.use('/api/resume', resumeRoutes);
 
 app.get('/api/health', (req, res) => {
-    res.json({
-        status: 'ok',
-        version: '1.0.0',
-        deepseek: !!config.DEEPSEEK_API_KEY,
-        timestamp: new Date().toISOString()
-    });
+  res.json({
+    status: 'ok',
+    version: '1.0.0',
+    deepseek: !!config.DEEPSEEK_API_KEY,
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.use((err, req, res, _next) => {
-    console.error('[Server] Unhandled error:', err);
-    if (res.headersSent) return;
-    res.status(err.status || 500).json({ error: '服务器内部错误' });
+  logger.error('Unhandled error:', err);
+  if (res.headersSent) return;
+  res.status(err.status || 500).json({ error: '服务器内部错误' });
 });
 
 const server = app.listen(config.PORT, () => {
-    console.log(`[Server] AI Tool Hub API running on port ${config.PORT}`);
-    console.log(`[Server] DeepSeek API: ${config.DEEPSEEK_API_KEY ? 'configured' : 'NOT configured'}`);
-    console.log(`[Server] Daily quota per user: ${config.DAILY_QUOTA}`);
-    console.log(`[Server] CORS origin: ${config.CORS_ORIGIN}`);
+  logger.info(`AI Tool Hub API running on port ${config.PORT}`);
+  logger.info(`DeepSeek API: ${config.DEEPSEEK_API_KEY ? 'configured' : 'NOT configured'}`);
+  logger.info(`Daily quota per user: ${config.DAILY_QUOTA}`);
+  logger.info(`CORS origin: ${config.CORS_ORIGIN}`);
 });
 
 function gracefulShutdown(signal) {
-    console.log(`[Server] Received ${signal}. Shutting down gracefully...`);
-    server.close(() => {
-        console.log('[Server] HTTP server closed.');
-        process.exit(0);
-    });
-    setTimeout(() => {
-        console.error('[Server] Forced shutdown after timeout.');
-        process.exit(1);
-    }, 10000);
+  logger.info(`Received ${signal}. Shutting down gracefully...`);
+  server.close(() => {
+    logger.info('HTTP server closed.');
+    process.exit(0);
+  });
+  setTimeout(() => {
+    logger.error('Forced shutdown after timeout.');
+    process.exit(1);
+  }, 10000);
 }
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 process.on('unhandledRejection', (reason) => {
-    console.error('[Server] Unhandled Promise Rejection:', reason);
+  logger.error('Unhandled Promise Rejection:', reason);
 });
+
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+export default app;
