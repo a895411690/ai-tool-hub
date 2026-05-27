@@ -19,6 +19,10 @@
 #   full        完整流程（build + upload + deploy）
 # ============================================================
 
+# 切换到项目根目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/../.." || exit 1
+
 set -e
 
 # 颜色定义
