@@ -90,10 +90,10 @@
                                 </div>
                             </div>
                             <div id="versionTabs" class="flex gap-1 bg-gray-800 rounded-lg p-1">
-                                <button onclick="window.aiOptimizer.switchVersion(-1)" id="versionOriginal" class="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white font-medium transition-all">
+                                <button onclick="window.aiOptimizer.switchVersion(-1)" id="versionOriginal" class="px-3 py-1.5 text-xs rounded-md bg-indigo-600 text-white font-medium transition-all" title="回退到未经 AI 优化的原始简历内容">
                                     原始版本
                                 </button>
-                                <button onclick="window.aiOptimizer.switchVersion(0)" id="versionOpt1" class="px-3 py-1.5 text-xs rounded-md text-gray-400 hover:text-white hover:bg-gray-700 font-medium transition-all hidden">
+                                <button onclick="window.aiOptimizer.switchVersion(0)" id="versionOpt1" class="px-3 py-1.5 text-xs rounded-md text-gray-400 hover:text-white hover:bg-gray-700 font-medium transition-all hidden" title="切换到 AI 优化后的版本">
                                     优化后
                                 </button>
                             </div>
@@ -150,7 +150,7 @@
                                 <i class="fas fa-stethoscope mr-2"></i>
                                 免费简历诊断
                             </button>
-                            <button onclick="pdfGenerator.download()" id="downloadPdfBtn" class="px-4 py-2 bg-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
+                            <button data-action="exportPdf" id="downloadPdfBtn" class="px-4 py-2 bg-indigo-600 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
                                 <i class="fas fa-download mr-2"></i>
                                 导出 PDF
                             </button>
@@ -166,7 +166,7 @@
 
     <!-- AI Optimizer Panel -->
     <div id="aiPanel" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" onclick="aiOptimizer.closePanel()"></div>
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" data-action="closeAiPanel"></div>
         <div class="absolute right-0 top-0 h-full w-full max-w-md bg-gray-900 border-l border-gray-800 shadow-2xl transform translate-x-full transition-transform duration-300" id="aiPanelContent">
             <div class="p-6 h-full flex flex-col">
                 <div class="flex items-center justify-between mb-6">
@@ -174,7 +174,7 @@
                         <i class="fas fa-robot text-purple-400"></i>
                         AI 简历优化
                     </h3>
-                    <button onclick="aiOptimizer.closePanel()" class="text-gray-400 hover:text-white">
+                    <button data-action="closeAiPanel" class="text-gray-400 hover:text-white">
                         <i class="fas fa-times text-xl"></i>
                     </button>
                 </div>

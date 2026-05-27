@@ -152,5 +152,12 @@ class PDFGenerator {
 // 创建全局实例
 const pdfGenerator = new PDFGenerator();
 
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action="exportPdf"]');
+    if (btn) {
+        pdfGenerator.generate();
+    }
+});
+
 export { PDFGenerator, pdfGenerator };
 window.pdfGenerator = pdfGenerator;
