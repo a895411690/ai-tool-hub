@@ -186,20 +186,15 @@ class ImportUtils {
                 
                 // Use local result to fill in missing LLM fields
                 if (parsedData.profile && localResult.profile) {
-                    if (!parsedData.profile.name || parsedData.profile.name === '张三' || parsedData.profile.name === '未识别') {
-                        parsedData.profile.name = localResult.profile.name;
-                    }
-                    if (!parsedData.profile.phone || parsedData.profile.phone === '13800138000') {
-                        parsedData.profile.phone = localResult.profile.phone;
-                    }
-                    if (!parsedData.profile.email || parsedData.profile.email === 'zhangsan@example.com') {
-                        parsedData.profile.email = localResult.profile.email;
-                    }
-                    if (!parsedData.profile.location || parsedData.profile.location === '北京市') {
-                        parsedData.profile.location = localResult.profile.location;
-                    }
-                    if (!parsedData.profile.title) {
-                        parsedData.profile.title = localResult.profile.title;
+                    const fields = ['name', 'phone', 'email', 'location', 'title'];
+                    for (const field of fields) {
+                        const llmVal = parsedData.profile[field];
+                        const localVal = localResult.profile[field];
+                        const wasPlaceholder = this.isPlaceholderValue(field, llmVal);
+                        if (wasPlaceholder) {
+                            parsedData.profile[field] = localVal || '';
+                        }
+                        console.log('[ParseLog]', field, '| LLM:', llmVal, '| Local:', localVal, '| Final:', parsedData.profile[field], '| Placeholder:', wasPlaceholder);
                     }
                 }
                 
@@ -924,6 +919,12 @@ async extractTextFromDOCX(content) {
         
         // 移除特殊字符
         text = text.replace(/[\u200b-\u200f\u202a-\u202e]/g, '');
+        
+        // 修复被拆分的电话号码（如 133 1166 7685 -> 13311667685）
+        text = text.replace(/(1[3-9])(\d[\s\-]*){9}/g, (match) => match.replace(/[\s\-]/g, ''));
+        
+        // 修复被拆分的邮箱（如 895411690 @qq.com -> 895411690@qq.com）
+        text = text.replace(/\s+(@)/g, '$1').replace(/(@)\s+/g, '$1');
         
         // 保留换行，但清理多余的空白行
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
@@ -1747,13 +1748,14 @@ async extractTextFromDOCX(content) {
         
         // 姓名提取 - 增强版（支持多种常见格式）
         const namePatterns = [
-            /姓名[：:]\s*([\u4e00-\u9fa5]{2,4})/,           // 格式1: "姓名：张三"
-            /Name[：:]\s*([\u4e00-\u9fa5]{2,4})/,             // 格式2: "name: Zhang"
-            /个人简历[-—–]\s*([\u4e00-\u9fa5]{2,4})/,        // 格式3: "个人简历-张三"
-            /^([\u4e00-\u9fa5]{2,4})的简历/,                 // 格式4: "张三的简历"
-            /^([\u4e00-\u9fa5]{2,4})个人简历/,                // 格式5: "张三个人简历"
-            /([\u4e00-\u9fa5]{2,4})\s*[男|女]/,              // 格式6: "张三 男"
-            /^([\u4e00-\u9fa5]{2,4})$/                       // 格式7: 独立名字（首行）
+            /姓名[：:]\s*([\u4e00-\u9fa5]{2,4})/,
+            /Name[：:]\s*([\u4e00-\u9fa5]{2,4})/,
+            /个人简历[-—–]\s*([\u4e00-\u9fa5]{2,4})/,
+            /^([\u4e00-\u9fa5]{2,4})的简历/,
+            /^([\u4e00-\u9fa5]{2,4})个人简历/,
+            /([\u4e00-\u9fa5]{2,4})\s*[男|女]/,
+            /^\d{1,3}[\.\s\-\)]+\s*([\u4e00-\u9fa5]{2,4})/m,
+            /^([\u4e00-\u9fa5]{2,4})$/
         ];
         
         namePatterns.forEach(pattern => {
@@ -1781,15 +1783,16 @@ async extractTextFromDOCX(content) {
         }
         
         // 电话提取
-        const phonePattern = /(1[3-9]\d{9})/;
+        const phonePattern = /(1[3-9][\d\s\-]{9,13})/;
         const phoneMatch = fullText.match(phonePattern);
         if (phoneMatch && !result.profile.phone) {
-            result.profile.phone = phoneMatch[1];
+            result.profile.phone = phoneMatch[1].replace(/[\s\-]/g, '');
         }
         
         // 邮箱提取
+        const preprocessedText = fullText.replace(/\s+(@)/g, '$1').replace(/(@)\s+/g, '$1');
         const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-        const emailMatch = fullText.match(emailPattern);
+        const emailMatch = preprocessedText.match(emailPattern);
         if (emailMatch && !result.profile.email) {
             result.profile.email = emailMatch[0];
         }
@@ -1797,11 +1800,14 @@ async extractTextFromDOCX(content) {
         // 位置信息提取
         if (!result.profile.location) {
             const locationPatterns = [
+                /现居[：:]\s*([^\n]+)/,
+                /居住地[：:]\s*([^\n]+)/,
                 /住址[：:]\s*([^\n]+)/,
                 /地址[：:]\s*([^\n]+)/,
                 /所在地[：:]\s*([^\n]+)/,
+                /户籍[：:]\s*([^\n]+)/,
                 /location[：:]\s*([^\n]+)/i,
-                /(北京|上海|广州|深圳|杭州|南京|成都|武汉|西安|重庆|天津|苏州|青岛|长沙|大连|厦门|宁波|无锡|合肥|郑州|济南|福州|昆明|南昌|哈尔滨|石家庄|温州|南宁|贵阳|海口|兰州|银川|西宁|呼和浩特|乌鲁木齐|拉萨)/
+                /(北京|上海|广州|深圳|杭州|南京|成都|武汉|西安|重庆|天津|苏州|青岛|长沙|大连|厦门|宁波|无锡|合肥|郑州|济南|福州|昆明|南昌|哈尔滨|石家庄|温州|南宁|贵阳|海口|兰州|银川|西宁|呼和浩特|乌鲁木齐|拉萨|东莞|佛山|珠海|惠州|中山|常州|徐州|烟台|潍坊|保定|唐山|洛阳|绍兴|嘉兴|漳州|泉州|三亚|桂林|柳州|株洲|湘潭|宜昌|襄阳|芜湖|蚌埠|淮南|马鞍山|安庆|金华|台州|舟山|衡阳|邵阳|岳阳|益阳|常德|遵义|绵阳|德阳|宜宾|曲靖|大理|咸阳|宝鸡|渭南|天水|包头|赤峰|吉林|齐齐哈尔|大庆|鞍山|抚顺|丹东|锦州|葫芦岛|连云港|淮安|盐城|扬州|镇江|泰州|宿迁|衢州|丽水|马鞍山|铜陵|池州|黄山|滁州|阜阳|宿州|六安|亳州|景德镇|萍乡|九江|新余|鹰潭|赣州|吉安|上饶|萍乡|抚州|开封|平顶山|安阳|鹤壁|新乡|焦作|濮阳|许昌|漯河|三门峡|南阳|信阳|周口|驻马店|济源|黄石|十堰|荆州|荆门|鄂州|孝感|黄冈|咸宁|随州|恩施|仙桃|潜江|天门|神农架|株洲|衡阳|邵阳|岳阳|常德|张家界|益阳|郴州|永州|怀化|娄底|湘西|韶关|深圳|汕头|佛山|江门|湛江|茂名|肇庆|惠州|梅州|汕尾|河源|阳江|清远|东莞|中山|潮州|揭阳|云浮)/
             ];
             
             for (const pattern of locationPatterns) {
@@ -2338,21 +2344,37 @@ async extractTextFromDOCX(content) {
         }
     }
 
+    isPlaceholderValue(field, value) {
+        if (!value || value.trim() === '') return true;
+        const v = value.trim().toLowerCase();
+        const placeholders = {
+            name: ['张三','李四','王五','赵六','钱七','未识别','未知','待填写','用户名','简历中的真实姓名','姓名','name','your name'],
+            phone: ['13800138000','13900139000','18888888888','12345678901','10000000000','00000000000','手机号码','电话','phone','tel','联系电话'],
+            email: ['zhangsan@example.com','example@email.com','test@test.com','user@example.com','邮箱地址','email','电子邮箱','your email'],
+            location: ['北京市','上海市','广州市','所在城市','城市','location','your city']
+        };
+        if (placeholders[field] && placeholders[field].includes(v)) return true;
+        if (field === 'phone' && !/\d/.test(v)) return true;
+        if (field === 'email' && !v.includes('@')) return true;
+        if (field === 'name' && (v.length < 2 || v.length > 4)) return true;
+        return false;
+    }
+
     /**
      * 提取电话号码
      */
     extractPhone(line) {
-        const phoneRegex = /[+\d\s\-()]{7,}/g;
+        const phoneRegex = /1[3-9][\d\s\-]{9,13}/g;
         const matches = line.match(phoneRegex);
-        return matches ? matches[0].trim() : '';
+        if (!matches) return '';
+        const cleaned = matches[0].replace(/[\s\-]/g, '');
+        return cleaned.length === 11 ? cleaned : '';
     }
 
-    /**
-     * 提取邮箱
-     */
     extractEmail(line) {
+        const preprocessed = line.replace(/\s+(@)/g, '$1').replace(/(@)\s+/g, '$1');
         const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-        const matches = line.match(emailRegex);
+        const matches = preprocessed.match(emailRegex);
         return matches ? matches[0].trim() : '';
     }
 
