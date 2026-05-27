@@ -1767,10 +1767,13 @@ async extractTextFromDOCX(content) {
             }
         });
         
-        if (!result.profile.name && lines.length > 0) {
-            const firstName = lines[0].trim();
-            if (/^[\u4e00-\u9fa5]{2,4}$/.test(firstName)) {
-                result.profile.name = firstName;
+        if (!result.profile.name) {
+            const textLines = fullText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if (textLines.length > 0) {
+                const firstName = textLines[0];
+                if (/^[\u4e00-\u9fa5]{2,4}$/.test(firstName)) {
+                    result.profile.name = firstName;
+                }
             }
         }
         
