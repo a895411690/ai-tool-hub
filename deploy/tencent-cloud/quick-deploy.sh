@@ -105,16 +105,24 @@ do_upload() {
     
     echo "   目标: ${SERVER_USER}@${SERVER_IP}:${SERVER_PATH}/dist/"
     
-    # 使用rsync增量同步（更快更稳定）
     if command -v rsync &> /dev/null; then
         rsync -avz --delete \
             --exclude 'node_modules' \
             --exclude '.git' \
             --exclude '*.log' \
             dist/ ${SERVER_USER}@${SERVER_IP}:${SERVER_PATH}/dist/
+        
+        echo "   同步 tools 目录..."
+        rsync -avz \
+            --exclude 'node_modules' \
+            --exclude '.git' \
+            --exclude '*.log' \
+            --exclude '*.backup' \
+            --exclude 'tests/' \
+            tools/ ${SERVER_USER}@${SERVER_IP}:${SERVER_PATH}/tools/
     else
-        # 回退到scp
         scp -r dist/* ${SERVER_USER}@${SERVER_IP}:${SERVER_PATH}/dist/
+        scp -r tools/ ${SERVER_USER}@${SERVER_IP}:${SERVER_PATH}/tools/
     fi
     
     echo -e "${GREEN}✅ 上传完成！${NC}"
