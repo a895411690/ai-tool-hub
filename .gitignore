@@ -38,6 +38,7 @@ npm-debug.log*
 *.png
 .playwright-mcp/
 deploy-to-server.sh
+*.backup
 
 # Test files
 test-resume.pdf

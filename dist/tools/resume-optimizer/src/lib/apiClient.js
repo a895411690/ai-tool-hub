@@ -4,18 +4,29 @@
  */
 
 class ApiClient {
-    constructor(baseURL = '/api') {
+    constructor(baseURL = '/api/v1') {
         this.baseURL = baseURL;
-        this.tokenKey = 'ai_tool_hub_token';
+        this.legacyBaseURL = '/api';
         this.userKey = 'ai_tool_hub_user';
     }
 
+    _getCookie(name) {
+        const cookies = document.cookie.split(';');
+        for (const cookie of cookies) {
+            const [key, value] = cookie.trim().split('=');
+            if (key === name) {
+                return decodeURIComponent(value);
+            }
+        }
+        return null;
+    }
+
     isAuthenticated() {
-        return !!localStorage.getItem(this.tokenKey);
+        return !!this._getCookie('auth_token');
     }
 
     getToken() {
-        return localStorage.getItem(this.tokenKey);
+        return this._getCookie('auth_token');
     }
 
     getUser() {
@@ -31,6 +42,7 @@ class ApiClient {
         const response = await fetch(`${this.baseURL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ email, password })
         });
 
@@ -40,8 +52,8 @@ class ApiClient {
             throw new Error(data.error || '注册失败');
         }
 
-        localStorage.setItem(this.tokenKey, data.token);
         localStorage.setItem(this.userKey, JSON.stringify(data.user));
+        this._notifyAuthChange();
         return data;
     }
 
@@ -49,6 +61,7 @@ class ApiClient {
         const response = await fetch(`${this.baseURL}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ email, password })
         });
 
@@ -58,20 +71,21 @@ class ApiClient {
             throw new Error(data.error || '登录失败');
         }
 
-        localStorage.setItem(this.tokenKey, data.token);
         localStorage.setItem(this.userKey, JSON.stringify(data.user));
+        this._notifyAuthChange();
         return data;
     }
 
     logout() {
-        localStorage.removeItem(this.tokenKey);
         localStorage.removeItem(this.userKey);
+        document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
         this._notifyAuthChange();
     }
 
     async getProfile() {
         const response = await fetch(`${this.baseURL}/auth/me`, {
-            headers: this._getHeaders()
+            headers: this._getHeaders(),
+            credentials: 'include'
         });
 
         if (response.status === 401) {
@@ -96,6 +110,7 @@ class ApiClient {
                 ...this._getHeaders(),
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify({ level, resumeText, jobDescription })
         });
 
@@ -208,6 +223,7 @@ class ApiClient {
                 ...this._getHeaders(),
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify({ jdText })
         });
 
@@ -231,6 +247,7 @@ class ApiClient {
                 ...this._getHeaders(),
                 'Content-Type': 'application/json'
             },
+            credentials: 'include',
             body: JSON.stringify({ text })
         });
 

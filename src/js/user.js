@@ -18,8 +18,7 @@ export function initUser() {
             state.user = decryptedUser;
             updateUserUI();
             syncFromGist();
-        } catch (error) {
-            // Error decrypting user data
+        } catch {
             logout();
         }
     }
@@ -61,8 +60,7 @@ export async function handleGitHubCallback() {
             
             // 清除 URL 中的参数
             window.history.pushState({}, document.title, window.location.pathname);
-        } catch (error) {
-            console.error('GitHub login failed:', error);
+        } catch {
             showToast('登录失败，请重试');
         }
     }
@@ -181,8 +179,7 @@ export async function syncToGist() {
         }
         
         showToast('数据同步成功');
-    } catch (error) {
-        console.error('Sync to gist failed:', error);
+    } catch {
         showToast('数据同步失败');
     }
 }
@@ -238,8 +235,7 @@ export async function syncFromGist() {
         } else {
             showToast('暂无云端数据');
         }
-    } catch (error) {
-        console.error('Sync from gist failed:', error);
+    } catch {
         showToast('数据拉取失败');
     }
 }

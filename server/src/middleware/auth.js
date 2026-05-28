@@ -2,14 +2,27 @@ import jwt from 'jsonwebtoken';
 import config from '../config.js';
 
 export function authMiddleware(req, res, next) {
+    let token = null;
+    
+    // 优先从 Authorization header 读取
     const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7);
+    } 
+    // 其次从 Cookie 读取
+    else if (req.cookies && req.cookies.auth_token) {
+        token = req.cookies.auth_token;
+    }
+    
+    if (!token) {
         return res.status(401).json({ error: '未登录，请先登录' });
     }
 
-    const token = authHeader.substring(7);
     try {
-        const decoded = jwt.verify(token, config.JWT_SECRET);
+        const decoded = jwt.verify(token, config.JWT_SECRET, {
+            issuer: config.JWT_ISSUER,
+            audience: config.JWT_AUDIENCE
+        });
         req.user = decoded;
         next();
     } catch (err) {
@@ -24,6 +37,10 @@ export function generateToken(user) {
     return jwt.sign(
         { id: user.id, email: user.email },
         config.JWT_SECRET,
-        { expiresIn: config.JWT_EXPIRES_IN }
+        {
+            expiresIn: config.JWT_EXPIRES_IN,
+            issuer: config.JWT_ISSUER,
+            audience: config.JWT_AUDIENCE
+        }
     );
 }

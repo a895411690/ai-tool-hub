@@ -186,20 +186,14 @@ class ImportUtils {
                 
                 // Use local result to fill in missing LLM fields
                 if (parsedData.profile && localResult.profile) {
-                    if (!parsedData.profile.name || parsedData.profile.name === '张三' || parsedData.profile.name === '未识别') {
-                        parsedData.profile.name = localResult.profile.name;
-                    }
-                    if (!parsedData.profile.phone || parsedData.profile.phone === '13800138000') {
-                        parsedData.profile.phone = localResult.profile.phone;
-                    }
-                    if (!parsedData.profile.email || parsedData.profile.email === 'zhangsan@example.com') {
-                        parsedData.profile.email = localResult.profile.email;
-                    }
-                    if (!parsedData.profile.location || parsedData.profile.location === '北京市') {
-                        parsedData.profile.location = localResult.profile.location;
-                    }
-                    if (!parsedData.profile.title) {
-                        parsedData.profile.title = localResult.profile.title;
+                    const fields = ['name', 'phone', 'email', 'location', 'title'];
+                    for (const field of fields) {
+                        const llmVal = parsedData.profile[field];
+                        const localVal = localResult.profile[field];
+                        const wasPlaceholder = this.isPlaceholderValue(field, llmVal);
+                        if (wasPlaceholder) {
+                            parsedData.profile[field] = localVal || '';
+                        }
                     }
                 }
                 
@@ -243,7 +237,6 @@ class ImportUtils {
             };
 
         } catch (error) {
-            console.error('简历解析失败:', error);
             return {
                 success: false,
                 fileName: file.name,
@@ -320,10 +313,8 @@ class ImportUtils {
                 text += pageText + '\n';
             }
 
-console.log('[Import] PDF提取完成，文本长度:', text.length);
             return text;
         } catch (error) {
-            console.error('PDF解析失败:', error);
             return '';
         }
     }
@@ -384,7 +375,6 @@ async extractTextFromDOCX(content) {
                 throw new Error('mammoth.js库未加载');
             }
         } catch (error) {
-            console.error('DOCX解析失败:', error);
             return '';
         }
     }
@@ -438,30 +428,59 @@ async extractTextFromDOCX(content) {
             return '';
         }
 
-        // 移除危险标签（不区分大小写，包括多行内容）
-        const dangerousTags = /<(script|iframe|object|embed|form|input|button|textarea|select)[^>]*>[\s\S]*?<\/\1>/gi;
-        let sanitized = html.replace(dangerousTags, '');
+        const ALLOWED_TAGS = new Set([
+            'p', 'br', 'b', 'strong', 'i', 'em', 'u', 'span', 'div',
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'thead', 'tbody',
+            'a', 'hr', 'blockquote', 'pre', 'code'
+        ]);
 
-        // 移除自闭合的危险标签
-        const dangerousSelfClosingTags = /<(script|iframe|object|embed|input|button|textarea|select|img|link|style|meta)[^>]*\/?>/gi;
-        sanitized = sanitized.replace(dangerousSelfClosingTags, '');
+        const ALLOWED_ATTRS = new Set(['href', 'target', 'rel', 'class']);
 
-        // 移除事件处理器 (onclick, onload, onerror等) — 使用DOM解析方式
-        sanitized = sanitized.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, '');
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const walker = document.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT);
 
-        // 移除javascript:伪协议
-        sanitized = sanitized.replace(/(href|src|action)\s*=\s*(["'])\s*javascript:[^\2]*?\2/gi, '$1=$2#$2');
+            const toRemove = [];
+            let node;
+            while ((node = walker.nextNode())) {
+                if (!ALLOWED_TAGS.has(node.tagName.toLowerCase())) {
+                    toRemove.push(node);
+                } else {
+                    for (const attr of [...node.attributes]) {
+                        if (!ALLOWED_ATTRS.has(attr.name.toLowerCase())) {
+                            node.removeAttribute(attr.name);
+                        }
+                        if (attr.value && /^\s*(javascript|data|vbscript):/i.test(attr.value.trim())) {
+                            node.removeAttribute(attr.name);
+                        }
+                    }
+                }
+            }
 
-        // 移除data:伪协议（可能导致XSS）
-        sanitized = sanitized.replace(/(href|src|action)\s*=\s*(["'])\s*data:[^\2]*?\2/gi, '$1=$2#$2');
+            for (const el of toRemove) {
+                const parent = el.parentNode;
+                if (parent) {
+                    while (el.firstChild) {
+                        parent.insertBefore(el.firstChild, el);
+                    }
+                    parent.removeChild(el);
+                }
+            }
 
-        // 移除vbscript:伪协议
-        sanitized = sanitized.replace(/(href|src|action)\s*=\s*(["'])\s*vbscript:[^\2]*?\2/gi, '$1=$2#$2');
+            const aTags = doc.body.querySelectorAll('a');
+            aTags.forEach(a => {
+                a.setAttribute('rel', 'noopener noreferrer');
+                a.setAttribute('target', '_blank');
+            });
 
-        // 移除expression: (CSS表达式，IE特有)
-        sanitized = sanitized.replace(/expression\s*\(/gi, '');
-
-        return sanitized;
+            return doc.body.innerHTML;
+        } catch {
+            const tempDiv = document.createElement('div');
+            tempDiv.textContent = html;
+            return tempDiv.innerHTML;
+        }
     }
 
     /**
@@ -796,7 +815,11 @@ async extractTextFromDOCX(content) {
         
         // 提取职位
         let position = null;
-        const positionKeywords = ['高级测试工程师', '测试组长', '测试经理', '测试总监', '测试主管', '资深测试工程师', '测试工程师', '功能测试工程师', '自动化测试工程师', '性能测试工程师', '安全测试工程师'];
+        const positionKeywords = [
+            '高级测试开发工程师', '资深测试开发工程师', '测试开发工程师',
+            '高级测试工程师', '测试组长', '测试经理', '测试总监', '测试主管', '资深测试工程师', '测试工程师',
+            '功能测试工程师', '自动化测试工程师', '性能测试工程师', '安全测试工程师'
+        ];
         for (const keyword of positionKeywords) {
             if (line.includes(keyword)) {
                 position = keyword;
@@ -857,7 +880,6 @@ async extractTextFromDOCX(content) {
                 successful: results.filter(r => r.success).length
             };
         } catch (error) {
-            console.error('批量解析失败:', error);
             return {
                 success: false,
                 error: error.message
@@ -907,7 +929,6 @@ async extractTextFromDOCX(content) {
             result.fullText = originalText;
             return result;
         } catch (error) {
-            console.error('增强PDF解析失败:', error);
             // 失败时返回空文本，让后续的文本解析逻辑处理
             return this.parseTextContent('');
         }
@@ -920,6 +941,12 @@ async extractTextFromDOCX(content) {
         
         // 移除特殊字符
         text = text.replace(/[\u200b-\u200f\u202a-\u202e]/g, '');
+        
+        // 修复被拆分的电话号码（如 133 1166 7685 -> 13311667685）
+        text = text.replace(/(1[3-9])(\d[\s\-]*){9}/g, (match) => match.replace(/[\s\-]/g, ''));
+        
+        // 修复被拆分的邮箱（如 895411690 @qq.com -> 895411690@qq.com）
+        text = text.replace(/\s+(@)/g, '$1').replace(/(@)\s+/g, '$1');
         
         // 保留换行，但清理多余的空白行
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
@@ -1257,8 +1284,10 @@ async extractTextFromDOCX(content) {
                     if (line.includes('交通银行')) company = '交通银行';
                     if (line.includes('广发')) company = '广发银行';
                     
-                    if (line.includes('高级测试工程师')) position = '高级测试工程师';
-                    if (line.includes('测试组长')) position = '测试组长';
+                    if (line.includes('高级测试开发工程师')) position = '高级测试开发工程师';
+                    else if (line.includes('测试开发工程师')) position = '测试开发工程师';
+                    else if (line.includes('高级测试工程师')) position = '高级测试工程师';
+                    else if (line.includes('测试组长')) position = '测试组长';
                     
                     // 尝试提取时间
                     let period = '';
@@ -1302,6 +1331,9 @@ async extractTextFromDOCX(content) {
 
         // 常见职位关键词 - 扩展
         const positionKeywords = [
+            '测试开发工程师', '自动化测试工程师', '性能测试工程师', '安全测试工程师',
+            '前端开发工程师', '后端开发工程师', '全栈开发工程师', '软件开发工程师',
+            '运维工程师', '数据分析师',
             '工程师', '开发', '测试', '产品', '设计', '经理', '总监', '主管',
             '专员', '分析师', '架构师', '程序员', '设计师', '运营', '市场',
             '销售', '人事', '财务', '会计', '顾问', '专家', '组长', '负责人'
@@ -1738,13 +1770,14 @@ async extractTextFromDOCX(content) {
         
         // 姓名提取 - 增强版（支持多种常见格式）
         const namePatterns = [
-            /姓名[：:]\s*([\u4e00-\u9fa5]{2,4})/,           // 格式1: "姓名：张三"
-            /Name[：:]\s*([\u4e00-\u9fa5]{2,4})/,             // 格式2: "name: Zhang"
-            /个人简历[-—–]\s*([\u4e00-\u9fa5]{2,4})/,        // 格式3: "个人简历-张三"
-            /^([\u4e00-\u9fa5]{2,4})的简历/,                 // 格式4: "张三的简历"
-            /^([\u4e00-\u9fa5]{2,4})个人简历/,                // 格式5: "张三个人简历"
-            /([\u4e00-\u9fa5]{2,4})\s*[男|女]/,              // 格式6: "张三 男"
-            /^([\u4e00-\u9fa5]{2,4})$/                       // 格式7: 独立名字（首行）
+            /姓名[：:]\s*([\u4e00-\u9fa5]{2,4})/,
+            /Name[：:]\s*([\u4e00-\u9fa5]{2,4})/,
+            /个人简历[-—–]\s*([\u4e00-\u9fa5]{2,4})/,
+            /^([\u4e00-\u9fa5]{2,4})的简历/,
+            /^([\u4e00-\u9fa5]{2,4})个人简历/,
+            /([\u4e00-\u9fa5]{2,4})\s*[男|女]/,
+            /^\d{1,3}[\.\s\-\)]+\s*([\u4e00-\u9fa5]{2,4})/m,
+            /^([\u4e00-\u9fa5]{2,4})$/
         ];
         
         namePatterns.forEach(pattern => {
@@ -1756,10 +1789,13 @@ async extractTextFromDOCX(content) {
             }
         });
         
-        if (!result.profile.name && lines.length > 0) {
-            const firstName = lines[0].trim();
-            if (/^[\u4e00-\u9fa5]{2,4}$/.test(firstName)) {
-                result.profile.name = firstName;
+        if (!result.profile.name) {
+            const textLines = fullText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if (textLines.length > 0) {
+                const firstName = textLines[0];
+                if (/^[\u4e00-\u9fa5]{2,4}$/.test(firstName)) {
+                    result.profile.name = firstName;
+                }
             }
         }
         
@@ -1772,15 +1808,16 @@ async extractTextFromDOCX(content) {
         }
         
         // 电话提取
-        const phonePattern = /(1[3-9]\d{9})/;
+        const phonePattern = /(1[3-9][\d\s\-]{9,13})/;
         const phoneMatch = fullText.match(phonePattern);
         if (phoneMatch && !result.profile.phone) {
-            result.profile.phone = phoneMatch[1];
+            result.profile.phone = phoneMatch[1].replace(/[\s\-]/g, '');
         }
         
         // 邮箱提取
+        const preprocessedText = fullText.replace(/\s+(@)/g, '$1').replace(/(@)\s+/g, '$1');
         const emailPattern = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
-        const emailMatch = fullText.match(emailPattern);
+        const emailMatch = preprocessedText.match(emailPattern);
         if (emailMatch && !result.profile.email) {
             result.profile.email = emailMatch[0];
         }
@@ -1788,11 +1825,14 @@ async extractTextFromDOCX(content) {
         // 位置信息提取
         if (!result.profile.location) {
             const locationPatterns = [
+                /现居[：:]\s*([^\n]+)/,
+                /居住地[：:]\s*([^\n]+)/,
                 /住址[：:]\s*([^\n]+)/,
                 /地址[：:]\s*([^\n]+)/,
                 /所在地[：:]\s*([^\n]+)/,
+                /户籍[：:]\s*([^\n]+)/,
                 /location[：:]\s*([^\n]+)/i,
-                /(北京|上海|广州|深圳|杭州|南京|成都|武汉|西安|重庆|天津|苏州|青岛|长沙|大连|厦门|宁波|无锡|合肥|郑州|济南|福州|昆明|南昌|哈尔滨|石家庄|温州|南宁|贵阳|海口|兰州|银川|西宁|呼和浩特|乌鲁木齐|拉萨)/
+                /(北京|上海|广州|深圳|杭州|南京|成都|武汉|西安|重庆|天津|苏州|青岛|长沙|大连|厦门|宁波|无锡|合肥|郑州|济南|福州|昆明|南昌|哈尔滨|石家庄|温州|南宁|贵阳|海口|兰州|银川|西宁|呼和浩特|乌鲁木齐|拉萨|东莞|佛山|珠海|惠州|中山|常州|徐州|烟台|潍坊|保定|唐山|洛阳|绍兴|嘉兴|漳州|泉州|三亚|桂林|柳州|株洲|湘潭|宜昌|襄阳|芜湖|蚌埠|淮南|马鞍山|安庆|金华|台州|舟山|衡阳|邵阳|岳阳|益阳|常德|遵义|绵阳|德阳|宜宾|曲靖|大理|咸阳|宝鸡|渭南|天水|包头|赤峰|吉林|齐齐哈尔|大庆|鞍山|抚顺|丹东|锦州|葫芦岛|连云港|淮安|盐城|扬州|镇江|泰州|宿迁|衢州|丽水|马鞍山|铜陵|池州|黄山|滁州|阜阳|宿州|六安|亳州|景德镇|萍乡|九江|新余|鹰潭|赣州|吉安|上饶|萍乡|抚州|开封|平顶山|安阳|鹤壁|新乡|焦作|濮阳|许昌|漯河|三门峡|南阳|信阳|周口|驻马店|济源|黄石|十堰|荆州|荆门|鄂州|孝感|黄冈|咸宁|随州|恩施|仙桃|潜江|天门|神农架|株洲|衡阳|邵阳|岳阳|常德|张家界|益阳|郴州|永州|怀化|娄底|湘西|韶关|深圳|汕头|佛山|江门|湛江|茂名|肇庆|惠州|梅州|汕尾|河源|阳江|清远|东莞|中山|潮州|揭阳|云浮)/
             ];
             
             for (const pattern of locationPatterns) {
@@ -2005,9 +2045,9 @@ async extractTextFromDOCX(content) {
         // 提取地址/位置
         if (!result.profile.location) {
             const locationPatterns = [
-                /[地址住址location\s]*[:：]?\s*([\u4e00-\u9fa5]+(?:市|省|区|县))/,
-                /^(?:现居|居住|位于)[:：]?\s*([\u4e00-\u9fa5]+)/,
-                /(上海|北京|广州|深圳|杭州|成都|武汉|南京|西安|重庆|天津)(?:市)?/
+                /^(?:现居|居住地?|位于|所在地|住址|地址|户籍)[:：]\s*([\u4e00-\u9fa5]{2,})/,
+                /[地址住址location\s]*[:：]\s*([\u4e00-\u9fa5]+(?:市|省|区|县))/,
+                /(上海|北京|广州|深圳|杭州|成都|武汉|南京|西安|重庆|天津|东莞|佛山|苏州|珠海|惠州|中山|无锡|宁波|合肥|济南|青岛|长沙|大连|厦门|福州|昆明|南昌|哈尔滨|石家庄|温州|南宁|贵阳|海口|兰州|银川|西宁|呼和浩特|乌鲁木齐|拉萨|常州|徐州|烟台|潍坊|保定|唐山|洛阳|绍兴|嘉兴|漳州|泉州|三亚|桂林|柳州|株洲|湘潭|宜昌|襄阳|芜湖|金华|台州|遵义|绵阳|德阳|宜宾|咸阳|宝鸡|包头|赤峰|吉林|大庆|鞍山|连云港|淮安|盐城|扬州|镇江|泰州|宿迁|衢州|丽水|景德镇|九江|赣州|开封|南阳|信阳|周口|黄石|十堰|荆州|荆门|孝感|黄冈|邵阳|岳阳|常德|张家界|郴州|永州|怀化|娄底|韶关|汕头|江门|湛江|茂名|肇庆|梅州|汕尾|河源|阳江|清远|潮州|揭阳|云浮)(?:市)?/
             ];
             for (const pattern of locationPatterns) {
                 const match = line.match(pattern);
@@ -2329,21 +2369,37 @@ async extractTextFromDOCX(content) {
         }
     }
 
+    isPlaceholderValue(field, value) {
+        if (!value || value.trim() === '') return true;
+        const v = value.trim().toLowerCase();
+        const placeholders = {
+            name: ['张三','李四','王五','赵六','钱七','未识别','未知','待填写','用户名','简历中的真实姓名','姓名','name','your name'],
+            phone: ['13800138000','13900139000','18888888888','12345678901','10000000000','00000000000','手机号码','电话','phone','tel','联系电话'],
+            email: ['zhangsan@example.com','example@email.com','test@test.com','user@example.com','邮箱地址','email','电子邮箱','your email'],
+            location: ['北京市','上海市','广州市','所在城市','城市','location','your city']
+        };
+        if (placeholders[field] && placeholders[field].includes(v)) return true;
+        if (field === 'phone' && !/\d/.test(v)) return true;
+        if (field === 'email' && !v.includes('@')) return true;
+        if (field === 'name' && (v.length < 2 || v.length > 4)) return true;
+        return false;
+    }
+
     /**
      * 提取电话号码
      */
     extractPhone(line) {
-        const phoneRegex = /[+\d\s\-()]{7,}/g;
+        const phoneRegex = /1[3-9][\d\s\-]{9,13}/g;
         const matches = line.match(phoneRegex);
-        return matches ? matches[0].trim() : '';
+        if (!matches) return '';
+        const cleaned = matches[0].replace(/[\s\-]/g, '');
+        return cleaned.length === 11 ? cleaned : '';
     }
 
-    /**
-     * 提取邮箱
-     */
     extractEmail(line) {
+        const preprocessed = line.replace(/\s+(@)/g, '$1').replace(/(@)\s+/g, '$1');
         const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-        const matches = line.match(emailRegex);
+        const matches = preprocessed.match(emailRegex);
         return matches ? matches[0].trim() : '';
     }
 
@@ -2462,14 +2518,26 @@ async extractTextFromDOCX(content) {
      * 提取职位
      */
     extractPosition(line) {
-        // 优先匹配长职位名（如"高级测试工程师"优先于"工程师"）
         const positions = [
-            '高级测试工程师', '资深测试工程师', '测试工程师', '测试组长', '测试经理', '测试总监', '测试主管',
-            '高级开发工程师', '资深开发工程师', '开发工程师', '开发组长', '开发经理',
+            '高级测试开发工程师', '资深测试开发工程师', '测试开发工程师',
+            '高级自动化测试工程师', '资深自动化测试工程师', '自动化测试工程师',
+            '高级性能测试工程师', '资深性能测试工程师', '性能测试工程师',
+            '高级功能测试工程师', '资深功能测试工程师', '功能测试工程师',
+            '高级安全测试工程师', '资深安全测试工程师', '安全测试工程师',
+            '高级前端开发工程师', '资深前端开发工程师', '前端开发工程师',
+            '高级后端开发工程师', '资深后端开发工程师', '后端开发工程师',
+            '高级全栈开发工程师', '资深全栈开发工程师', '全栈开发工程师',
+            '高级软件开发工程师', '资深软件开发工程师', '软件开发工程师',
+            '高级测试工程师', '资深测试工程师', '测试工程师',
+            '测试组长', '测试经理', '测试总监', '测试主管',
+            '高级开发工程师', '资深开发工程师', '开发工程师',
+            '开发组长', '开发经理',
             '高级产品经理', '产品经理', '产品专员',
-            '高级设计师', '设计师',
+            '高级UI设计师', 'UI设计师', '高级设计师', '设计师',
             '项目经理', '技术经理', '技术总监', '架构师',
-            '工程师', '经理', '总监', '主管', '开发', '产品', '设计', '运营', '市场', '销售', '人事', '财务', '会计', '顾问', '专家', '组长', '负责人', '分析师', '程序员'
+            '高级运维工程师', '运维工程师',
+            '高级数据分析师', '数据分析师',
+            '工程师', '经理', '总监', '主管', '开发', '测试', '产品', '设计', '运营', '市场', '销售', '人事', '财务', '会计', '顾问', '专家', '组长', '负责人', '分析师', '程序员'
         ];
         for (const position of positions) {
             if (line.includes(position)) return position;

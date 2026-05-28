@@ -35,7 +35,6 @@ async function initAuthUI() {
             authModal.updateUI();
         });
     } catch (error) {
-        console.warn('认证模块加载失败:', error);
     }
 }
 
@@ -134,7 +133,6 @@ function openResumeImport() {
             }
         })
         .catch(error => {
-            console.error('导入模块加载失败:', error);
             showNotification('简历导入功能加载失败，请刷新页面重试', 'error');
         });
 }
@@ -173,7 +171,6 @@ function initOptimizationLevelSelector() {
 // 使用导入数据更新简历表单
 function updateResumeFormWithImportedData(data) {
     if (!window.resumeForm || !window.store) {
-        console.warn('简历表单或存储模块未初始化');
         return;
     }
 
@@ -245,7 +242,6 @@ function updateResumeFormWithImportedData(data) {
         }, 100);
 
     } catch (error) {
-        console.error('更新简历表单失败:', error);
         showNotification('导入数据更新表单时出错', 'error');
     }
 }
@@ -253,7 +249,6 @@ function updateResumeFormWithImportedData(data) {
 // 添加工作经历项
 function addExperienceItem(experience) {
     if (!window.resumeForm || typeof window.resumeForm.addExperience !== 'function') {
-        console.warn('resumeForm.addExperience 方法不可用');
         return;
     }
 
@@ -300,14 +295,12 @@ function addExperienceItem(experience) {
 
         window.resumeForm.addExperience(expData);
     } catch (error) {
-        console.error('添加工作经历失败:', error);
     }
 }
 
 // 添加教育经历项
 function addEducationItem(education) {
     if (!window.resumeForm || typeof window.resumeForm.addEducation !== 'function') {
-        console.warn('resumeForm.addEducation 方法不可用');
         return;
     }
 
@@ -343,28 +336,19 @@ function addEducationItem(education) {
 
         window.resumeForm.addEducation(eduData);
     } catch (error) {
-        console.error('添加教育经历失败:', error);
     }
 }
 
 // 设置错误处理
 function setupErrorHandling() {
-    // 捕获未处理的 Promise 错误
     window.addEventListener('unhandledrejection', event => {
-        console.warn('⚠️ 未处理的 Promise 错误:', event.reason);
-        event.preventDefault(); // 防止控制台默认错误
+        showNotification('操作出现错误，请稍后重试', 'error');
     });
     
-    // 捕获全局 JavaScript 错误
     window.addEventListener('error', event => {
-        // 过滤已知的浏览器扩展错误
         if (event.message && event.message.includes('chrome-extension')) {
-            event.preventDefault();
             return;
         }
-        
-        console.warn('⚠️ 全局 JavaScript 错误:', event.error);
-        event.preventDefault();
+        showNotification('页面出现错误，请刷新重试', 'error');
     });
-    
 }

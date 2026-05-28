@@ -38,10 +38,8 @@ async function loadTools() {
             loadingState.classList.add('hidden');
         }
     } catch (error) {
-        console.error('加载工具失败:', error);
         showToast(`加载失败: ${error.message}`);
         
-        // Show error state
         const loadingState = document.getElementById('loadingState');
         if (loadingState) {
             loadingState.innerHTML = `
@@ -49,11 +47,15 @@ async function loadTools() {
                     <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
                     <h3 class="text-xl font-bold mb-2">加载失败</h3>
                     <p class="text-gray-400 mb-4">${escapeHtml(error.message)}</p>
-                    <button onclick="loadTools()" class="px-6 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:shadow-lg transition-all">
+                    <button id="retryLoadBtn" class="px-6 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:shadow-lg transition-all">
                         重试
                     </button>
                 </div>
             `;
+            const retryBtn = document.getElementById('retryLoadBtn');
+            if (retryBtn) {
+                retryBtn.addEventListener('click', () => loadTools());
+            }
         }
     }
 }

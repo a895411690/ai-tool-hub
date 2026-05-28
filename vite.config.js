@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
-import { copyFileSync, cpSync } from 'fs'
+import { copyFileSync, cpSync, existsSync } from 'fs'
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
 const pkg = require('./package.json')
@@ -11,18 +11,27 @@ function copyToolsPlugin() {
     name: 'copy-tools',
     closeBundle() {
       try {
-        cpSync('tools', 'dist/tools', { recursive: true, force: true })
-        cpSync('src/tools.json', 'dist/tools.json', { force: true })
-        copyFileSync('sw.js', 'dist/sw.js')
-        console.log('✓ Tools directory, tools.json and sw.js copied to dist/')
+        if (existsSync('tools')) {
+          cpSync('tools', 'dist/tools', { recursive: true, force: true })
+        }
+        if (existsSync('src/tools.json')) {
+          cpSync('src/tools.json', 'dist/tools.json', { force: true })
+        } else if (existsSync('tools.json')) {
+          cpSync('tools.json', 'dist/tools.json', { force: true })
+        }
+        if (existsSync('sw.js')) {
+          copyFileSync('sw.js', 'dist/sw.js')
+        }
+        console.log('✓ Files copied to dist/')
       } catch (err) {
-        console.error('Failed to copy tools:', err)
+        console.error('Failed to copy files:', err)
+        // Don't fail the build on copy error
       }
     }
   }
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   root: '.',
   base: './',
   build: {
@@ -31,21 +40,23 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html')
+      },
+      output: {
       }
     },
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true,
-        drop_debugger: true
+        drop_console: mode === 'production',
+        drop_debugger: mode === 'production'
       }
     },
     assetsInlineLimit: 4096,
     cssCodeSplit: true,
-    sourcemap: true
+    sourcemap: mode !== 'production' // 生产环境禁用 sourcemap
   },
   server: {
-    port: 3000,
+    port: 3001, // 避免与后端端口冲突
     open: true,
     cors: true
   },
@@ -59,4 +70,4 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version)
   },
   plugins: [copyToolsPlugin()]
-})
+}))

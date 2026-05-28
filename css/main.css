@@ -54,20 +54,8 @@ body, .tech-bg {
     padding: 0 !important;
 }
 
-/* 确保所有内容区域也是深色 */
-main, section, div, article, header, footer {
-    background: transparent !important;
-}
-
-/* 强制所有页面元素深色背景 */
-* {
-    background-color: transparent !important;
-}
-
-/* 防止任何白色背景 */
-.bg-white, .bg-gray-50, .bg-gray-100, .bg-slate-50, .bg-slate-100, .bg-gray-50, .bg-gray-200 {
-    background-color: rgba(5, 5, 8, 0.95) !important;
-    background-image: none !important;
+main, section, article, header, footer {
+    background: transparent;
 }
 
 /* 特殊处理卡片和容器 */
@@ -737,4 +725,13 @@ button {
 /* 禁用纯白色 */
 .text-white {
     color: #e0f7fa !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }

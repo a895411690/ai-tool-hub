@@ -209,43 +209,52 @@ export class LLMService {
 
         yield { type: 'progress', data: { status: 'analyzing', level } };
 
-        const response = await this._callAPI(messages, options);
+        let response = null;
+        try {
+            response = await this._callAPI(messages, options);
 
-        yield { type: 'progress', data: { status: 'optimizing', level } };
+            yield { type: 'progress', data: { status: 'optimizing', level } };
 
-        let fullContent = '';
-        const decoder = new TextDecoder();
+            let fullContent = '';
+            const decoder = new TextDecoder();
 
-        for await (const chunk of response) {
-            const text = decoder.decode(chunk, { stream: true });
-            const lines = text.split('\n');
+            for await (const chunk of response) {
+                const text = decoder.decode(chunk, { stream: true });
+                const lines = text.split('\n');
 
-            for (const line of lines) {
-                if (!line.startsWith('data: ')) continue;
-                const data = line.substring(6).trim();
-                if (data === '[DONE]') continue;
+                for (const line of lines) {
+                    if (!line.startsWith('data: ')) continue;
+                    const data = line.substring(6).trim();
+                    if (data === '[DONE]') continue;
 
-                try {
-                    const parsed = JSON.parse(data);
-                    const content = parsed.choices?.[0]?.delta?.content || '';
-                    if (content) {
-                        fullContent += content;
-                        yield { type: 'token', data: { content } };
+                    try {
+                        const parsed = JSON.parse(data);
+                        const content = parsed.choices?.[0]?.delta?.content || '';
+                        if (content) {
+                            fullContent += content;
+                            yield { type: 'token', data: { content } };
+                        }
+                    } catch {
+                        // skip malformed JSON
                     }
-                } catch {
-                    // skip malformed JSON
                 }
             }
-        }
 
-        const result = this._parseResult(level, fullContent);
-        yield { type: 'done', data: result };
+            const result = this._parseResult(level, fullContent);
+            yield { type: 'done', data: result };
+        } finally {
+            if (response && typeof response.cancel === 'function') {
+                response.cancel();
+            }
+        }
     }
 
     async parseResumeText(text) {
         if (!this.apiKey) {
             throw new Error('DEEPSEEK_API_KEY not configured');
         }
+
+        const safeText = this._sanitizeInput(text);
 
         const messages = [
             {
@@ -274,7 +283,7 @@ export class LLMService {
                 content: `请从以下简历文本中提取结构化信息，严格按照指定的JSON格式输出：
 
 【简历原文】
-${text}
+${safeText}
 
 【必须按此格式输出，不要添加任何其他字段或注释】
 {
@@ -349,6 +358,8 @@ ${text}
             throw new Error('DEEPSEEK_API_KEY not configured');
         }
 
+        const safeJdText = this._sanitizeInput(jdText);
+
         const messages = [
             {
                 role: 'system',
@@ -356,7 +367,7 @@ ${text}
             },
             {
                 role: 'user',
-                content: `请分析以下职位描述（JD），提取关键信息：\n\n【JD内容】\n${jdText}\n\n请以JSON格式返回：\n{\n  "jobTitle": "职位名称",\n  "requiredSkills": ["必备技能1", "必备技能2"],\n  "preferredSkills": ["优先技能1"],\n  "experienceYears": 数字,\n  "education": "学历要求",\n  "responsibilities": ["主要职责1"],\n  "keywords": ["关键词1", "关键词2"],\n  "industry": "行业",\n  "companyType": "公司类型",\n  "matchDifficulty": "easy/medium/hard"\n}`
+                content: `请分析以下职位描述（JD），提取关键信息：\n\n【JD内容】\n${safeJdText}\n\n请以JSON格式返回：\n{\n  "jobTitle": "职位名称",\n  "requiredSkills": ["必备技能1", "必备技能2"],\n  "preferredSkills": ["优先技能1"],\n  "experienceYears": 数字,\n  "education": "学历要求",\n  "responsibilities": ["主要职责1"],\n  "keywords": ["关键词1", "关键词2"],\n  "industry": "行业",\n  "companyType": "公司类型",\n  "matchDifficulty": "easy/medium/hard"\n}`
             }
         ];
 
@@ -379,10 +390,29 @@ ${text}
         return { rawAnalysis: fullContent };
     }
 
+    _sanitizeInput(text) {
+        if (typeof text !== 'string') return '';
+        let sanitized = text;
+        sanitized = sanitized.replace(/```[\s\S]*?```/g, '[CODE_BLOCK_REMOVED]');
+        sanitized = sanitized.replace(/<system[^>]*>[\s\S]*?<\/system>/gi, '[BLOCKED]');
+        sanitized = sanitized.replace(/<\|im_start\|>[\s\S]*?<\|im_end\|>/gi, '[BLOCKED]');
+        sanitized = sanitized.replace(/\[INST\][\s\S]*?\[\/INST\]/gi, '[BLOCKED]');
+        sanitized = sanitized.replace(/ignore\s+(all\s+)?previous\s+(instructions|prompts)/gi, '[FILTERED]');
+        sanitized = sanitized.replace(/你是一个|你现在是|从现在起你是|forget everything|new instruction/gi, '[FILTERED]');
+        const MAX_INPUT_LENGTH = 30000;
+        if (sanitized.length > MAX_INPUT_LENGTH) {
+            sanitized = sanitized.substring(0, MAX_INPUT_LENGTH) + '\n...[TRUNCATED]';
+        }
+        return sanitized.trim();
+    }
+
     _buildMessages(promptConfig, resumeText, jobDescription) {
-        const userContent = jobDescription
-            ? `${promptConfig.user}\n\n【原文】\n${resumeText}\n\n【目标职位参考】\n${jobDescription}`
-            : `${promptConfig.user}\n\n【原文】\n${resumeText}`;
+        const safeResume = this._sanitizeInput(resumeText);
+        const safeJobDesc = jobDescription ? this._sanitizeInput(jobDescription) : null;
+
+        const userContent = safeJobDesc
+            ? `${promptConfig.user}\n\n【原文】\n${safeResume}\n\n【目标职位参考】\n${safeJobDesc}`
+            : `${promptConfig.user}\n\n【原文】\n${safeResume}`;
 
         return [
             { role: 'system', content: promptConfig.system },
@@ -392,9 +422,13 @@ ${text}
 
     async _callAPI(messages, options = {}) {
         const maxRetries = 3;
+        const TIMEOUT_MS = 60000;
         let lastError;
 
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
             try {
                 const response = await fetch(`${this.baseUrl}/chat/completions`, {
                     method: 'POST',
@@ -411,8 +445,11 @@ ${text}
                         top_p: options.top_p || 0.9,
                         frequency_penalty: options.frequency_penalty || 0.3,
                         presence_penalty: options.presence_penalty || 0.1
-                    })
+                    }),
+                    signal: controller.signal
                 });
+
+                clearTimeout(timeoutId);
 
                 if (!response.ok) {
                     const error = await response.json().catch(() => ({}));

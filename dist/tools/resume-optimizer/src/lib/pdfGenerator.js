@@ -28,7 +28,6 @@ class PDFGenerator {
     async generate() {
         const element = document.getElementById('resumePreview');
         if (!element) {
-            console.error('Resume preview element not found');
             return;
         }
 
@@ -62,7 +61,6 @@ class PDFGenerator {
 
             showNotification('PDF 导出成功！', 'success');
         } catch (error) {
-            console.error('PDF generation failed:', error);
             showNotification('PDF 导出失败，请重试', 'error');
         } finally {
             const clone = document.body.querySelector('[style*="left: -9999px"][style*="210mm"]');
@@ -80,7 +78,6 @@ class PDFGenerator {
     async generateBlob() {
         const element = document.getElementById('resumePreview');
         if (!element) {
-            console.error('Resume preview element not found');
             return null;
         }
 
@@ -106,7 +103,6 @@ class PDFGenerator {
 
             return blob;
         } catch (error) {
-            console.error('PDF blob generation failed:', error);
             const clone = document.body.querySelector('[style*="left: -9999px"][style*="210mm"]');
             if (clone && clone.parentNode) {
                 clone.parentNode.removeChild(clone);
@@ -151,6 +147,13 @@ class PDFGenerator {
 
 // 创建全局实例
 const pdfGenerator = new PDFGenerator();
+
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action="exportPdf"]');
+    if (btn) {
+        pdfGenerator.generate();
+    }
+});
 
 export { PDFGenerator, pdfGenerator };
 window.pdfGenerator = pdfGenerator;

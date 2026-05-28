@@ -150,7 +150,6 @@ function closeThemeModal(event) {
 function setTheme(themeName) {
     // Validate theme name
     if (!THEMES[themeName]) {
-        console.warn(`Unknown theme: ${themeName}, falling back to default`);
         themeName = 'default';
     }
 
@@ -248,13 +247,23 @@ function loadSavedTheme() {
  * @param {string} msg - Message to display in toast
  * Toast automatically disappears after TOAST_DISPLAY_TIME ms
  */
+let toastTimeout = null;
+
 function showToast(msg) {
     const toast = document.getElementById('toast');
     const toastMsg = document.getElementById('toastMsg');
     if (!toast || !toastMsg) return;
+    
+    if (toastTimeout) {
+        clearTimeout(toastTimeout);
+    }
+    
     toastMsg.textContent = msg;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), TOAST_DISPLAY_TIME);
+    toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+        toastTimeout = null;
+    }, TOAST_DISPLAY_TIME);
 }
 
 /**
@@ -322,7 +331,7 @@ function isValidUrl(url) {
  */
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(console.error);
+        navigator.serviceWorker.register('sw.js').catch(() => {});
     }
 }
 

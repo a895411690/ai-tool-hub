@@ -16,7 +16,6 @@ class ResumePreview {
             try {
                 this.update(state);
             } catch (error) {
-                console.error('简历预览更新出错:', error);
             }
         });
     }

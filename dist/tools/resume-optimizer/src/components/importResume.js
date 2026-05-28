@@ -20,7 +20,6 @@ class ImportResume {
     init(containerId = 'importResumeContainer') {
         this.container = document.getElementById(containerId);
         if (!this.container) {
-            console.error(`找不到容器: ${containerId}`);
             return false;
         }
 

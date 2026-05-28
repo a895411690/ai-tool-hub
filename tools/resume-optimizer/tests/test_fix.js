@@ -7,12 +7,12 @@ global.window = { document: { createElement: () => ({}) } };
 global.document = global.window.document;
 
 // 测试简历内容
-const testResume = `个人简历-卫家豪
+const testResume = `个人简历-测试用户
 
 个人信息
-姓名：卫家豪
-电话：13311667685
-邮箱：895411690@qq.com
+姓名：张三
+电话：13800138000
+邮箱：test@example.com
 性别：男
 工作经验：8年
 求职意向：测试工程师（资深/管理）

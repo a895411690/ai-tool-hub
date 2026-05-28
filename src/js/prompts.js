@@ -9,8 +9,8 @@ export async function loadPrompts() {
         const data = await response.json();
         state.allPrompts = data.prompts;
         state.promptCategories = data.categories;
-    } catch (error) {
-        console.error('Failed to load prompts:', error);
+    } catch {
+        // prompts.json 加载失败，静默处理
     }
 }
 

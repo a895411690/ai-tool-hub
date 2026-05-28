@@ -1,5 +1,5 @@
-// Service Worker for AI Tool Hub v5.1.2
-const CACHE_NAME = 'ai-tool-hub-v5.1.2';
+// Service Worker for AI Tool Hub v5.1.1
+const CACHE_NAME = 'ai-tool-hub-v5.1.1';
 
 const PRECACHE_URLS = [
   './',

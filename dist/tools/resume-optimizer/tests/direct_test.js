@@ -12,9 +12,9 @@ const testResume = fs.readFileSync('./test_weijiahao_resume.txt', 'utf8');
 
 console.log('🔍 直接测试简历解析准确性...\n');
 console.log('📋 测试简历内容摘要:');
-console.log('   姓名: 卫家豪');
-console.log('   电话: 13311667685');
-console.log('   邮箱: 895411690@qq.com');
+console.log('   姓名: 张三');
+console.log('   电话: 13800138000');
+console.log('   邮箱: test@example.com');
 console.log('   性别: 男');
 console.log('   工作经验: 8年');
 console.log('   工作经历: 2个项目');
@@ -35,9 +35,9 @@ try {
     // 1. 个人信息验证
     console.log('\n👤 个人信息验证:');
     const personalChecks = [
-        { field: 'name', expected: '卫家豪', actual: result.profile.name },
-        { field: 'phone', expected: '13311667685', actual: result.profile.phone },
-        { field: 'email', expected: '895411690@qq.com', actual: result.profile.email },
+        { field: 'name', expected: '张三', actual: result.profile.name },
+        { field: 'phone', expected: '13800138000', actual: result.profile.phone },
+        { field: 'email', expected: 'test@example.com', actual: result.profile.email },
         { field: 'gender', expected: '男', actual: result.profile.gender },
         { field: 'experience_years', expected: '8', actual: result.profile.experience_years }
     ];

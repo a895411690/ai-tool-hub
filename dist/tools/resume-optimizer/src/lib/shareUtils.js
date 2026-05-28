@@ -116,7 +116,6 @@ class ShareUtils {
                 this.logShareEvent('copy_link');
             })
             .catch(err => {
-                console.error('复制失败:', err);
                 showNotification('复制失败，请手动复制链接', 'error');
             });
     }
@@ -139,7 +138,6 @@ class ShareUtils {
             showNotification('PDF已生成，可以分享给他人', 'success');
             this.logShareEvent('pdf_download');
         }).catch(error => {
-            console.error('PDF生成失败:', error);
             showNotification('PDF生成失败，请重试', 'error');
         });
     }
@@ -167,9 +165,7 @@ class ShareUtils {
             timestamp: new Date().toISOString(),
             resumeData: this.shareData
         });
-        localStorage.setItem('shareLogs', JSON.stringify(shareLog.slice(-50))); // 保留最近50条
-        
-        console.log(`分享到 ${platform}:`, this.shareData);
+        localStorage.setItem('shareLogs', JSON.stringify(shareLog.slice(-50)));
     }
 
     // 获取分享统计数据

@@ -7,6 +7,9 @@ import logger from '../utils/logger.js';
 const router = Router();
 const llmService = new LLMService();
 
+const MAX_RESUME_LENGTH = 50000;
+const MAX_JD_LENGTH = 10000;
+
 router.post('/optimize', authMiddleware, async (req, res) => {
     const { level, resumeText, jobDescription } = req.body;
 
@@ -18,11 +21,11 @@ router.post('/optimize', authMiddleware, async (req, res) => {
         return res.status(400).json({ error: '无效的优化级别，可选: light, medium, deep' });
     }
 
-    if (resumeText.length > 50000) {
+    if (resumeText.length > MAX_RESUME_LENGTH) {
         return res.status(400).json({ error: '简历文本过长，最多支持50000个字符' });
     }
 
-    if (jobDescription && jobDescription.length > 10000) {
+    if (jobDescription && jobDescription.length > MAX_JD_LENGTH) {
         return res.status(400).json({ error: '职位描述过长，最多支持10000个字符' });
     }
 
@@ -50,11 +53,16 @@ router.post('/optimize', authMiddleware, async (req, res) => {
     req.setTimeout(SSE_TIMEOUT);
     res.setTimeout(SSE_TIMEOUT);
 
+    let quotaConsumed = false;
     const connectionStart = Date.now();
     let timeoutHandle = setTimeout(() => {
         if (!res.writableEnded && !res.destroyed) {
-            sendSSE('error', { message: '连接超时，SSE流已超过60秒限制，请稍后重试' });
-            logger.warn(`SSE timeout: user=${req.user.id}, duration=${Date.now() - connectionStart}ms`);
+            if (!quotaConsumed) {
+                sendSSE('error', { message: '连接超时，配额未扣除，请稍后重试' });
+            } else {
+                sendSSE('error', { message: '连接超时，请稍后重试' });
+            }
+            logger.warn(`SSE timeout: user=${req.user.id}, duration=${Date.now() - connectionStart}ms, quotaConsumed=${quotaConsumed}`);
             res.end();
         }
     }, SSE_TIMEOUT);
@@ -67,17 +75,25 @@ router.post('/optimize', authMiddleware, async (req, res) => {
         }
     };
 
+    let aborted = false;
+    req.on('close', () => {
+        aborted = true;
+        clearTimeout(timeoutHandle);
+        logger.info(`Client disconnected: user=${req.user.id}, duration=${Date.now() - connectionStart}ms`);
+    });
+
     try {
         const generator = llmService.streamOptimize(level, resumeText, jobDescription || '');
 
         for await (const event of generator) {
-            if (res.writableEnded || res.destroyed) break;
+            if (res.writableEnded || res.destroyed || aborted) break;
 
             if (event.type === 'progress') {
                 sendSSE('progress', event.data);
             } else if (event.type === 'token') {
                 sendSSE('token', event.data);
             } else if (event.type === 'done') {
+                quotaConsumed = true;
                 const newQuota = quotaService.incrementUsage(req.user.id);
                 sendSSE('done', {
                     ...event.data,
@@ -103,6 +119,10 @@ router.post('/parse', authMiddleware, async (req, res) => {
 
     if (!text || text.trim().length < 10) {
         return res.status(400).json({ error: '缺少简历文本或文本过短' });
+    }
+
+    if (text.length > MAX_RESUME_LENGTH) {
+        return res.status(400).json({ error: `文本过长，最多支持${MAX_RESUME_LENGTH}个字符` });
     }
 
     const quota = quotaService.checkQuota(req.user.id);
@@ -132,6 +152,10 @@ router.post('/analyze-jd', authMiddleware, async (req, res) => {
 
     if (!jdText) {
         return res.status(400).json({ error: '缺少JD文本' });
+    }
+
+    if (jdText.length > MAX_JD_LENGTH) {
+        return res.status(400).json({ error: `JD文本过长，最多支持${MAX_JD_LENGTH}个字符` });
     }
 
     const quota = quotaService.checkQuota(req.user.id);

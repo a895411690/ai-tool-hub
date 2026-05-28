@@ -1,6 +1,17 @@
 import winston from 'winston';
+import { sanitize } from './sanitizer.js';
 
 const { combine, timestamp, printf, colorize, errors } = winston.format;
+
+const sanitizeFormat = winston.format((info) => {
+  if (typeof info.message === 'string') {
+    info.message = sanitize(info.message);
+  }
+  if (info.stack && typeof info.stack === 'string') {
+    info.stack = sanitize(info.stack);
+  }
+  return info;
+})();
 
 const logFormat = printf(({ level, message, timestamp, stack }) => {
   return `${timestamp} [${level}]: ${stack || message}`;
@@ -9,6 +20,7 @@ const logFormat = printf(({ level, message, timestamp, stack }) => {
 export const logger = winston.createLogger({
   level: process.env.LOG_LEVEL || 'info',
   format: combine(
+    sanitizeFormat,
     errors({ stack: true }),
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     logFormat
@@ -16,6 +28,7 @@ export const logger = winston.createLogger({
   transports: [
     new winston.transports.Console({
       format: combine(
+        sanitizeFormat,
         colorize(),
         errors({ stack: true }),
         timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
@@ -38,7 +51,7 @@ export const logger = winston.createLogger({
 
 if (process.env.NODE_ENV !== 'production') {
   logger.add(new winston.transports.Console({
-    format: combine(colorize(), timestamp({ format: 'HH:mm:ss' }), printf(({ level, message, timestamp }) => {
+    format: combine(sanitizeFormat, colorize(), timestamp({ format: 'HH:mm:ss' }), printf(({ level, message, timestamp }) => {
       return `${timestamp} ${level}: ${message}`;
     }))
   }));

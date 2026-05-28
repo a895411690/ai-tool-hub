@@ -105,20 +105,17 @@ export function safeJsonParse(jsonString, defaultValue = null) {
             }
             return value;
         });
-    } catch (error) {
-        console.error('JSON解析错误:', error);
+    } catch {
         return defaultValue;
     }
 }
 
-// 本地存储封装（带加密）
 export const storage = {
     get: (key) => {
         try {
             const item = localStorage.getItem(key);
             return item ? safeJsonParse(item) : null;
-        } catch (error) {
-            console.error('Error getting from localStorage:', error);
+        } catch {
             return null;
         }
     },
@@ -126,8 +123,7 @@ export const storage = {
         try {
             localStorage.setItem(key, JSON.stringify(value));
             return true;
-        } catch (error) {
-            console.error('Error setting to localStorage:', error);
+        } catch {
             return false;
         }
     },
@@ -135,8 +131,7 @@ export const storage = {
         try {
             localStorage.removeItem(key);
             return true;
-        } catch (error) {
-            console.error('Error removing from localStorage:', error);
+        } catch {
             return false;
         }
     }
@@ -151,14 +146,12 @@ export const crypto = {
             const data = encoder.encode(text);
             const binaryString = String.fromCharCode(...data);
             return btoa(binaryString);
-        } catch (error) {
-            console.error('Error encrypting:', error);
+        } catch {
             return text;
         }
     },
     decrypt: (text) => {
         try {
-            // 使用更现代的UTF-8解码方法，避免使用已废弃的escape
             const binaryString = atob(text);
             const bytes = new Uint8Array(binaryString.length);
             for (let i = 0; i < binaryString.length; i++) {
@@ -166,8 +159,7 @@ export const crypto = {
             }
             const decoder = new TextDecoder('utf-8', { fatal: true });
             return decoder.decode(bytes);
-        } catch (error) {
-            console.error('Error decrypting:', error);
+        } catch {
             return text;
         }
     }

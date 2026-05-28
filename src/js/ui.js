@@ -1,8 +1,8 @@
-// UI 工具函数
+let toastTimeout = null;
+
 export function showToast(message) {
     const toast = document.getElementById('toast');
     if (!toast) {
-        // 如果没有找到toast元素，创建一个临时的
         const tempToast = document.createElement('div');
         tempToast.id = 'toast';
         tempToast.className = 'fixed bottom-4 left-1/2 -translate-x-1/2 px-6 py-3 bg-gray-800 text-white rounded-lg shadow-lg z-50 show';
@@ -13,9 +13,17 @@ export function showToast(message) {
         }, 3000);
         return;
     }
+
+    if (toastTimeout) {
+        clearTimeout(toastTimeout);
+    }
+
     toast.textContent = message;
     toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
+    toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+        toastTimeout = null;
+    }, 3000);
 }
 
 export function closeModal(event, modalId) {
@@ -76,12 +84,10 @@ document.addEventListener('keydown', (e) => {
 });
 
 // 全局错误处理
-window.addEventListener('error', (e) => {
-    console.error('Global error:', e);
+window.addEventListener('error', () => {
     showToast('页面出现错误，请刷新重试');
 });
 
-window.addEventListener('unhandledrejection', (e) => {
-    console.error('Unhandled rejection:', e);
+window.addEventListener('unhandledrejection', () => {
     showToast('网络请求失败，请检查连接');
 });

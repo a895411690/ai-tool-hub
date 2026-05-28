@@ -1,5 +1,18 @@
-import html2canvas from 'html2canvas';
 import { showToast } from './utils.js';
+
+function loadHtml2Canvas() {
+    return new Promise((resolve, reject) => {
+        if (window.html2canvas) {
+            resolve(window.html2canvas);
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        script.onload = () => resolve(window.html2canvas);
+        script.onerror = () => reject(new Error('html2canvas 加载失败'));
+        document.head.appendChild(script);
+    });
+}
 
 /**
  * Display the share modal dialog
@@ -88,6 +101,7 @@ async function generateShareImage() {
     try {
         showToast('正在生成分享图片...');
 
+        const html2canvas = await loadHtml2Canvas();
         const canvas = await html2canvas(shareCard.firstElementChild, {
             backgroundColor: null,
             scale: 2

@@ -69,7 +69,6 @@ class Store {
             try {
                 listener(this.state);
             } catch (error) {
-                console.error('Store listener error:', error);
             }
         }
     }
@@ -99,7 +98,6 @@ class Store {
                 this.notify();
             }
         } catch (e) {
-            console.error('Failed to load state:', e);
         }
     }
 
@@ -107,7 +105,6 @@ class Store {
         try {
             localStorage.setItem('resumeOptimizerState', JSON.stringify(this.state));
         } catch (e) {
-            console.error('Failed to save state:', e);
         }
     }
 

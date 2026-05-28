@@ -1,8 +1,8 @@
 import { loadTools } from './app.js';
-import { renderCategories, renderHotTools, renderTools, filterCategory, loadSavedFilters, setSearch, clearSearch, setupSearch, sortTools, setCurrentSort, applyFiltersAndSort, toggleAdvancedFilters, toggleAdvancedFilter, clearAllFilters } from './ui.js';
+import { filterCategory, loadSavedFilters, clearSearch, setupSearch, setCurrentSort, applyFiltersAndSort, toggleAdvancedFilters, clearAllFilters } from './ui.js';
 import { openTool, toggleFavorite, showToolDetail, closeToolDetail, rateTool } from './tool.js';
 import { showShareModal, closeShareModal, shareToWeChat, shareToQQ, copyShareLink, generateShareImage } from './share.js';
-import { setupKeyboardShortcuts, setupPullToRefresh, toggleTheme, showToast, loadAnnouncement, closeAnnouncement, checkForUpdate, closeUpdateModal, registerServiceWorker, showThemeModal, closeThemeModal, setTheme, loadSavedTheme } from './utils.js';
+import { setupKeyboardShortcuts, setupPullToRefresh, toggleTheme, showToast, loadAnnouncement, closeAnnouncement, checkForUpdate, closeUpdateModal, registerServiceWorker, closeThemeModal, setTheme, loadSavedTheme } from './utils.js';
 import state, { exportUserData, importUserData } from './state.js';
 
 function scrollToTop() {
@@ -139,12 +139,10 @@ function setupBackToTopButton() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    window.addEventListener('error', (event) => {
-        console.error('Global error:', event.error);
+    window.addEventListener('error', () => {
         showToast('出现错误，请刷新页面重试');
     });
-    window.addEventListener('unhandledrejection', (event) => {
-        console.error('Unhandled promise rejection:', event.reason);
+    window.addEventListener('unhandledrejection', () => {
     });
     loadSavedTheme();
     loadTools();

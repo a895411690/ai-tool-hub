@@ -194,7 +194,6 @@ class ImportUtils {
                         if (wasPlaceholder) {
                             parsedData.profile[field] = localVal || '';
                         }
-                        console.log('[ParseLog]', field, '| LLM:', llmVal, '| Local:', localVal, '| Final:', parsedData.profile[field], '| Placeholder:', wasPlaceholder);
                     }
                 }
                 
@@ -238,7 +237,6 @@ class ImportUtils {
             };
 
         } catch (error) {
-            console.error('简历解析失败:', error);
             return {
                 success: false,
                 fileName: file.name,
@@ -315,10 +313,8 @@ class ImportUtils {
                 text += pageText + '\n';
             }
 
-console.log('[Import] PDF提取完成，文本长度:', text.length);
             return text;
         } catch (error) {
-            console.error('PDF解析失败:', error);
             return '';
         }
     }
@@ -379,7 +375,6 @@ async extractTextFromDOCX(content) {
                 throw new Error('mammoth.js库未加载');
             }
         } catch (error) {
-            console.error('DOCX解析失败:', error);
             return '';
         }
     }
@@ -433,30 +428,59 @@ async extractTextFromDOCX(content) {
             return '';
         }
 
-        // 移除危险标签（不区分大小写，包括多行内容）
-        const dangerousTags = /<(script|iframe|object|embed|form|input|button|textarea|select)[^>]*>[\s\S]*?<\/\1>/gi;
-        let sanitized = html.replace(dangerousTags, '');
+        const ALLOWED_TAGS = new Set([
+            'p', 'br', 'b', 'strong', 'i', 'em', 'u', 'span', 'div',
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+            'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'thead', 'tbody',
+            'a', 'hr', 'blockquote', 'pre', 'code'
+        ]);
 
-        // 移除自闭合的危险标签
-        const dangerousSelfClosingTags = /<(script|iframe|object|embed|input|button|textarea|select|img|link|style|meta)[^>]*\/?>/gi;
-        sanitized = sanitized.replace(dangerousSelfClosingTags, '');
+        const ALLOWED_ATTRS = new Set(['href', 'target', 'rel', 'class']);
 
-        // 移除事件处理器 (onclick, onload, onerror等) — 使用DOM解析方式
-        sanitized = sanitized.replace(/\s+on\w+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]*)/gi, '');
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const walker = document.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT);
 
-        // 移除javascript:伪协议
-        sanitized = sanitized.replace(/(href|src|action)\s*=\s*(["'])\s*javascript:[^\2]*?\2/gi, '$1=$2#$2');
+            const toRemove = [];
+            let node;
+            while ((node = walker.nextNode())) {
+                if (!ALLOWED_TAGS.has(node.tagName.toLowerCase())) {
+                    toRemove.push(node);
+                } else {
+                    for (const attr of [...node.attributes]) {
+                        if (!ALLOWED_ATTRS.has(attr.name.toLowerCase())) {
+                            node.removeAttribute(attr.name);
+                        }
+                        if (attr.value && /^\s*(javascript|data|vbscript):/i.test(attr.value.trim())) {
+                            node.removeAttribute(attr.name);
+                        }
+                    }
+                }
+            }
 
-        // 移除data:伪协议（可能导致XSS）
-        sanitized = sanitized.replace(/(href|src|action)\s*=\s*(["'])\s*data:[^\2]*?\2/gi, '$1=$2#$2');
+            for (const el of toRemove) {
+                const parent = el.parentNode;
+                if (parent) {
+                    while (el.firstChild) {
+                        parent.insertBefore(el.firstChild, el);
+                    }
+                    parent.removeChild(el);
+                }
+            }
 
-        // 移除vbscript:伪协议
-        sanitized = sanitized.replace(/(href|src|action)\s*=\s*(["'])\s*vbscript:[^\2]*?\2/gi, '$1=$2#$2');
+            const aTags = doc.body.querySelectorAll('a');
+            aTags.forEach(a => {
+                a.setAttribute('rel', 'noopener noreferrer');
+                a.setAttribute('target', '_blank');
+            });
 
-        // 移除expression: (CSS表达式，IE特有)
-        sanitized = sanitized.replace(/expression\s*\(/gi, '');
-
-        return sanitized;
+            return doc.body.innerHTML;
+        } catch {
+            const tempDiv = document.createElement('div');
+            tempDiv.textContent = html;
+            return tempDiv.innerHTML;
+        }
     }
 
     /**
@@ -856,7 +880,6 @@ async extractTextFromDOCX(content) {
                 successful: results.filter(r => r.success).length
             };
         } catch (error) {
-            console.error('批量解析失败:', error);
             return {
                 success: false,
                 error: error.message
@@ -906,7 +929,6 @@ async extractTextFromDOCX(content) {
             result.fullText = originalText;
             return result;
         } catch (error) {
-            console.error('增强PDF解析失败:', error);
             // 失败时返回空文本，让后续的文本解析逻辑处理
             return this.parseTextContent('');
         }

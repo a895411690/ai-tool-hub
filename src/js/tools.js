@@ -42,7 +42,6 @@ export async function loadTools() {
             mainContent.innerHTML = '';
         }
     } catch (error) {
-        console.error('Failed to load tools:', error);
         if (loadingEl) loadingEl.classList.add('hidden');
         if (errorEl) {
             errorEl.classList.remove('hidden');

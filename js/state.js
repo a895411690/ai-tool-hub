@@ -13,8 +13,7 @@ function safeJsonParse(key, defaultValue) {
     try {
         const raw = localStorage.getItem(key);
         return raw ? JSON.parse(raw) : defaultValue;
-    } catch (e) {
-        console.warn(`解析 localStorage key "${key}" 失败:`, e);
+    } catch {
         localStorage.removeItem(key);
         return defaultValue;
     }
@@ -189,7 +188,6 @@ function getPopularTools() {
 function setToolRating(toolId, rating) {
     // Validate rating is between 1 and 5
     if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-        console.warn('Invalid rating value:', rating);
         rating = Math.max(1, Math.min(5, Math.round(rating)));
     }
 
@@ -298,7 +296,6 @@ function importUserData(jsonString) {
             message: `成功导入数据：${data.favorites.length} 个收藏，${Object.keys(data.ratings || {}).length} 个评分`
         };
     } catch (error) {
-        console.error('Import failed:', error);
         return {
             success: false,
             message: `导入失败：${error.message}`

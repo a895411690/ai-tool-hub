@@ -55,6 +55,24 @@ class AIOptimizer {
         
         this.currentLevel = 'medium';
         this._initTemplateDropdown();
+        this._setupCloseHandlers();
+    }
+
+    _setupCloseHandlers() {
+        document.addEventListener('click', (e) => {
+            const closeBtn = e.target.closest('[data-action="closeAiPanel"]');
+            if (closeBtn) {
+                e.stopPropagation();
+                this.closePanel();
+                return;
+            }
+
+            const overlay = e.target.closest('#aiPanel > .absolute.inset-0');
+            if (overlay && !e.target.closest('#aiPanelContent')) {
+                this.closePanel();
+                return;
+            }
+        });
     }
 
     _initTemplateDropdown() {
@@ -134,9 +152,11 @@ class AIOptimizer {
         const panel = document.getElementById('aiPanel');
         const content = document.getElementById('aiPanelContent');
         if (!panel || !content) return;
-        
+
         panel.classList.remove('hidden');
-        setTimeout(() => content.classList.add('ai-panel-open'), 10);
+        void content.offsetHeight;
+        content.classList.remove('translate-x-full');
+        content.classList.add('translate-x-0');
         this._renderOptimizationLevels();
         this._updateStatus();
     }
@@ -146,8 +166,9 @@ class AIOptimizer {
         const panel = document.getElementById('aiPanel');
         const content = document.getElementById('aiPanelContent');
         if (!panel || !content) return;
-        
-        content.classList.remove('ai-panel-open');
+
+        content.classList.remove('translate-x-0');
+        content.classList.add('translate-x-full');
         setTimeout(() => panel.classList.add('hidden'), 300);
     }
 
@@ -298,7 +319,7 @@ const resumeData = window.store ? window.store.getState() : {};
             try {
                 const resumeText = this._resumeDataToText(resumeData);
                 const result = await apiClient.optimize('light', resumeText, jobDescription, {
-                    onProgress: (status) => console.log('[AI优化]', status),
+                    onProgress: () => {},
                     onToken: (token) => {} // 流式token，静默处理
                 });
                 if (result) {
@@ -361,7 +382,7 @@ const resumeData = window.store ? window.store.getState() : {};
             try {
                 const resumeText = this._resumeDataToText(resumeData);
                 const result = await apiClient.optimize('medium', resumeText, jobDescription, {
-                    onProgress: (status) => console.log('[AI优化]', status),
+                    onProgress: () => {},
                     onToken: (token) => {}
                 });
                 if (result) {
@@ -413,7 +434,7 @@ const resumeData = window.store ? window.store.getState() : {};
             try {
                 const resumeText = this._resumeDataToText(resumeData);
                 const result = await apiClient.optimize('deep', resumeText, jobDescription, {
-                    onProgress: (status) => console.log('[AI优化]', status),
+                    onProgress: () => {},
                     onToken: (token) => {}
                 });
                 if (result) {
@@ -1333,7 +1354,6 @@ ${star.result}`
             this.closePanel();
             showNotification('✅ 优化结果已应用到简历！', 'success');
         } catch (error) {
-            console.error('应用优化结果失败:', error);
             showNotification('应用优化结果失败: ' + error.message, 'error');
         }
     }
@@ -1392,7 +1412,6 @@ ${star.result}`
 
             showNotification('✅ 优化结果已导出！', 'success');
         } catch (error) {
-            console.error('导出失败:', error);
             showNotification('导出失败: ' + error.message, 'error');
         }
     }
@@ -1553,6 +1572,16 @@ ${star.result}`
 
     // 免费简历诊断
     diagnoseResume() {
+        if (this.useRemoteAI && !apiClient.isAuthenticated()) {
+            showNotification('简历诊断需要登录，请先登录或注册', 'warning');
+            import('../components/authModal.js').then(({ authModal }) => {
+                authModal.show();
+            }).catch(() => {
+                showNotification('登录模块加载失败，请刷新页面重试', 'error');
+            });
+            return;
+        }
+
         const resumeData = window.store ? window.store.getState() : {};
         if (!resumeData.profile || !resumeData.profile.name) {
             showNotification('请先填写简历基本信息', 'error');
@@ -1716,11 +1745,13 @@ ${star.result}`
         }
 
         document.querySelectorAll('#quickJobTags button').forEach(btn => {
-            btn.classList.remove('bg-indigo-600/30', 'text-indigo-300');
+            btn.classList.remove('bg-indigo-600/30', 'text-indigo-300', 'border-indigo-500/50');
             btn.classList.add('bg-gray-700/50', 'text-gray-300');
+            if (btn.textContent.trim() && jobTitle.includes(btn.textContent.trim())) {
+                btn.classList.remove('bg-gray-700/50', 'text-gray-300');
+                btn.classList.add('bg-indigo-600/30', 'text-indigo-300', 'border-indigo-500/50');
+            }
         });
-        event.currentTarget.classList.remove('bg-gray-700/50', 'text-gray-300');
-        event.currentTarget.classList.add('bg-indigo-600/30', 'text-indigo-300');
 
         showNotification(`已选择：${jobTitle}`, 'success');
     }

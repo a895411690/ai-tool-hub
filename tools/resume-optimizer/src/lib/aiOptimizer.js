@@ -319,7 +319,7 @@ const resumeData = window.store ? window.store.getState() : {};
             try {
                 const resumeText = this._resumeDataToText(resumeData);
                 const result = await apiClient.optimize('light', resumeText, jobDescription, {
-                    onProgress: (status) => console.log('[AI优化]', status),
+                    onProgress: () => {},
                     onToken: (token) => {} // 流式token，静默处理
                 });
                 if (result) {
@@ -382,7 +382,7 @@ const resumeData = window.store ? window.store.getState() : {};
             try {
                 const resumeText = this._resumeDataToText(resumeData);
                 const result = await apiClient.optimize('medium', resumeText, jobDescription, {
-                    onProgress: (status) => console.log('[AI优化]', status),
+                    onProgress: () => {},
                     onToken: (token) => {}
                 });
                 if (result) {
@@ -434,7 +434,7 @@ const resumeData = window.store ? window.store.getState() : {};
             try {
                 const resumeText = this._resumeDataToText(resumeData);
                 const result = await apiClient.optimize('deep', resumeText, jobDescription, {
-                    onProgress: (status) => console.log('[AI优化]', status),
+                    onProgress: () => {},
                     onToken: (token) => {}
                 });
                 if (result) {
@@ -1354,7 +1354,6 @@ ${star.result}`
             this.closePanel();
             showNotification('✅ 优化结果已应用到简历！', 'success');
         } catch (error) {
-            console.error('应用优化结果失败:', error);
             showNotification('应用优化结果失败: ' + error.message, 'error');
         }
     }
@@ -1413,7 +1412,6 @@ ${star.result}`
 
             showNotification('✅ 优化结果已导出！', 'success');
         } catch (error) {
-            console.error('导出失败:', error);
             showNotification('导出失败: ' + error.message, 'error');
         }
     }
