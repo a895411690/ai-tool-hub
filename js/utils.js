@@ -51,7 +51,9 @@ function setupKeyboardShortcuts(callbacks = {}) {
         const searchInput = document.getElementById('mainSearch');
 
         if (e.key === '/' || e.key === 's' || e.key === 'S') {
-            if (searchInput && document.activeElement !== searchInput) {
+            const active = document.activeElement;
+            const isEditing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
+            if (searchInput && !isEditing) {
                 e.preventDefault();
                 searchInput.focus();
             }
@@ -331,8 +333,40 @@ function isValidUrl(url) {
  */
 function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
+        navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed:', err));
     }
+}
+const RATING_LABELS = ['', '很差', '较差', '一般', '很好', '极好'];
+
+function generateTagsHtml(tool) {
+    let html = '';
+    if (tool.tags) {
+        if (tool.tags.includes('free')) html += '<span class="tag tag-free">免费</span>';
+        else if (tool.tags.includes('vip')) html += '<span class="tag tag-vip">VIP</span>';
+        if (tool.tags.includes('new')) html += '<span class="tag tag-new">NEW</span>';
+        if (tool.tags.includes('hot')) html += '<span class="tag tag-hot">热门</span>';
+    }
+    if (tool.toolTags) {
+        if (tool.toolTags.includes('国产')) html += '<span class="tag tag-domestic">国产</span>';
+        if (tool.toolTags.includes('海外')) html += '<span class="tag tag-overseas">海外</span>';
+        if (tool.toolTags.includes('开源')) html += '<span class="tag tag-open-source">开源</span>';
+        if (tool.toolTags.includes('无需登录')) html += '<span class="tag tag-no-login">无需登录</span>';
+    }
+    return html;
+}
+
+function generatePlatformBadgesHtml(platform) {
+    if (!platform || !Array.isArray(platform)) return '';
+    const icons = { web: 'fa-globe', local: 'fa-server', mobile: 'fa-mobile-alt', desktop: 'fa-desktop' };
+    return `<div class="platform-badges">${platform.map(p =>
+        `<i class="fas ${icons[p] || 'fa-cog'}" title="${escapeAttr(p)}"></i>`
+    ).join('')}</div>`;
+}
+
+function generateStatusBadgeHtml(status) {
+    if (status === 'hot') return '<span class="status-badge status-hot"><i class="fas fa-fire"></i> 热门推荐</span>';
+    if (status === 'stable') return '<span class="status-badge status-stable"><i class="fas fa-check-circle"></i> 稳定可靠</span>';
+    return '';
 }
 
 // Export functions, constants, and utilities
@@ -355,5 +389,11 @@ export {
     isValidUrl,
     MAX_SEARCH_HISTORY,
     TOAST_DISPLAY_TIME,
-    SEARCH_DEBOUNCE_TIME
+    SEARCH_DEBOUNCE_TIME,
+    generateTagsHtml,
+    generatePlatformBadgesHtml,
+    generateStatusBadgeHtml,
+    RATING_LABELS
 };
+
+

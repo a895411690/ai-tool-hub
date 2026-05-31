@@ -1,5 +1,5 @@
 import { loadTools } from './app.js';
-import { filterCategory, loadSavedFilters, clearSearch, setupSearch, setCurrentSort, applyFiltersAndSort, toggleAdvancedFilters, clearAllFilters } from './ui.js';
+import { renderTools, filterCategory, loadSavedFilters, clearSearch, setupSearch, setCurrentSort, applyFiltersAndSort, toggleAdvancedFilters, clearAllFilters } from './ui.js';
 import { openTool, toggleFavorite, showToolDetail, closeToolDetail, rateTool } from './tool.js';
 import { showShareModal, closeShareModal, shareToWeChat, shareToQQ, copyShareLink, generateShareImage } from './share.js';
 import { setupKeyboardShortcuts, setupPullToRefresh, toggleTheme, showToast, loadAnnouncement, closeAnnouncement, checkForUpdate, closeUpdateModal, registerServiceWorker, closeThemeModal, setTheme, loadSavedTheme } from './utils.js';
@@ -66,7 +66,6 @@ function importFavorites() {
         reader.onload = async (event) => {
             const result = importUserData(event.target.result);
             showToast(result.message);
-            const { renderTools } = await import('./ui.js');
             renderTools(state.tools);
         };
         reader.readAsText(file);
@@ -142,7 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('error', () => {
         showToast('出现错误，请刷新页面重试');
     });
-    window.addEventListener('unhandledrejection', () => {
+    window.addEventListener('unhandledrejection', (e) => {
+        console.warn('Unhandled promise rejection:', e.reason);
     });
     loadSavedTheme();
     loadTools();
@@ -161,4 +161,53 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSavedFilters();
     registerServiceWorker();
     setupBackToTopButton();
+
+    // Close user menu when clicking outside
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('userMenu');
+        const btn = document.getElementById('userBtn');
+        if (menu && menu.classList.contains('show') && menu !== e.target && !menu.contains(e.target) && btn !== e.target && !btn.contains(e.target)) {
+            menu.classList.remove('show');
+        }
+    });
 });
+
+// ---------------------------------------------------------------------------
+// Global functions for inline onclick handlers in index.html
+// These wire the UI elements that were part of the removed src/js/ codebase.
+window.showPromptsPage = function() {
+    showToast("提示词功能即将上线");
+};
+
+window.showResearchPage = async function() {
+    var mod = await import('./research.js');
+    mod.initResearchPage();
+};
+
+window.toggleUserMenu = function() {
+    const menu = document.getElementById('userMenu');
+    if (menu) menu.classList.toggle('show');
+};
+
+window.showProfile = function() {
+    showToast('个人中心功能即将上线');
+};
+
+window.syncData = function() {
+    showToast('同步功能即将上线');
+};
+
+window.exportData = function() {
+    exportFavorites();
+};
+
+window.loginWithGitHub = function() {
+    showToast('GitHub OAuth 需后端服务器支持，当前为前端演示模式');
+};
+
+// Expose commonly-used close functions on window for inline onclick handlers
+window.closeAnnouncement = closeAnnouncement;
+window.closeToolDetail = closeToolDetail;
+window.closeShareModal = closeShareModal;
+window.closeThemeModal = closeThemeModal;
+window.closeUpdateModal = closeUpdateModal;

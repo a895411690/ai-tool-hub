@@ -47,3 +47,15 @@ resume_parsed_*.json
 
 # Continuation
 .omo/
+
+# Third-party assets
+css/tailwind.min.css
+css/tailwind.css
+
+# Generated reports
+coverage/
+e2e-test-report.md
+E2E_TEST_REPORT.md
+agent-browser.json
+index.html.built
+*.backup

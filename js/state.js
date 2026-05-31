@@ -58,6 +58,12 @@ const state = {
     tools: [],           // All tools data from tools.json
     categories: [],      // Category definitions
     currentCategory: 'all', // Currently selected category filter
+    currentSort: 'default', // Current sort method
+    advancedFilters: {    // Advanced filter state (price, origin, status)
+        price: [],
+        origin: [],
+        status: []
+    },
     searchHistory: safeJsonParse('ai-tool-hub-search-history', []),
     favorites: safeJsonParse('ai-tool-hub-favorites', []),
     clickStats: safeJsonParse('ai-tool-hub-click-stats', {}),  // Tool click statistics {toolId: count}
@@ -157,6 +163,13 @@ function recordToolClick(toolId) {
         _clickSaveTimeout = setTimeout(() => {
             localStorage.setItem('ai-tool-hub-click-stats', JSON.stringify(state.clickStats));
         }, 2000);
+    }
+
+    if (typeof window !== 'undefined' && !window.__clickStatsUnloadRegistered) {
+        window.__clickStatsUnloadRegistered = true;
+        window.addEventListener('beforeunload', () => {
+            localStorage.setItem('ai-tool-hub-click-stats', JSON.stringify(state.clickStats));
+        });
     }
 }
 
@@ -321,5 +334,6 @@ export {
     getRatedToolsCount,
     exportUserData,
     importUserData,
+    migrateState,
     safeJsonParse
 };

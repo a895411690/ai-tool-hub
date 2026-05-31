@@ -1,7 +1,7 @@
 // Import state and functions
 import state, { toggleFavorite, recordToolClick, getToolClickCount, setToolRating, getToolRating } from './state.js';
 import { renderTools } from './ui.js';
-import { showToast, isValidUrl, escapeHtml, escapeAttr } from './utils.js';
+import { showToast, isValidUrl, escapeHtml, escapeAttr, generateTagsHtml, generateStatusBadgeHtml, RATING_LABELS } from './utils.js';
 
 /**
  * Open tool URL in new tab with security validation
@@ -12,9 +12,17 @@ import { showToast, isValidUrl, escapeHtml, escapeAttr } from './utils.js';
 function openTool(id, url, event) {
     event.stopPropagation();
 
-    // Security: Validate URL to prevent javascript: injection
+    // Handle internal tool navigation
+    if (url.startsWith("#")) {
+        recordToolClick(id);
+        if (url === "#research" && typeof window.showResearchPage === "function") {
+            window.showResearchPage();
+        }
+        return;
+    }
+
     if (!isValidUrl(url)) {
-        showToast('无效的工具链接');
+        showToast("无效的工具链接");
         return;
     }
 
@@ -69,25 +77,11 @@ function showToolDetail(id) {
     const clickCount = getToolClickCount(tool.id);
 
     // Generate tags HTML
-    let tagsHtml = '';
-    if (tool.tags) {
-        if (tool.tags.includes('free')) tagsHtml += '<span class="tag tag-free">免费</span>';
-        else if (tool.tags.includes('vip')) tagsHtml += '<span class="tag tag-vip">VIP</span>';
-        if (tool.tags.includes('new')) tagsHtml += '<span class="tag tag-new">NEW</span>';
-        if (tool.tags.includes('hot')) tagsHtml += '<span class="tag tag-hot">热门</span>';
-    }
-
-    if (tool.toolTags) {
-        if (tool.toolTags.includes('国产')) tagsHtml += '<span class="tag tag-domestic">国产</span>';
-        if (tool.toolTags.includes('海外')) tagsHtml += '<span class="tag tag-overseas">海外</span>';
-        if (tool.toolTags.includes('开源')) tagsHtml += '<span class="tag tag-open-source">开源</span>';
-        if (tool.toolTags.includes('无需登录')) tagsHtml += '<span class="tag tag-no-login">无需登录</span>';
-    }
+    const tagsHtml = generateTagsHtml(tool);
 
     // Generate platform badges
-    const platformIcons = { web: 'fa-globe', local: 'fa-server', mobile: 'fa-mobile-alt', desktop: 'fa-desktop' };
     const platformBadges = tool.platform?.map(p =>
-        `<span class="platform-badge"><i class="fas ${platformIcons[p] || 'fa-cog'}"></i> ${p}</span>`
+        `<span class="platform-badge"><i class="fas ${{web:'fa-globe',local:'fa-server',mobile:'fa-mobile-alt',desktop:'fa-desktop'}[p] || 'fa-cog'}"></i> ${escapeHtml(p)}</span>`
     ).join('') || '';
 
     // Generate difficulty display
@@ -95,9 +89,7 @@ function showToolDetail(id) {
     const difficultyDisplay = tool.difficulty ? difficultyLabels[tool.difficulty] : '';
 
     // Generate status badge
-    let statusBadge = '';
-    if (tool.status === 'hot') statusBadge = '<span class="status-badge status-hot"><i class="fas fa-fire"></i> 热门推荐</span>';
-    else if (tool.status === 'stable') statusBadge = '<span class="status-badge status-stable"><i class="fas fa-check-circle"></i> 稳定可靠</span>';
+    const statusBadge = generateStatusBadgeHtml(tool.status);
 
     // Find related tools (same category)
     const relatedTools = state.tools
@@ -148,13 +140,13 @@ function showToolDetail(id) {
     if (favBtn) {
         favBtn.classList.toggle('active', favorite);
         favBtn.innerHTML = `<i class="fas fa-star"></i> ${favorite ? '已收藏' : '收藏'}`;
-        favBtn.onclick = (e) => { e.stopPropagation(); handleToggleFavorite(tool.id, e); };
+        favBtn.addEventListener('click', (e) => { e.stopPropagation(); handleToggleFavorite(tool.id, e); });
     }
 
     // Update open button
     const openBtn = modal.querySelector('.detail-open-btn');
     if (openBtn) {
-        openBtn.onclick = (e) => { e.stopPropagation(); openTool(tool.id, tool.url, e); };
+        openBtn.addEventListener('click', (e) => { e.stopPropagation(); openTool(tool.id, tool.url, e); });
     }
 
     // Initialize rating UI (v4.4.0)
@@ -169,8 +161,7 @@ function showToolDetail(id) {
 
         // Update text
         if (currentRating > 0) {
-            const ratingLabels = ['', '很差', '较差', '一般', '很好', '极好'];
-            ratingText.textContent = ratingLabels[currentRating] || `${currentRating}星`;
+            ratingText.textContent = RATING_LABELS[currentRating] || `${currentRating}星`;
         } else {
             ratingText.textContent = '点击评分';
         }
@@ -188,7 +179,7 @@ function showToolDetail(id) {
 
     const closeBtn = modal.querySelector('.modal-close-btn-modern');
     if (closeBtn) {
-        closeBtn.onclick = (e) => { e.stopPropagation(); closeToolDetail(); };
+        closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeToolDetail(); });
     }
 }
 
@@ -225,8 +216,7 @@ function rateTool(rating) {
     // Update text
     const ratingText = document.querySelector('#ratingText');
     if (ratingText) {
-        const ratingLabels = ['', '很差', '较差', '一般', '很好', '极好'];
-        ratingText.textContent = ratingLabels[rating] || `${rating}星`;
+        ratingText.textContent = RATING_LABELS[rating] || `${rating}星`;
     }
 
     // Show toast feedback

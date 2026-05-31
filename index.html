@@ -1,66 +1,74 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="dark">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tool Hub v3.0 - 智能工具聚合平台</title>
+    <title>AI Tool Hub - 智能工具聚合平台</title>
     <meta name="description" content="一站式AI工具聚合导航平台，支持用户系统、工具对比、个性化推荐">
     <meta name="keywords" content="AI工具,人工智能,AI写作,AI绘画,AI代码,AI视频">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#1677ff">
     <link rel="manifest" href="./manifest.json">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.18.2/dist/index.js"></script>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <link rel="stylesheet" href="./css/tailwind.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.18.2/dist/index.js" integrity="sha384-oOzlBbyTRPCSLZF7MUBwr2iOMUkVopRZkQgV/eyy5AusOQg4UmNgp73E59pYMrN3" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="./css/main.css">
 </head>
-<body class="text-gray-100 min-h-screen tech-bg">
+<body class="min-h-screen">
     <!-- Navigation -->
-    <nav class="fixed top-0 left-0 right-0 z-50 glass">
+    <nav class="nav-bar fixed top-0 left-0 right-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <a href="#" class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                    <i class="fas fa-robot text-white text-lg"></i>
+                <div class="w-8 h-8 rounded-lg" style="background: var(--color-primary); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-robot text-white text-sm"></i>
                 </div>
-                <span class="text-xl font-bold gradient-text">AI Tool Hub</span>
-                <span class="text-xs text-gray-500 ml-2">v3.0</span>
+                <span class="text-lg font-semibold" style="color: var(--color-primary);">AI Tool Hub</span>
             </a>
             
             <div class="flex items-center gap-4">
-                <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full glass text-sm">
+                <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm" style="border-color: var(--border-color);">
                     <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                     <span>上新 <span id="newToolsCount">0</span> 款</span>
                 </div>
                 
-                <button onclick="showPromptsPage()" class="hidden md:flex items-center gap-2 px-4 py-2 rounded-full glass hover:border-primary transition-all text-sm">
-                    <i class="fas fa-wand-magic-sparkles text-purple-400"></i>
+                <button onclick="showResearchPage()" class="hidden md:flex items-center gap-2 px-4 py-2 rounded-full border hover:border-blue-300 transition-all text-sm" style="border-color: var(--border-color);" title="Deep Research Agent">
+                    <i class="fas fa-microscope" style="color: var(--color-primary);"></i>
+                    <span>深度研究</span>
+                </button>
+                <button onclick="showPromptsPage()" class="hidden md:flex items-center gap-2 px-4 py-2 rounded-full border hover:border-blue-300 transition-all text-sm" style="border-color: var(--border-color);">
+                    <i class="fas fa-wand-magic-sparkles" style="color: var(--color-primary);"></i>
                     <span>提示词</span>
+                </button>
+
+                <button data-action="toggle-theme" class="flex items-center justify-center w-9 h-9 rounded-full border" style="border-color: var(--border-color); color: var(--text-secondary);" title="切换主题">
+                    <i id="themeIconNav" class="fas fa-palette text-sm"></i>
                 </button>
                 
                 <div class="relative">
-                    <button id="userBtn" onclick="toggleUserMenu()" class="flex items-center gap-2 px-4 py-2 rounded-full glass hover:border-primary transition-all">
+                    <button id="userBtn" onclick="toggleUserMenu()" class="flex items-center gap-2 px-4 py-2 rounded-full border" style="border-color: var(--border-color);">
                         <img id="userAvatar" src="" class="w-8 h-8 rounded-full hidden" alt="">
-                        <i id="userIcon" class="fas fa-user-circle text-xl text-gray-400"></i>
+                        <i id="userIcon" class="fas fa-user-circle text-xl" style="color: var(--text-tertiary);"></i>
                         <span id="userName" class="hidden md:inline text-sm">游客</span>
-                        <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                        <i class="fas fa-chevron-down text-xs" style="color: var(--text-tertiary);"></i>
                     </button>
                     
                     <div id="userMenu" class="user-menu">
-                        <div class="p-2 border-b border-gray-700" id="userInfoSection">
+                        <div class="p-2" style="border-bottom: 1px solid var(--border-color);" id="userInfoSection">
                             <p class="text-sm font-medium" id="menuUserName">游客</p>
-                            <p class="text-xs text-gray-500" id="menuUserEmail">未登录</p>
+                            <p class="text-xs" style="color: var(--text-tertiary);" id="menuUserEmail">未登录</p>
                         </div>
-                        <a href="#" onclick="showProfile(); return false;" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
-                            <i class="fas fa-user text-gray-400"></i> 个人中心
+                        <a href="#" onclick="showProfile(); return false;" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm" style="color: var(--text-secondary);">
+                            <i class="fas fa-user" style="color: var(--text-tertiary);"></i> 个人中心
                         </a>
-                        <a href="#" onclick="syncData(); return false;" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
-                            <i class="fas fa-sync text-gray-400"></i> 同步数据
+                        <a href="#" onclick="syncData(); return false;" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm" style="color: var(--text-secondary);">
+                            <i class="fas fa-sync" style="color: var(--text-tertiary);"></i> 同步数据
                         </a>
-                        <a href="#" onclick="exportData(); return false;" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
-                            <i class="fas fa-download text-gray-400"></i> 导出数据
+                        <a href="#" onclick="exportData(); return false;" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm" style="color: var(--text-secondary);">
+                            <i class="fas fa-download" style="color: var(--text-tertiary);"></i> 导出数据
                         </a>
-                        <div class="border-t border-gray-700 mt-2 pt-2" id="authSection">
-                            <button onclick="loginWithGitHub()" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-sm text-left">
-                                <i class="fab fa-github text-gray-400"></i> GitHub登录
+                        <div style="border-top: 1px solid var(--border-color); margin-top: 8px; padding-top: 8px;" id="authSection">
+                            <button onclick="loginWithGitHub()" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left" style="color: var(--text-secondary);">
+                                <i class="fab fa-github" style="color: var(--text-tertiary);"></i> GitHub登录
                             </button>
                         </div>
                     </div>
@@ -71,65 +79,163 @@
 
     <!-- Main Content -->
     <main class="pt-24 pb-32" id="mainContent">
-        <!-- Content will be loaded by JavaScript -->
+        <!-- Announcement Bar -->
+        <div id="announcementBar" class="hidden fixed top-16 left-0 right-0 z-40 text-white text-center py-2 text-sm" style="background: rgba(22,119,255,0.9);">
+            <span id="announcementText"></span>
+            <button onclick="closeAnnouncement()" class="ml-4 text-white/70 hover:text-white"><i class="fas fa-times"></i></button>
+        </div>
+
+        <!-- Search Section -->
+        <section class="max-w-7xl mx-auto px-4 mb-6">
+            <div class="relative">
+                <div class="flex items-center rounded-lg px-4 py-3" style="border: 1px solid var(--border-color); background: var(--input-bg);">
+                    <i class="fas fa-search mr-3" style="color: var(--text-tertiary);"></i>
+                    <input type="text" id="mainSearch" placeholder="搜索 AI 工具..." class="flex-1 bg-transparent outline-none text-sm" autocomplete="off" style="color: var(--text-primary);">
+                    <button id="clearSearchBtn" class="hidden ml-2" style="color: var(--text-tertiary);"><i class="fas fa-times"></i></button>
+                </div>
+                <div id="searchHistory" class="hidden absolute top-full left-0 right-0 mt-2 rounded-lg z-30 max-h-64 overflow-y-auto" style="border: 1px solid var(--border-color); background: var(--bg-container);"></div>
+                <div id="searchSuggestions" class="hidden absolute top-full left-0 right-0 mt-2 rounded-lg z-30 max-h-64 overflow-y-auto" style="border: 1px solid var(--border-color); background: var(--bg-container);"></div>
+            </div>
+        </section>
+
+        <!-- Category Filter -->
+        <section class="max-w-7xl mx-auto px-4 mb-6">
+            <div id="categoryFilter" class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"></div>
+        </section>
+
+        <!-- Hot Tools Section -->
+        <section class="max-w-7xl mx-auto px-4 mb-8">
+            <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                <i class="fas fa-fire text-orange-400"></i> 热门推荐
+            </h2>
+            <div id="hotToolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- Statistics Dashboard -->
+        <section class="max-w-7xl mx-auto px-4 mb-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div class="glass-card rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold" style="color: #1677ff;" id="totalToolsCount">0</div>
+                    <div class="text-xs text-gray-500 mt-1">工具总数</div>
+                </div>
+                <div class="glass-card rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold" style="color: #1677ff;" id="totalClicksCount">0</div>
+                    <div class="text-xs text-gray-500 mt-1">总点击</div>
+                </div>
+                <div class="glass-card rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-red-400" id="favoritesCount">0</div>
+                    <div class="text-xs text-gray-500 mt-1">收藏数</div>
+                </div>
+                <div class="glass-card rounded-xl p-4 text-center">
+                    <div class="text-2xl font-bold text-green-500" id="categoriesCount">0</div>
+                    <div class="text-xs text-gray-500 mt-1">分类数</div>
+                </div>
+            </div>
+            <div id="categoryBars" class="glass-card rounded-xl p-4"></div>
+            <div id="topToolsList" class="glass-card rounded-xl p-4 mt-4"></div>
+        </section>
+
+        <!-- Tools Grid -->
+        <section class="max-w-7xl mx-auto px-4">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold flex items-center gap-2">
+                    <i class="fas fa-th text-blue-500"></i> 全部工具
+                </h2>
+            </div>
+            <div id="toolsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+        </section>
+
+        <!-- Tool Detail Modal -->
+        <div id="toolDetailModal" class="modal-overlay fixed inset-0 z-50 hidden items-center justify-center" style="display:none;">
+            <div class="modal-panel rounded-xl p-6 max-w-lg w-full mx-4 max-h-[80vh] overflow-y-auto shadow-xl">
+                <div id="toolDetailContent"></div>
+                <button onclick="closeToolDetail()" class="mt-4 w-full py-2 rounded-lg border text-sm transition-all" style="border-color: var(--border-color);">关闭</button>
+            </div>
+        </div>
+
+        <!-- Share Modal -->
+        <div id="shareModal" class="modal-overlay fixed inset-0 z-50 hidden items-center justify-center" style="display:none;">
+            <div class="modal-panel rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+                <h3 class="text-lg font-bold mb-4">分享</h3>
+                <div id="shareContent"></div>
+                <button onclick="closeShareModal()" class="mt-4 w-full py-2 rounded-lg border text-sm transition-all" style="border-color: var(--border-color);">关闭</button>
+            </div>
+        </div>
+
+        <!-- Theme Modal -->
+        <div id="themeModal" class="modal-overlay fixed inset-0 z-50 hidden items-center justify-center" style="display:none;">
+            <div class="modal-panel rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+                <h3 class="text-lg font-bold mb-4">主题设置</h3>
+                <div id="themeContent" class="grid grid-cols-2 gap-3">
+                    <button class="theme-option active" data-action="set-theme" data-theme-value="default" style="background: var(--bg-elevated); border: 2px solid var(--color-primary); border-radius: 8px; padding: 12px; cursor: pointer; text-align: left; transition: all .2s;">
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 14px;">🎨 默认紫蓝</div>
+                        <div style="color: var(--text-tertiary); font-size: 12px;">classic</div>
+                    </button>
+                    <button class="theme-option" data-action="set-theme" data-theme-value="midnight" style="background: var(--bg-elevated); border: 2px solid transparent; border-radius: 8px; padding: 12px; cursor: pointer; text-align: left; transition: all .2s;">
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 14px;">🌙 深夜模式</div>
+                        <div style="color: var(--text-tertiary); font-size: 12px;">dark</div>
+                    </button>
+                    <button class="theme-option" data-action="set-theme" data-theme-value="lavender" style="background: var(--bg-elevated); border: 2px solid transparent; border-radius: 8px; padding: 12px; cursor: pointer; text-align: left; transition: all .2s;">
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 14px;">💜 薰衣草紫</div>
+                        <div style="color: var(--text-tertiary); font-size: 12px;">lavender</div>
+                    </button>
+                    <button class="theme-option" data-action="set-theme" data-theme-value="ocean" style="background: var(--bg-elevated); border: 2px solid transparent; border-radius: 8px; padding: 12px; cursor: pointer; text-align: left; transition: all .2s;">
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 14px;">🌊 海洋蓝</div>
+                        <div style="color: var(--text-tertiary); font-size: 12px;">ocean</div>
+                    </button>
+                    <button class="theme-option" data-action="set-theme" data-theme-value="sakura" style="background: var(--bg-elevated); border: 2px solid transparent; border-radius: 8px; padding: 12px; cursor: pointer; text-align: left; transition: all .2s;">
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 14px;">🌸 樱花粉</div>
+                        <div style="color: var(--text-tertiary); font-size: 12px;">sakura</div>
+                    </button>
+                    <button class="theme-option" data-action="set-theme" data-theme-value="forest" style="background: var(--bg-elevated); border: 2px solid transparent; border-radius: 8px; padding: 12px; cursor: pointer; text-align: left; transition: all .2s;">
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 14px;">🍃 森林绿</div>
+                        <div style="color: var(--text-tertiary); font-size: 12px;">forest</div>
+                    </button>
+                    <button class="theme-option" data-action="set-theme" data-theme-value="sunset" style="background: var(--bg-elevated); border: 2px solid transparent; border-radius: 8px; padding: 12px; cursor: pointer; text-align: left; transition: all .2s;">
+                        <div style="font-weight: 600; color: var(--text-primary); font-size: 14px;">🔥 日落橙</div>
+                        <div style="color: var(--text-tertiary); font-size: 12px;">sunset</div>
+                    </button>
+                </div>
+                <button onclick="closeThemeModal()" class="mt-4 w-full py-2 rounded-lg border text-sm transition-all" style="border-color: var(--border-color);">关闭</button>
+            </div>
+        </div>
+
+        <!-- Update Modal -->
+        <div id="updateModal" class="modal-overlay fixed inset-0 z-50 hidden items-center justify-center" style="display:none;">
+            <div class="modal-panel rounded-xl p-6 max-w-md w-full mx-4 text-center shadow-xl">
+                <i class="fas fa-arrow-up-from-bracket text-4xl mb-4" style="color: var(--color-primary);"></i>
+                <h3 class="text-lg font-bold mb-2">发现新版本</h3>
+                <p class="text-sm mb-4" style="color: var(--text-tertiary);">有新版本可用，建议更新以获得更好的体验</p>
+                <button onclick="closeUpdateModal()" class="px-6 py-2 text-white rounded-lg" style="background: var(--color-primary);">更新</button>
+            </div>
+        </div>
+
+        <!-- Back to Top Button -->
+        <button id="backToTopBtn" class="fixed bottom-24 right-6 z-40 w-12 h-12 rounded-full border shadow-sm flex items-center justify-center opacity-0 pointer-events-none transition-all" style="border-color: var(--border-color); background: var(--bg-container);">
+            <i class="fas fa-arrow-up" style="color: var(--text-tertiary);"></i>
+        </button>
+
+        <!-- Pull Refresh Indicator -->
+        <div id="pullRefresh" class="fixed top-0 left-0 right-0 z-50 flex items-center justify-center py-2 text-sm" style="display:none; background: rgba(22,119,255,0.1); color: #1677ff;">
+            <i class="fas fa-spinner fa-spin mr-2"></i> 刷新中...
+        </div>
     </main>
 
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-[60] px-6 py-3 rounded-lg shadow-lg text-sm transition-all opacity-0 pointer-events-none" style="background: var(--bg-container); color: var(--text-secondary); border: 1px solid var(--border-color);">
+        <span id="toastMsg"></span>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="fixed inset-0 z-50 flex items-center justify-center" style="background: var(--bg-body);">
+        <div class="text-center">
+            <div class="w-10 h-10 mx-auto mb-4 border-4 rounded-full animate-spin" style="border-color: var(--border-color); border-top-color: var(--color-primary);"></div>
+            <p class="text-sm" style="color: var(--text-tertiary);">加载中...</p>
+        </div>
+    </div>
+
     <!-- Scripts -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        function $(sel) { return document.querySelector(sel); }
-        function $$(sel) { return document.querySelectorAll(sel); }
 
-        window.toggleUserMenu = function() {
-            var menu = $('#userMenu');
-            if (menu) menu.classList.toggle('show');
-        };
-
-        window.showProfile = function() {
-            var menu = $('#userMenu');
-            if (menu) menu.classList.remove('show');
-            var content = $('#mainContent');
-            if (content) content.dispatchEvent(new CustomEvent('navigate', { detail: { page: 'profile' } }));
-        };
-
-        window.syncData = function() {
-            var menu = $('#userMenu');
-            if (menu) menu.classList.remove('show');
-            if (window._appModule && window._appModule.syncData) {
-                window._appModule.syncData();
-            }
-        };
-
-        window.exportData = function() {
-            var menu = $('#userMenu');
-            if (menu) menu.classList.remove('show');
-            if (window._appModule && window._appModule.exportData) {
-                window._appModule.exportData();
-            }
-        };
-
-        window.loginWithGitHub = function() {
-            var menu = $('#userMenu');
-            if (menu) menu.classList.remove('show');
-            if (window._appModule && window._appModule.loginWithGitHub) {
-                window._appModule.loginWithGitHub();
-            }
-        };
-
-        window.showPromptsPage = function() {
-            var content = $('#mainContent');
-            if (content) content.dispatchEvent(new CustomEvent('navigate', { detail: { page: 'prompts' } }));
-        };
-
-        document.addEventListener('click', function(e) {
-            var menu = $('#userMenu');
-            var btn = $('#userBtn');
-            if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !btn.contains(e.target)) {
-                menu.classList.remove('show');
-            }
-        });
-    });
-    </script>
-    <script type="module" src="./js/app.js"></script>
+    <script type="module" src="./js/main.js"></script>
 </body>
 </html>

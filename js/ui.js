@@ -1,290 +1,9 @@
 // Import state from centralized state module (no circular dependency!)
-import state, { getCategoryName, isFavorite, addToSearchHistory } from './state.js';
-import { escapeHtml, escapeAttr, SEARCH_DEBOUNCE_TIME, showToast } from './utils.js';
+import state, { addToSearchHistory } from './state.js';
+import { escapeHtml, escapeAttr, SEARCH_DEBOUNCE_TIME, showToast, generateTagsHtml, generatePlatformBadgesHtml, generateStatusBadgeHtml } from './utils.js';
 
 /**
- * Render category filter buttons
- * Creates clickable category buttons for filtering tools
- */
-function renderCategories() {
-    const container = document.getElementById('categoryFilter');
-    if (!container) return;
-
-    container.setAttribute('role', 'navigation');
-    container.setAttribute('aria-label', '工具分类');
-
-    const buttons = state.categories.map(cat =>
-        `<button class="category-btn px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="${escapeAttr(cat.id)}" data-action="filter-category" aria-label="查看${escapeHtml(cat.name)}分类的工具" tabindex="0">${escapeHtml(cat.name)}</button>`
-    ).join('');
-
-    container.innerHTML = '<button class="category-btn active px-5 py-2 rounded-full glass text-sm font-medium transition-all" data-category="all" data-action="filter-category" aria-label="查看全部工具" tabindex="0">全部</button>' + buttons;
-}
-
-/**
- * Render hot tools section (v4.3.0)
- * Shows top 6-8 hot/popular tools in a dedicated section
- */
-function renderHotTools() {
-    const grid = document.getElementById('hotToolsGrid');
-    if (!grid) return;
-
-    // Get hot tools (status=hot) or fallback to first 6 tools
-    let hotTools = state.tools.filter(t => t.status === 'hot');
-
-    // If less than 4 hot tools, supplement with other tools
-    if (hotTools.length < 4) {
-        const otherTools = state.tools
-            .filter(t => t.status !== 'hot')
-            .slice(0, 8 - hotTools.length);
-        hotTools = [...hotTools, ...otherTools];
-    }
-
-    // Limit to max 8 tools
-    hotTools = hotTools.slice(0, 8);
-
-    // Generate HTML for each hot tool card
-    const html = hotTools.map(tool => {
-        // Generate tags
-        let tagsHtml = '';
-        if (tool.tags?.includes('free')) tagsHtml += '<span class="tag tag-free">免费</span>';
-        else if (tool.tags?.includes('vip')) tagsHtml += '<span class="tag tag-vip">VIP</span>';
-        if (tool.toolTags?.includes('国产')) tagsHtml += '<span class="tag tag-domestic">国产</span>';
-
-        return `
-            <div class="hot-tool-card" data-tool-id="${tool.id}">
-                <div class="hot-tool-icon">
-                    <i class="fas ${escapeAttr(tool.icon)}"></i>
-                </div>
-                <div class="hot-tool-info">
-                    <div class="hot-tool-name">${escapeHtml(tool.name)}</div>
-                    <div class="hot-tool-desc">${escapeHtml(tool.desc)}</div>
-                    <div class="hot-tool-tags">${tagsHtml}</div>
-                </div>
-                <i class="fas fa-arrow-right hot-tool-arrow"></i>
-            </div>
-        `;
-    }).join('');
-
-    grid.innerHTML = html;
-}
-
-/**
- * Render statistics dashboard (v4.4.0)
- * Shows usage statistics, category distribution, and top tools ranking
- */
-function renderStatisticsDashboard() {
-    // Update stat cards
-    const totalToolsEl = document.getElementById('totalToolsCount');
-    const totalClicksEl = document.getElementById('totalClicksCount');
-    const favoritesEl = document.getElementById('favoritesCount');
-    const categoriesEl = document.getElementById('categoriesCount');
-
-    if (totalToolsEl) totalToolsEl.textContent = state.tools.length;
-    if (categoriesEl) categoriesEl.textContent = state.categories.length;
-    if (favoritesEl) favoritesEl.textContent = state.favorites.length;
-
-    // Calculate total clicks
-    let totalClicks = 0;
-    Object.values(state.clickStats || {}).forEach(count => { totalClicks += count; });
-    if (totalClicksEl) totalClicksEl.textContent = totalClicks;
-
-    // Render category distribution bars
-    const categoryBarsContainer = document.getElementById('categoryBars');
-    if (categoryBarsContainer && state.categories.length > 0) {
-        const categoryColors = [
-            '#6366f1', '#ec4899', '#10b981', '#f59e0b',
-            '#0ea5e9', '#8b5cf6', '#ef4444', '#14b8a6',
-            '#f97316', '#06b6d4'
-        ];
-
-        const maxToolsInCategory = Math.max(...state.categories.map(cat =>
-            state.tools.filter(t => t.category === cat.id).length
-        ));
-
-        const barsHtml = state.categories.map((cat, index) => {
-            const count = state.tools.filter(t => t.category === cat.id).length;
-            const percentage = maxToolsInCategory > 0 ? (count / maxToolsInCategory) * 100 : 0;
-            const color = categoryColors[index % categoryColors.length];
-
-            return `
-                <div class="category-bar-item">
-                    <span class="category-bar-label">${escapeHtml(cat.name)}</span>
-                    <div class="category-bar-track">
-                        <div class="category-bar-fill" style="width: ${percentage}%; background: linear-gradient(90deg, ${color}, ${color}dd);"></div>
-                    </div>
-                    <span class="category-bar-count">${count}</span>
-                </div>
-            `;
-        }).join('');
-
-        categoryBarsContainer.innerHTML = barsHtml;
-    }
-
-    // Render top tools ranking
-    const topToolsListContainer = document.getElementById('topToolsList');
-    if (topToolsListContainer) {
-        // Sort tools by click count descending
-        const sortedTools = [...state.tools].sort((a, b) =>
-            (state.clickStats[b.id] || 0) - (state.clickStats[a.id] || 0)
-        ).slice(0, 5);
-
-        const listHtml = sortedTools.map((tool, index) => {
-            const clicks = state.clickStats[tool.id] || 0;
-            const rankClass = index === 0 ? 'top-rank-1' : index === 1 ? 'top-rank-2' : index === 2 ? 'top-rank-3' : 'top-rank-default';
-
-            return `
-                <div class="top-tool-item" data-tool-id="${tool.id}">
-                    <span class="top-rank ${rankClass}">${index + 1}</span>
-                    <div class="top-tool-info">
-                        <div class="top-tool-name">${escapeHtml(tool.name)}</div>
-                        <div class="top-tool-clicks">${clicks} 次点击</div>
-                    </div>
-                    <i class="fas ${escapeAttr(tool.icon)} top-tool-icon" style="color: var(--text-muted);"></i>
-                </div>
-            `;
-        }).join('');
-
-        topToolsListContainer.innerHTML = listHtml || '<p class="text-muted text-center py-4">暂无使用数据</p>';
-    }
-}
-
-/**
- * Create a tool card element with modern design and enhanced features
- * @param {Object} tool - Tool data object
- * @returns {string} HTML string for the tool card
- */
-function createToolCard(tool) {
-    const categoryName = getCategoryName(tool.category);
-    const favorite = isFavorite(tool.id);
-
-    // Generate status badge (hot/stable/new)
-    let statusBadge = '';
-    if (tool.status === 'hot') {
-        statusBadge = '<span class="status-badge status-hot"><i class="fas fa-fire"></i> 热门</span>';
-    } else if (tool.status === 'stable') {
-        statusBadge = '<span class="status-badge status-stable"><i class="fas fa-check-circle"></i> 稳定</span>';
-    }
-
-    // Generate tags HTML
-    let tagsHtml = '';
-    if (tool.tags) {
-        if (tool.tags.includes('free')) tagsHtml += '<span class="tag tag-free">免费</span>';
-        else if (tool.tags.includes('vip')) tagsHtml += '<span class="tag tag-vip">VIP</span>';
-        if (tool.tags.includes('new')) tagsHtml += '<span class="tag tag-new">NEW</span>';
-        if (tool.tags.includes('hot')) tagsHtml += '<span class="tag tag-hot">热门</span>';
-    }
-
-    // Generate toolTags HTML (domestic/overseas)
-    if (tool.toolTags) {
-        if (tool.toolTags.includes('国产')) tagsHtml += '<span class="tag tag-domestic">国产</span>';
-        if (tool.toolTags.includes('海外')) tagsHtml += '<span class="tag tag-overseas">海外</span>';
-        if (tool.toolTags.includes('开源')) tagsHtml += '<span class="tag tag-open-source">开源</span>';
-        if (tool.toolTags.includes('无需登录')) tagsHtml += '<span class="tag tag-no-login">无需登录</span>';
-    }
-
-    // Generate difficulty indicator
-    let difficultyLabel = '';
-    if (tool.difficulty) {
-        const difficultyConfig = {
-            beginner: { label: '入门', icon: 'fa-seedling', color: 'difficulty-beginner' },
-            intermediate: { label: '进阶', icon: 'fa-leaf', color: 'difficulty-intermediate' },
-            advanced: { label: '高级', icon: 'fa-tree', color: 'difficulty-advanced' }
-        };
-        const diff = difficultyConfig[tool.difficulty] || difficultyConfig.beginner;
-        difficultyLabel = `<span class="difficulty-badge ${diff.color}"><i class="fas ${diff.icon}"></i> ${diff.label}</span>`;
-    }
-
-    // Generate platform badges
-    let platformBadges = '';
-    if (tool.platform && Array.isArray(tool.platform)) {
-        const platformIcons = { web: 'fa-globe', local: 'fa-server', mobile: 'fa-mobile-alt', desktop: 'fa-desktop' };
-        platformBadges = `<div class="platform-badges">${tool.platform.map(p => `<i class="fas ${platformIcons[p] || 'fa-cog'}" title="${p}"></i>`).join('')}</div>`;
-    }
-
-    // Generate update time display
-    let updateTimeDisplay = '';
-    if (tool.updateTime) {
-        updateTimeDisplay = `<span class="update-time"><i class="fas fa-clock"></i> ${escapeHtml(tool.updateTime)}</span>`;
-    }
-
-    return `
-        <div class="tool-card" data-tool-id="${tool.id}">
-            <div class="card-header">
-                <div class="card-icon">
-                    <i class="fas ${escapeAttr(tool.icon)}"></i>
-                </div>
-                <div class="card-badges">
-                    ${statusBadge}
-                    ${difficultyLabel}
-                </div>
-                <button data-action="toggle-favorite" data-tool-id="${tool.id}" class="favorite-btn ${favorite ? 'active' : ''}" aria-label="${favorite ? '取消收藏' : '收藏'} ${escapeHtml(tool.name)}">
-                    <i class="fas fa-star"></i>
-                </button>
-            </div>
-            <h3 class="card-title">${escapeHtml(tool.name)}</h3>
-            <p class="card-desc">${escapeHtml(tool.desc)}</p>
-            <div class="card-meta">
-                ${updateTimeDisplay}
-                ${platformBadges}
-            </div>
-            <div class="card-tags">
-                ${tagsHtml}
-            </div>
-            <div class="card-footer">
-                <span class="card-category">${escapeHtml(categoryName)}</span>
-                <button data-action="open-tool" data-tool-id="${tool.id}" data-tool-url="${escapeAttr(tool.url)}" class="card-action-btn">
-                    <i class="fas fa-external-link-alt"></i> 使用
-                </button>
-            </div>
-        </div>
-    `;
-}
-
-/**
- * Render tools grid with DocumentFragment for performance optimization
- * @param {Array} tools - Array of tool objects to render
- */
-function renderTools(tools) {
-    const grid = document.getElementById('toolsGrid');
-    if (!grid) return;
-
-    const searchTerm = document.getElementById('mainSearch')?.value.trim() || '';
-
-    if (tools.length === 0 && searchTerm) {
-        grid.innerHTML = '';
-        grid.setAttribute('role', 'grid');
-        grid.setAttribute('aria-label', 'AI工具列表');
-        const emptyState = document.createElement('div');
-        emptyState.className = 'empty-state';
-        emptyState.innerHTML = `
-            <div class="empty-state-icon">🔍</div>
-            <h3 class="empty-state-title">未找到相关工具</h3>
-            <p class="empty-state-desc">没有与 "${escapeHtml(searchTerm)}" 匹配的 AI 工具</p>
-            <button class="empty-state-btn" data-action="clear-all-filters">查看全部工具</button>
-        `;
-        grid.appendChild(emptyState);
-        return;
-    }
-    
-    grid.setAttribute('role', 'grid');
-    grid.setAttribute('aria-label', 'AI工具列表');
-    
-    // Use DocumentFragment to minimize reflows
-    const fragment = document.createDocumentFragment();
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = tools.map(createToolCard).join('');
-    
-    while (tempDiv.firstChild) {
-        fragment.appendChild(tempDiv.firstChild);
-    }
-    
-    grid.innerHTML = '';
-    grid.appendChild(fragment);
-}
-
-/**
- * Filter tools by category and update UI
- * @param {string} category - Category ID to filter by ('all' for no filter)
+ * Filter/Sort functions
  */
 function filterCategory(category) {
     state.currentCategory = category;
@@ -299,21 +18,13 @@ function filterCategory(category) {
     applyFiltersAndSort();
 }
 
-let currentSort = 'default';
-
 function setCurrentSort(sortBy) {
-    currentSort = sortBy;
+    state.currentSort = sortBy;
 }
 
 // Advanced Filters State (v4.3.0)
-const advancedFilters = {
-    price: [],
-    origin: [],
-    status: []
-};
-
 function sortTools(tools, sortBy) {
-    currentSort = sortBy;
+    state.currentSort = sortBy;
 
     const sorted = [...tools];
     switch (sortBy) {
@@ -348,27 +59,27 @@ function applyAdvancedFilters(tools) {
     let filtered = [...tools];
 
     // Apply price filter
-    if (advancedFilters.price.length > 0) {
+    if (state.advancedFilters.price.length > 0) {
         filtered = filtered.filter(tool =>
-            advancedFilters.price.some(price =>
+            state.advancedFilters.price.some(price =>
                 tool.tags?.includes(price)
             )
         );
     }
 
     // Apply origin filter
-    if (advancedFilters.origin.length > 0) {
+    if (state.advancedFilters.origin.length > 0) {
         filtered = filtered.filter(tool =>
-            advancedFilters.origin.some(origin =>
+            state.advancedFilters.origin.some(origin =>
                 tool.toolTags?.includes(origin)
             )
         );
     }
 
     // Apply status filter
-    if (advancedFilters.status.length > 0) {
+    if (state.advancedFilters.status.length > 0) {
         filtered = filtered.filter(tool =>
-            advancedFilters.status.some(status =>
+            state.advancedFilters.status.some(status =>
                 tool.status === status
             )
         );
@@ -395,7 +106,7 @@ function applyFiltersAndSort() {
     filtered = applyAdvancedFilters(filtered);
 
     // Apply sorting
-    filtered = sortTools(filtered, currentSort);
+    filtered = sortTools(filtered, state.currentSort);
 
     renderTools(filtered);
 }
@@ -821,18 +532,18 @@ function toggleAdvancedFilters() {
  */
 function toggleAdvancedFilter(category, value, checked) {
     if (checked) {
-        if (!advancedFilters[category].includes(value)) {
-            advancedFilters[category].push(value);
+        if (!state.advancedFilters[category].includes(value)) {
+            state.advancedFilters[category].push(value);
         }
     } else {
-        advancedFilters[category] = advancedFilters[category].filter(v => v !== value);
+        state.advancedFilters[category] = state.advancedFilters[category].filter(v => v !== value);
     }
 
     // Apply filters immediately
     applyFiltersAndSort();
 
     // Show toast with active filter count
-    const totalActive = advancedFilters.price.length + advancedFilters.origin.length + advancedFilters.status.length;
+    const totalActive = state.advancedFilters.price.length + state.advancedFilters.origin.length + state.advancedFilters.status.length;
     if (totalActive > 0) {
         showToast(`已启用 ${totalActive} 个筛选条件`);
     }
@@ -842,9 +553,9 @@ function toggleAdvancedFilter(category, value, checked) {
  * Clear all advanced filters and reset display (v4.3.0)
  */
 function clearAllFilters() {
-    advancedFilters.price = [];
-    advancedFilters.origin = [];
-    advancedFilters.status = [];
+    state.advancedFilters.price = [];
+    state.advancedFilters.origin = [];
+    state.advancedFilters.status = [];
 
     // Uncheck all checkboxes
     document.querySelectorAll('.advanced-filters input[type="checkbox"]').forEach(cb => {
@@ -858,4 +569,11 @@ function clearAllFilters() {
 }
 
 // Export functions
-export { renderCategories, renderHotTools, renderStatisticsDashboard, renderTools, filterCategory, loadSavedFilters, setSearch, clearSearch, setupSearch, sortTools, setCurrentSort, applyFiltersAndSort, toggleAdvancedFilters, toggleAdvancedFilter, clearAllFilters };
+// Import renderTools for local use (filter functions call renderTools internally)
+import { renderTools } from './renderer.js';
+
+// Re-export render functions from dedicated module
+export { createToolCard, renderCategories, renderHotTools, renderStatisticsDashboard, renderTools } from './renderer.js';
+
+// Filter, sort, and search functions (defined below)
+export { filterCategory, loadSavedFilters, setSearch, clearSearch, setupSearch, sortTools, setCurrentSort, applyAdvancedFilters, applyFiltersAndSort, toggleAdvancedFilters, toggleAdvancedFilter, clearAllFilters, highlightText, escapeRegex };

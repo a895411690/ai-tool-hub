@@ -1,6 +1,7 @@
 // Import functions
 import { showToast, escapeHtml } from './utils.js';
 import state, { updateData } from './state.js';
+import { renderCategories, renderHotTools, renderStatisticsDashboard, renderTools } from './ui.js';
 
 // Load Tools
 async function loadTools() {
@@ -23,9 +24,6 @@ async function loadTools() {
         // Update global state
         updateData(data.tools, data.categories);
         
-        // Import render functions dynamically to avoid circular dependencies
-        const { renderCategories, renderHotTools, renderStatisticsDashboard, renderTools } = await import('./ui.js');
-
         // Render UI using imported functions
         renderCategories();
         renderHotTools();  // v4.3.0: Render hot tools section
@@ -47,7 +45,7 @@ async function loadTools() {
                     <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
                     <h3 class="text-xl font-bold mb-2">加载失败</h3>
                     <p class="text-gray-400 mb-4">${escapeHtml(error.message)}</p>
-                    <button id="retryLoadBtn" class="px-6 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:shadow-lg transition-all">
+                    <button id="retryLoadBtn" class="px-6 py-2 text-white rounded-lg hover:shadow-lg transition-all" style="background: #1677ff;">
                         重试
                     </button>
                 </div>
