@@ -1,13 +1,14 @@
-# 🤖 AI Tool Hub v4.2 - 现代化AI工具导航平台
+# 🤖 AI Tool Hub v6.1 - 现代化AI工具导航平台
 
 <p align="center">
-  <strong>82款精选AI工具 · 10大领域覆盖 · 7套精美主题</strong>
+  <strong>94款精选AI工具 · 10大领域覆盖 · 综合测试覆盖</strong>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-4.2.0-blue.svg" alt="Version" />
-  <img src="https://img.shields.io/badge/tools-82%20%2B-brightgreen.svg" alt="Tools Count" />
+  <img src="https://img.shields.io/badge/version-6.1.0-blue.svg" alt="Version" />
+  <img src="https://img.shields.io/badge/tools-94%20%2B-brightgreen.svg" alt="Tools Count" />
   <img src="https://img.shields.io/badge/categories-10-orange.svg" alt="Categories" />
+  <img src="https://img.shields.io/badge/tests-145%20%2B-green.svg" alt="Tests" />
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License" />
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome" />
   <a href="https://github.com/a895411690/ai-tool-hub/stargazers"><img src="https://img.shields.io/github/stars/a895411690/ai-tool-hub?style=social" alt="Stars" /></a>
