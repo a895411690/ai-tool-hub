@@ -1,0 +1,39 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "type": "command",
+        "command": "node .claude/hooks/pre-tool-check.mjs"
+      }
+    ],
+    // PostToolUse — 取消注释即可启用自动格式化
+    // "PostToolUse": [
+    //   {
+    //     "type": "command",
+    //     "command": "node .claude/hooks/post-tool-check.mjs"
+    //   }
+    // ],
+    "PreCompact": [
+      {
+        "type": "command",
+        "command": "node .claude/hooks/pre-compact.mjs"
+      }
+    ],
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "node .claude/hooks/session-context.mjs"
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "node .claude/hooks/session-review.mjs"
+      }
+    ]
+  },
+  "env": {
+    "ENABLE_PROMPT_CACHING_1H": "1",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "50"
+  }
+}

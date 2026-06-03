@@ -32,7 +32,7 @@ app.use(morgan(morganFormat, {
   stream: {
     write: (message) => logger.http(message.trim())
   },
-  skip: (req) => req.url === '/api/health'
+  skip: (req) => req.url === '/api/v1/health'
 }));
 
 const allowedOrigins = config.CORS_ORIGIN.split(',').map(o => o.trim());
@@ -41,7 +41,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(null, false);
     }
   },
   credentials: true,
@@ -77,18 +77,11 @@ app.use(rateLimitMiddleware);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/resume', resumeRoutes);
 
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    version: '1.0.0',
-    timestamp: new Date().toISOString()
-  });
-});
-
 app.get('/api/v1/health', (req, res) => {
   res.json({
     status: 'ok',
     version: '1.0.0',
+    deepseek: !!config.DEEPSEEK_API_KEY,
     timestamp: new Date().toISOString()
   });
 });

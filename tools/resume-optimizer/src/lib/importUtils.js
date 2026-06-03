@@ -2,41 +2,9 @@
  * 简历导入工具库
  * 支持PDF、DOCX、TXT、HTML格式简历解析
  */
-
-// 公共配置数据 - 集中管理便于维护和扩展
-const CONFIG = {
-    // 支持的文件格式
-    supportedFormats: ['.pdf', '.docx', '.doc', '.txt', '.html', '.htm', '.md', '.markdown'],
-    // 最大文件大小 (10MB)
-    maxFileSize: 10 * 1024 * 1024,
-    // 城市列表
-    cities: ['北京', '上海', '广州', '深圳', '杭州', '南京', '成都', '武汉', '西安', '重庆', '天津', '苏州', '青岛', '长沙', '大连', '厦门', '宁波', '无锡', '合肥', '郑州', '济南', '福州', '昆明', '南昌', '哈尔滨', '石家庄', '温州', '南宁', '贵阳', '海口', '兰州', '银川', '西宁', '呼和浩特', '乌鲁木齐', '拉萨'],
-    // 常见公司名称
-    commonCompanies: ['腾讯', '阿里', '百度', '字节', '华为', '美团', '京东', '交通银行', '广发银行', '招商银行', '建设银行', '工商银行', '农业银行', '中国银行', '神州数码', '联想', '小米', 'OPPO', 'VIVO', '中兴', '阿里巴巴', '腾讯科技', '百度在线', '字节跳动', '美团点评', '谷歌', '微软', '苹果', '亚马逊', 'Facebook', 'Google', 'Microsoft', 'Apple'],
-    // 常见学校名称
-    commonSchools: ['清华大学', '北京大学', '复旦大学', '上海交通大学', '浙江大学', '南京大学', '中山大学', '武汉大学', '同济大学', '华东师范大学', '华东理工大学', '上海大学', '上海财经大学', '上海外国语大学', '西安交通大学', '哈尔滨工业大学', '华中科技大学', '中国科学技术大学', '中国人民大学', '东南大学', '北京航空航天大学', '北京理工大学', '天津大学', '华南理工大学', '西北工业大学', '大连理工大学', '电子科技大学', '中南大学', '湖南大学', '吉林大学', '山东大学', '四川大学', '重庆大学', '北京师范大学', '南开大学', '厦门大学', '青岛大学', '郑州大学', '苏州大学', '南京航空航天大学', '南京理工大学', '北京邮电大学', '西安电子科技大学', '杭州电子科技大学'],
-    // 常见专业
-    commonMajors: ['计算机科学与技术', '软件工程', '信息管理与信息系统', '电子信息工程', '自动化', '机械工程', '土木工程', '电气工程', '通信工程', '网络工程', '信息安全', '数据科学与大数据技术', '人工智能', '机器学习', '金融学', '会计学', '市场营销', '工商管理', '国际经济与贸易', '数学与应用数学', '统计学', '物理学', '化学', '法学', '英语', '日语', '新闻学', '广告学', '临床医学', '护理学', '药学', '生物医学工程', '环境工程', '材料科学与工程', '工业设计'],
-    // 常见学位
-    degrees: ['博士', '硕士', '学士', '本科', '研究生', '专科', '大专', '专升本'],
-    // 常见职位关键词
-    positionKeywords: ['工程师', '开发', '测试', '产品', '设计', '经理', '总监', '主管', '专员', '分析师', '架构师', '程序员', '设计师', '运营', '市场', '销售', '人事', '财务', '会计', '顾问', '专家', '组长', '负责人'],
-    // 公司后缀词
-    companySuffixes: ['银行', '公司', '集团', '科技', '网络', '软件', '数据', '信息', '数码', '技术', '有限', '股份', '控股', '投资', '金融', '保险', '证券', '互联网', '电子商务', '通信', '电子', '半导体', '医药', '教育'],
-    // 技能关键词
-    skillKeywords: ['React', 'Vue', 'TypeScript', 'JavaScript', 'HTML5', 'CSS3', 'Node.js', 'Python', 'Java', 'Go', 'C++', 'MySQL', 'Redis', 'MongoDB', 'PostgreSQL', 'Git', 'Docker', 'Jenkins', 'Kubernetes', 'Postman', 'Jmeter', 'Fiddler', 'Selenium', 'Linux', 'Shell', 'Bash', '运维', '测试', '开发', '自动化测试', '性能测试', '安全测试', '功能测试', '回归测试', '测试策略', '测试计划', '团队协作', '项目管理', '沟通能力', '问题解决', '学习能力', '团队管理', '技术领导', '需求分析', '风险管理'],
-    // 正则表达式模式
-    patterns: {
-        phone: /1[3-9]\d{9}/,
-        email: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/,
-        name: /^[\u4e00-\u9fa5]{2,4}$/,
-        experienceYears: /(\d+)\s*年[以]?[上]?/,
-        period: /(\d{4}[.\-/]\d{1,2})\s*[至\-~–到]\s*(\d{4}[.\-/]\d{1,2}|至今|现在)/,
-        yearPeriod: /(\d{4})\s*[至\-~–到]\s*(\d{4}|至今|现在)/
-    },
-    // PDF.js配置
-    pdfJsWorkerUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js'
-};
+import CONFIG from './resumeConfig.js';
+import { sanitizeHtml, extractTextFromHTML, extractTextFromMarkdown, extractTextFromPDF, reconstructPDFFromItems, extractTextFromDOCX } from './textExtractors.js';
+import { extractPhone, extractEmail, extractSchool, extractMajor, extractDegree, extractCompany, extractPosition, extractPeriod, extractSkills, isPhoneNumber, isPlaceholderValue, isExperienceStartLine, isEducationStartLine, isProjectStartLine, isPersonalInfoLine, isExperienceLine, getErrorSuggestion, parseEducationLine, parseExperienceLine } from './fieldExtractors.js';
 
 class ImportUtils {
     constructor() {
@@ -143,19 +111,19 @@ class ImportUtils {
             let rawText = '';
             switch (fileData.fileType) {
                 case 'pdf':
-                    rawText = await this.extractTextFromPDF(fileData.content);
+                    rawText = await extractTextFromPDF(fileData.content);
                     break;
                 case 'docx':
-                    rawText = await this.extractTextFromDOCXDoc(fileData.content);
+                    rawText = await extractTextFromDOCX(fileData.content);
                     break;
                 case 'txt':
                     rawText = fileData.content;
                     break;
                 case 'html':
-                    rawText = this.extractTextFromHTML(fileData.content);
+                    rawText = extractTextFromHTML(fileData.content);
                     break;
                 case 'markdown':
-                    rawText = this.extractTextFromMarkdown(fileData.content);
+                    rawText = extractTextFromMarkdown(fileData.content);
                     break;
                 default:
                     throw new Error(`不支持的文件类型: ${fileData.fileType}`);
@@ -190,7 +158,7 @@ class ImportUtils {
                     for (const field of fields) {
                         const llmVal = parsedData.profile[field];
                         const localVal = localResult.profile[field];
-                        const wasPlaceholder = this.isPlaceholderValue(field, llmVal);
+                        const wasPlaceholder = isPlaceholderValue(field, llmVal);
                         if (wasPlaceholder) {
                             parsedData.profile[field] = localVal || '';
                         }
@@ -241,7 +209,7 @@ class ImportUtils {
                 success: false,
                 fileName: file.name,
                 error: error.message,
-                suggestion: this.getErrorSuggestion(error.message)
+                suggestion: getErrorSuggestion(error.message)
             };
         } finally {
             this.isProcessing = false;
@@ -280,7 +248,7 @@ class ImportUtils {
      */
     async parseHTML(fileData) {
         // 提取HTML中的文本内容
-        const text = this.extractTextFromHTML(fileData.content);
+        const text = extractTextFromHTML(fileData.content);
         return this.parseTextContent(text);
     }
 
@@ -289,98 +257,8 @@ class ImportUtils {
      */
     async parseMarkdown(fileData) {
         // 提取Markdown中的文本内容
-        const text = this.extractTextFromMarkdown(fileData.content);
+        const text = extractTextFromMarkdown(fileData.content);
         return this.parseTextContent(text);
-    }
-
-    /**
-     * 从PDF提取文本（使用pdf.js库）
-     */
-    async extractTextFromPDF(arrayBuffer) {
-        try {
-            if (!this.initPDFJS()) {
-                throw new Error('PDF.js库未加载');
-            }
-
-            const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-            const pdfDocument = await loadingTask.promise;
-            let text = '';
-
-            for (let pageNum = 1; pageNum <= pdfDocument.numPages; pageNum++) {
-                const page = await pdfDocument.getPage(pageNum);
-                const content = await page.getTextContent();
-                const pageText = this._reconstructPDFFromItems(content.items);
-                text += pageText + '\n';
-            }
-
-            return text;
-        } catch (error) {
-            return '';
-        }
-    }
-
-    _reconstructPDFFromItems(items) {
-        if (!items || items.length === 0) return '';
-
-        const filtered = items.filter(item => item.str && item.str.trim().length > 0);
-        if (filtered.length === 0) return '';
-
-        filtered.sort((a, b) => {
-            const ay = Math.round(a.transform[5]);
-            const by = Math.round(b.transform[5]);
-            if (Math.abs(ay - by) > 3) return by - ay;
-            return a.transform[4] - b.transform[4];
-        });
-
-        const lines = [];
-        let currentLine = [];
-        let lastY = null;
-        const LINE_THRESHOLD = 5;
-
-        for (const item of filtered) {
-            const y = Math.round(item.transform[5]);
-            if (lastY === null || Math.abs(y - lastY) > LINE_THRESHOLD) {
-                if (currentLine.length > 0) {
-                    lines.push(currentLine.map(i => i.str).join(''));
-                }
-                currentLine = [item];
-            } else {
-                if (currentLine.length > 0) {
-                    const prevItem = currentLine[currentLine.length - 1];
-                    const gap = item.transform[4] - (prevItem.transform[4] + prevItem.width);
-                    if (gap > 8) {
-                        currentLine.push({ str: ' ', transform: item.transform, width: 0 });
-                    }
-                }
-                currentLine.push(item);
-            }
-            lastY = y;
-        }
-        if (currentLine.length > 0) {
-            lines.push(currentLine.map(i => i.str).join(''));
-        }
-
-        return lines.join('\n');
-    }
-
-    /**
-     * 从DOCX提取文本（使用mammoth.js库）
-     */
-async extractTextFromDOCX(content) {
-        try {
-            if (typeof mammoth !== 'undefined') {
-                const result = await mammoth.extractRawText({ arrayBuffer: content });
-                return result.value;
-            } else {
-                throw new Error('mammoth.js库未加载');
-            }
-        } catch (error) {
-            return '';
-        }
-    }
-
-    async extractTextFromDOCXDoc(content) {
-        return await this.extractTextFromDOCX(content);
     }
 
     normalizeLLMResult(llmResult) {
@@ -424,111 +302,7 @@ async extractTextFromDOCX(content) {
      * @returns {string} - 净化后的安全HTML
      */
     sanitizeHtml(html) {
-        if (!html || typeof html !== 'string') {
-            return '';
-        }
-
-        const ALLOWED_TAGS = new Set([
-            'p', 'br', 'b', 'strong', 'i', 'em', 'u', 'span', 'div',
-            'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-            'ul', 'ol', 'li', 'table', 'tr', 'td', 'th', 'thead', 'tbody',
-            'a', 'hr', 'blockquote', 'pre', 'code'
-        ]);
-
-        const ALLOWED_ATTRS = new Set(['href', 'target', 'rel', 'class']);
-
-        try {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const walker = document.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT);
-
-            const toRemove = [];
-            let node;
-            while ((node = walker.nextNode())) {
-                if (!ALLOWED_TAGS.has(node.tagName.toLowerCase())) {
-                    toRemove.push(node);
-                } else {
-                    for (const attr of [...node.attributes]) {
-                        if (!ALLOWED_ATTRS.has(attr.name.toLowerCase())) {
-                            node.removeAttribute(attr.name);
-                        }
-                        if (attr.value && /^\s*(javascript|data|vbscript):/i.test(attr.value.trim())) {
-                            node.removeAttribute(attr.name);
-                        }
-                    }
-                }
-            }
-
-            for (const el of toRemove) {
-                const parent = el.parentNode;
-                if (parent) {
-                    while (el.firstChild) {
-                        parent.insertBefore(el.firstChild, el);
-                    }
-                    parent.removeChild(el);
-                }
-            }
-
-            const aTags = doc.body.querySelectorAll('a');
-            aTags.forEach(a => {
-                a.setAttribute('rel', 'noopener noreferrer');
-                a.setAttribute('target', '_blank');
-            });
-
-            return doc.body.innerHTML;
-        } catch {
-            const tempDiv = document.createElement('div');
-            tempDiv.textContent = html;
-            return tempDiv.innerHTML;
-        }
-    }
-
-    /**
-     * 从HTML提取文本
-     */
-    extractTextFromHTML(html) {
-        // 先净化HTML内容，防止XSS攻击
-        const sanitizedHtml = this.sanitizeHtml(html);
-
-        // 创建临时DOM元素提取文本
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = sanitizedHtml;
-        const text = tempDiv.textContent || tempDiv.innerText || '';
-        tempDiv.remove(); // 清理临时DOM元素，防止内存泄漏
-        return text;
-    }
-
-    /**
-     * 从Markdown提取文本
-     */
-    extractTextFromMarkdown(markdown) {
-        // 移除Markdown格式标记，保留实际文本
-        let text = markdown
-            // 移除标题标记
-            .replace(/^#{1,6}\s+/gm, '')
-            // 移除粗体和斜体
-            .replace(/\*\*(.*?)\*\*/g, '$1')
-            .replace(/\*(.*?)\*/g, '$1')
-            .replace(/__(.*?)__/g, '$1')
-            .replace(/_(.*?)_/g, '$1')
-            // 移除链接
-            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-            // 移除图片
-            .replace(/!\[([^\]]*)\]\([^)]+\)/g, '')
-            // 移除代码块
-            .replace(/```[\s\S]*?```/g, '')
-            .replace(/`([^`]+)`/g, '$1')
-            // 移除引用
-            .replace(/^>\s+/gm, '')
-            // 移除列表标记
-            .replace(/^[\*\-\+]\s+/gm, '')
-            .replace(/^\d+\.\s+/gm, '')
-            // 移除水平线
-            .replace(/^[-*_]{3,}$/gm, '')
-            // 移除空行
-            .replace(/\n{3,}/g, '\n\n');
-        
-        return text.trim();
+    { return sanitizeHtml(html); }
     }
 
     /**
@@ -663,9 +437,9 @@ async extractTextFromDOCX(content) {
 
                 // 还没推断出来，用 isPersonalInfoLine / isExperienceLine
                 if (!currentSection) {
-                    if (this.isPersonalInfoLine(lineTrimmed)) {
+                    if (isPersonalInfoLine(lineTrimmed)) {
                         currentSection = 'personal';
-                    } else if (this.isExperienceLine(lineTrimmed)) {
+                    } else if (isExperienceLine(lineTrimmed)) {
                         currentSection = 'experience';
                     }
                 }
@@ -1137,13 +911,8 @@ async extractTextFromDOCX(content) {
             }
         });
         
-        // 如果没有找到技能，添加通用默认技能
         if (result.skills.length === 0) {
-            result.skills = [
-                '自动化测试', '性能测试', '功能测试', '回归测试', '测试策略',
-                '测试计划', 'Git', 'Docker', 'Linux', 'Java',
-                'MySQL', '团队协作', '项目管理', '问题解决', '沟通能力'
-            ];
+            result.skills = [];
         }
 
         result.skills = result.skills.filter(skill => {
@@ -1908,68 +1677,6 @@ async extractTextFromDOCX(content) {
             }
         }
     }
-
-    /**
-     * 个人信息行检测
-     */
-    isPersonalInfoLine(line) {
-        const personalKeywords = [
-            '姓名', 'name', '电话', '手机', 'phone', 'tel',
-            '邮箱', 'email', '地址', 'location', 'address',
-            '性别', 'gender', '年龄', 'age', '出生', 'birth',
-            '工作经验', 'experience years', '工作年限'
-        ];
-        
-        const lowerLine = line.toLowerCase();
-        return personalKeywords.some(keyword => lowerLine.includes(keyword.toLowerCase()));
-    }
-
-    /**
-     * 工作经历行检测
-     */
-    isExperienceLine(line) {
-        const experienceKeywords = [
-            '公司', 'company', '职位', 'position', '工作', 'work',
-            '项目', 'project', '职责', 'responsibility', '成就', 'achievement'
-        ];
-        
-        const lowerLine = line.toLowerCase();
-        return experienceKeywords.some(keyword => lowerLine.includes(keyword.toLowerCase()));
-    }
-
-    /**
-     * 工作经历开始行检测
-     */
-    isExperienceStartLine(line) {
-        // 必须包含时间段 + 公司/职位关键词，才认为是新工作经历开始行
-        const hasDateRange = /\d{4}[.\-/年]\d{1,2}[.\-/月]?\s*[-–—至到]\s*\d{4}|至今/.test(line) ||
-                             /\d{4}\s*[-–—至到]\s*\d{4}/.test(line);
-        if (!hasDateRange) return false;
-
-        // 排除纯描述行（以"-"、"•"、"*"开头的项目符号）
-        const trimmed = line.trim();
-        if (/^[-•*·▪▸▹►◅⟩]/.test(trimmed)) return false;
-
-        return true;
-    }
-
-    /**
-     * 教育经历开始行检测
-     */
-    isEducationStartLine(line) {
-        const educationKeywords = ['大学', '学院', '学校', '学历', '学位'];
-        const lowerLine = line.toLowerCase();
-        return educationKeywords.some(keyword => lowerLine.includes(keyword));
-    }
-
-    /**
-     * 项目经验开始行检测
-     */
-    isProjectStartLine(line) {
-        return line.includes('项目') && 
-               (line.includes('描述') || line.includes('职责') || /\d{4}/.test(line));
-    }
-
     /**
      * 提取个人信息
      */
@@ -2129,7 +1836,7 @@ async extractTextFromDOCX(content) {
     parseProjectLine(line) {
         return {
             name: this.extractProjectName(line),
-            period: this.extractPeriod(line),
+            period: extractPeriod(line),
             role: this.extractProjectRole(line),
             description: line.trim()
         };
@@ -2249,18 +1956,18 @@ async extractTextFromDOCX(content) {
         
         lines.forEach(line => {
             // 检测新工作经历开始
-            if (this.isExperienceStartLine(line)) {
+            if (isExperienceStartLine(line)) {
                 if (currentExperience) {
                     // 如果公司名仍是"知名公司"，从描述中尝试提取
                     if (currentExperience.company === '知名公司' && currentExperience.description) {
-                        const extractedCompany = this.extractCompany(currentExperience.description);
+                        const extractedCompany = extractCompany(currentExperience.description);
                         if (extractedCompany !== '知名公司') {
                             currentExperience.company = extractedCompany;
                         }
                     }
                     result.experience.push(currentExperience);
                 }
-                currentExperience = this.parseExperienceLine(line, prevLine);
+                currentExperience = parseExperienceLine(line, prevLine);
             } else if (currentExperience) {
                 // 添加到描述中
                 if (currentExperience.description) {
@@ -2275,7 +1982,7 @@ async extractTextFromDOCX(content) {
         if (currentExperience) {
             // 最后一条也尝试从描述中提取公司名
             if (currentExperience.company === '知名公司' && currentExperience.description) {
-                const extractedCompany = this.extractCompany(currentExperience.description);
+                const extractedCompany = extractCompany(currentExperience.description);
                 if (extractedCompany !== '知名公司') {
                     currentExperience.company = extractedCompany;
                 }
@@ -2291,11 +1998,11 @@ async extractTextFromDOCX(content) {
         let currentEducation = null;
         
         lines.forEach(line => {
-            if (this.isEducationStartLine(line)) {
+            if (isEducationStartLine(line)) {
                 if (currentEducation) {
                     result.education.push(currentEducation);
                 }
-                currentEducation = this.parseEducationLine(line);
+                currentEducation = parseEducationLine(line);
             } else if (currentEducation) {
                 if (currentEducation.description) {
                     currentEducation.description += '\n' + line.trim();
@@ -2315,7 +2022,7 @@ async extractTextFromDOCX(content) {
      */
     parseSkillsSection(lines, result) {
         lines.forEach(line => {
-            const skills = this.extractSkills(line);
+            const skills = extractSkills(line);
             result.skills.push(...skills);
         });
     }
@@ -2327,7 +2034,7 @@ async extractTextFromDOCX(content) {
         let currentProject = null;
         
         lines.forEach(line => {
-            if (this.isProjectStartLine(line)) {
+            if (isProjectStartLine(line)) {
                 if (currentProject) {
                     result.projects.push(currentProject);
                 }
@@ -2368,237 +2075,6 @@ async extractTextFromDOCX(content) {
             result.profile.summary = summary;
         }
     }
-
-    isPlaceholderValue(field, value) {
-        if (!value || value.trim() === '') return true;
-        const v = value.trim().toLowerCase();
-        const placeholders = {
-            name: ['张三','李四','王五','赵六','钱七','未识别','未知','待填写','用户名','简历中的真实姓名','姓名','name','your name'],
-            phone: ['13800138000','13900139000','18888888888','12345678901','10000000000','00000000000','手机号码','电话','phone','tel','联系电话'],
-            email: ['zhangsan@example.com','example@email.com','test@test.com','user@example.com','邮箱地址','email','电子邮箱','your email'],
-            location: ['北京市','上海市','广州市','所在城市','城市','location','your city']
-        };
-        if (placeholders[field] && placeholders[field].includes(v)) return true;
-        if (field === 'phone' && !/\d/.test(v)) return true;
-        if (field === 'email' && !v.includes('@')) return true;
-        if (field === 'name' && (v.length < 2 || v.length > 4)) return true;
-        return false;
-    }
-
-    /**
-     * 提取电话号码
-     */
-    extractPhone(line) {
-        const phoneRegex = /1[3-9][\d\s\-]{9,13}/g;
-        const matches = line.match(phoneRegex);
-        if (!matches) return '';
-        const cleaned = matches[0].replace(/[\s\-]/g, '');
-        return cleaned.length === 11 ? cleaned : '';
-    }
-
-    extractEmail(line) {
-        const preprocessed = line.replace(/\s+(@)/g, '$1').replace(/(@)\s+/g, '$1');
-        const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
-        const matches = preprocessed.match(emailRegex);
-        return matches ? matches[0].trim() : '';
-    }
-
-    /**
-     * 解析教育经历行
-     */
-    parseEducationLine(line) {
-        return {
-            school: this.extractSchool(line),
-            major: this.extractMajor(line),
-            degree: this.extractDegree(line),
-            period: this.extractPeriod(line),
-            description: line.trim()
-        };
-    }
-
-    /**
-     * 解析工作经历行
-     */
-    parseExperienceLine(line, prevLine) {
-        if (prevLine && /^(测试|开发|高级|资深|初级|中级)$/i.test(prevLine.trim())) {
-            line = prevLine.trim() + line;
-        }
-        return {
-            company: this.extractCompany(line),
-            position: this.extractPosition(line),
-            period: this.extractPeriod(line),
-            description: line.trim()
-        };
-    }
-
-    /**
-     * 提取学校名称
-     */
-    extractSchool(line) {
-        const schools = [
-            '清华大学', '北京大学', '复旦大学', '上海交通大学',
-            '浙江大学', '南京大学', '中山大学', '武汉大学',
-            '同济大学', '华东师范大学', '华东理工大学',
-            '上海大学', '上海财经大学', '上海外国语大学',
-            '西安交通大学', '哈尔滨工业大学', '华中科技大学',
-            '中国科学技术大学', '中国人民大学', '东南大学',
-            '北京航空航天大学', '北京理工大学', '天津大学',
-            '华南理工大学', '西北工业大学', '大连理工大学',
-            '电子科技大学', '中南大学', '湖南大学',
-            '吉林大学', '山东大学', '四川大学', '重庆大学',
-            '北京师范大学', '南开大学', '厦门大学',
-            '北京邮电大学', '西安电子科技大学', '杭州电子科技大学'
-        ];
-        for (const school of schools) {
-            if (line.includes(school)) return school;
-        }
-        // 通用匹配：包含"大学/学院/学校"的中文词
-        const schoolMatch = line.match(/([\u4e00-\u9fa5]{2,}(?:大学|学院|学校))/);
-        if (schoolMatch) return schoolMatch[1];
-        return '未知学校';
-    }
-
-    /**
-     * 提取专业
-     */
-    extractMajor(line) {
-        const majors = [
-            '计算机科学与技术', '软件工程', '信息管理与信息系统',
-            '电子信息工程', '自动化', '机械工程', '土木工程',
-            '电气工程', '通信工程', '网络工程', '信息安全',
-            '数据科学与大数据技术', '人工智能', '机器学习',
-            '金融学', '会计学', '市场营销', '工商管理', '国际经济与贸易',
-            '数学与应用数学', '统计学', '物理学', '化学',
-            '法学', '英语', '日语', '新闻学', '广告学',
-            '临床医学', '护理学', '药学', '生物医学工程',
-            '环境工程', '材料科学与工程', '工业设计'
-        ];
-        for (const major of majors) {
-            if (line.includes(major)) return major;
-        }
-        return '';
-    }
-
-    /**
-     * 提取学位
-     */
-    extractDegree(line) {
-        const degrees = ['博士', '硕士', '学士', '本科', '研究生'];
-        for (const degree of degrees) {
-            if (line.includes(degree)) return degree;
-        }
-        return '学士';
-    }
-
-    /**
-     * 提取公司名称
-     */
-    extractCompany(line) {
-        // 优先匹配常见公司（含银行、金融机构等）
-        const companies = [
-            // 银行
-            '交通银行', '广发银行', '广发', '招商银行', '建设银行', '工商银行', '农业银行', '中国银行',
-            '浦发银行', '民生银行', '兴业银行', '光大银行', '中信银行', '华夏银行', '平安银行',
-            // 互联网
-            '腾讯', '阿里', '百度', '字节', '华为', '美团', '京东', '小米', 'OPPO', 'VIVO', '中兴',
-            '阿里巴巴', '腾讯科技', '百度在线', '字节跳动', '美团点评', '神州数码', '联想',
-            // 外企
-            '谷歌', '微软', '苹果', '亚马逊', 'Facebook', 'Google', 'Microsoft', 'Apple'
-        ];
-        for (const company of companies) {
-            if (line.includes(company)) return company;
-        }
-        // 通用模式：匹配包含公司/集团/银行/科技等后缀的中文词
-        const companyMatch = line.match(/([\u4e00-\u9fa5]{2,}(?:有限)?(?:股份)?(?:公司|集团|银行|科技|网络|软件|数据|信息|数码|技术|互联网|电子商务|通信|电子|半导体|医药|教育|金融|保险|证券|控股|投资))/);
-        if (companyMatch) return companyMatch[1];
-        return '知名公司';
-    }
-
-    /**
-     * 提取职位
-     */
-    extractPosition(line) {
-        const positions = [
-            '高级测试开发工程师', '资深测试开发工程师', '测试开发工程师',
-            '高级自动化测试工程师', '资深自动化测试工程师', '自动化测试工程师',
-            '高级性能测试工程师', '资深性能测试工程师', '性能测试工程师',
-            '高级功能测试工程师', '资深功能测试工程师', '功能测试工程师',
-            '高级安全测试工程师', '资深安全测试工程师', '安全测试工程师',
-            '高级前端开发工程师', '资深前端开发工程师', '前端开发工程师',
-            '高级后端开发工程师', '资深后端开发工程师', '后端开发工程师',
-            '高级全栈开发工程师', '资深全栈开发工程师', '全栈开发工程师',
-            '高级软件开发工程师', '资深软件开发工程师', '软件开发工程师',
-            '高级测试工程师', '资深测试工程师', '测试工程师',
-            '测试组长', '测试经理', '测试总监', '测试主管',
-            '高级开发工程师', '资深开发工程师', '开发工程师',
-            '开发组长', '开发经理',
-            '高级产品经理', '产品经理', '产品专员',
-            '高级UI设计师', 'UI设计师', '高级设计师', '设计师',
-            '项目经理', '技术经理', '技术总监', '架构师',
-            '高级运维工程师', '运维工程师',
-            '高级数据分析师', '数据分析师',
-            '工程师', '经理', '总监', '主管', '开发', '测试', '产品', '设计', '运营', '市场', '销售', '人事', '财务', '会计', '顾问', '专家', '组长', '负责人', '分析师', '程序员'
-        ];
-        for (const position of positions) {
-            if (line.includes(position)) return position;
-        }
-        return '职位';
-    }
-
-    /**
-     * 提取时间段
-     */
-    extractPeriod(line) {
-        // 匹配多种时间段格式
-        const periodPatterns = [
-            // 2020年至今 / 2020年-至今
-            /(\d{4})\s*年?\s*[至\-~–到]\s*至今/i,
-            // 2020.02-2025.01 / 2020-2025
-            /(\d{4})[.\-/]\s*(\d{1,2})?\s*[至\-~–到]\s*(\d{4})[.\-/]?\s*(\d{1,2})?/,
-            // 2020年2月-2025年1月
-            /(\d{4})\s*年\s*(\d{1,2})?\s*月?\s*[至\-~–到]\s*(\d{4})\s*年?\s*(\d{1,2})?\s*月?/,
-            // 2020-2025 (纯年份范围)
-            /(\d{4})\s*[至\-~–到]\s*(\d{4})/,
-            // 单年份
-            /(\d{4})/
-        ];
-
-        for (const pattern of periodPatterns) {
-            const match = line.match(pattern);
-            if (match) {
-                // 根据匹配结果构建时间段字符串
-                const full = match[0];
-                // 标准化：年月分隔符统一为 .
-                return full
-                    .replace(/年/g, '.')
-                    .replace(/月/g, '')
-                    .replace(/[至~–]/g, '-')
-                    .replace(/\s+/g, '')
-                    .replace(/\.-/g, '-');
-            }
-        }
-        return '';
-    }
-
-    /**
-     * 提取技能
-     */
-    extractSkills(line) {
-        const skills = ['JavaScript', 'React', 'Vue', 'Node.js', 'Python', 'Java', 'Go', 'C++', 'TypeScript', 'HTML', 'CSS'];
-        const foundSkills = [];
-        for (const skill of skills) {
-            if (line.includes(skill)) foundSkills.push(skill);
-        }
-        return foundSkills;
-    }
-
-    /**
-     * 检查是否为电话号码
-     */
-    isPhoneNumber(text) {
-        return /^[+\d\s\-()]{7,}$/.test(text.trim());
-    }
-
     /**
      * 标准化数据格式
      */
@@ -2621,25 +2097,6 @@ async extractTextFromDOCX(content) {
             skills: Array.isArray(parsedData.skills) ? parsedData.skills : []
         };
     }
-
-    /**
-     * 获取错误建议
-     */
-    getErrorSuggestion(error) {
-        const suggestions = {
-            '不支持的文件格式': '请上传PDF、DOCX、TXT或HTML格式的文件',
-            '文件大小超过限制': '请上传小于10MB的文件',
-            '文件读取失败': '请检查文件是否损坏，或尝试重新上传',
-            '解析失败': '请尝试上传格式更规范的简历文件'
-        };
-
-        for (const [key, suggestion] of Object.entries(suggestions)) {
-            if (error.includes(key)) return suggestion;
-        }
-
-        return '请检查文件格式是否正确，或联系技术支持';
-    }
-
     /**
      * 验证必要字段完整性
      * @param {Object} result - 解析结果对象

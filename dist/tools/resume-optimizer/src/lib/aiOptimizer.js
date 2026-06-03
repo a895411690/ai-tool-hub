@@ -723,21 +723,7 @@ const resumeData = window.store ? window.store.getState() : {};
 
     // 生成结果
     _generateResults(desc) {
-        const results = [];
-        
-        if (/%/.test(desc)) results.push('显著提升了关键业务指标');
-        if (/用户|客户/.test(desc)) results.push('获得客户高度认可，满意度达95%以上');
-        if (/团队|协作/.test(desc)) results.push('有效提升了团队整体效率和协作水平');
-        if (/技术|架构/.test(desc)) results.push('建立了可扩展的技术架构，支撑业务快速发展');
-        
-        if (results.length === 0) {
-            results.push(
-                `成功交付多个重要项目，为公司创造了显著价值`,
-                `获得了领导和同事的一致好评`
-            );
-        }
-
-        return results.join('；');
+        return '';
     }
 
     // 深度优化版本生成

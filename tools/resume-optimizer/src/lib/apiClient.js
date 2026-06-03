@@ -78,7 +78,7 @@ class ApiClient {
 
     logout() {
         localStorage.removeItem(this.userKey);
-        document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        document.cookie = 'auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; Path=/; Secure; SameSite=Strict';
         this._notifyAuthChange();
     }
 

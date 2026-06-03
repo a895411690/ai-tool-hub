@@ -1,134 +1,490 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="dark">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AI Tool Hub v3.0 - 智能工具聚合平台</title>
-    <meta name="description" content="一站式AI工具聚合导航平台，支持用户系统、工具对比、个性化推荐">
+    <title>AI Tool Hub - 发现最佳 AI 工具</title>
+    <meta name="description" content="一站式AI工具聚合导航平台，帮你快速发现82+优质AI工具，涵盖写作、绘画、代码、视频、语音、设计、办公等领域">
     <meta name="keywords" content="AI工具,人工智能,AI写作,AI绘画,AI代码,AI视频">
-    <meta name="theme-color" content="#6366f1">
-    <link rel="manifest" href="./assets/manifest-BgkueAeV.json">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.18.2/dist/index.js"></script>
-  <script type="module" crossorigin src="./assets/main-C5JLSXLX.js"></script>
-  <link rel="stylesheet" crossorigin href="./assets/main-DF8gTTDr.css">
+    <meta name="theme-color" content="#0f0c29">
+    <link rel="manifest" href="./assets/manifest-C6yHd_0P.json">
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon-BvKsBHe2.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://api.deepseek.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net; frame-ancestors 'none';">
+  <script type="module" crossorigin src="./assets/main-6W1G86YN.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/main-Ck16GZEZ.css">
 </head>
-<body class="text-gray-100 min-h-screen tech-bg">
-    <!-- Navigation -->
-    <nav class="fixed top-0 left-0 right-0 z-50 glass">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-            <a href="#" class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                    <i class="fas fa-robot text-white text-lg"></i>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="mainNav" role="navigation" aria-label="主导航">
+        <div class="navbar-inner">
+            <a href="#" class="navbar-brand" aria-label="AI Tool Hub 首页">
+                <div class="navbar-brand-icon">
+                    <i class="fas fa-robot"></i>
                 </div>
-                <span class="text-xl font-bold gradient-text">AI Tool Hub</span>
-                <span class="text-xs text-gray-500 ml-2">v3.0</span>
+                <span class="navbar-brand-text" style="color: #00d4ff;">AI Tool Hub</span>
             </a>
-            
-            <div class="flex items-center gap-4">
-                <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full glass text-sm">
-                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                    <span>上新 <span id="newToolsCount">0</span> 款</span>
-                </div>
-                
-                <button onclick="showPromptsPage()" class="hidden md:flex items-center gap-2 px-4 py-2 rounded-full glass hover:border-primary transition-all text-sm">
-                    <i class="fas fa-wand-magic-sparkles text-purple-400"></i>
+
+            <!-- New Tools Badge (Desktop) -->
+            <div class="new-tools-badge hidden-mobile">
+                <span class="new-tools-dot"></span>
+                <span>上新 <span id="newToolsCount">0</span> 款</span>
+            </div>
+
+            <div class="navbar-actions">
+                <button class="navbar-btn" data-action="show-research" title="Deep Research Agent">
+                    <i class="fas fa-microscope"></i>
+                    <span>深度研究</span>
+                </button>
+                <button class="navbar-btn" data-action="show-prompts" title="提示词">
+                    <i class="fas fa-wand-magic-sparkles"></i>
                     <span>提示词</span>
                 </button>
-                
-                <div class="relative">
-                    <button id="userBtn" onclick="toggleUserMenu()" class="flex items-center gap-2 px-4 py-2 rounded-full glass hover:border-primary transition-all">
-                        <img id="userAvatar" src="" class="w-8 h-8 rounded-full hidden" alt="">
-                        <i id="userIcon" class="fas fa-user-circle text-xl text-gray-400"></i>
-                        <span id="userName" class="hidden md:inline text-sm">游客</span>
-                        <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                <button class="navbar-btn-icon" data-action="show-share-modal" title="分享">
+                    <i class="fas fa-share-alt"></i>
+                </button>
+                <button class="navbar-btn-icon" data-action="toggle-theme" title="切换主题">
+                    <i id="themeIconNav" class="fas fa-palette"></i>
+                </button>
+
+                <div class="navbar-user">
+                    <button id="userBtn" class="navbar-user-btn" data-action="toggle-user-menu" aria-haspopup="true" aria-expanded="false">
+                        <img id="userAvatar" src="" class="navbar-user-avatar hidden" alt="用户头像">
+                        <i id="userIcon" class="fas fa-user-circle" style="font-size:20px;color:var(--ant-text-tertiary);"></i>
+                        <span id="userName" class="navbar-user-name">游客</span>
+                        <i class="fas fa-chevron-down" style="font-size:10px;color:var(--ant-text-tertiary); margin-left:2px;"></i>
                     </button>
-                    
-                    <div id="userMenu" class="user-menu">
-                        <div class="p-2 border-b border-gray-700" id="userInfoSection">
-                            <p class="text-sm font-medium" id="menuUserName">游客</p>
-                            <p class="text-xs text-gray-500" id="menuUserEmail">未登录</p>
+
+                    <div id="userMenu" class="user-menu" role="menu">
+                        <div class="user-menu-header" id="userInfoSection">
+                            <p class="name" id="menuUserName">游客</p>
+                            <p class="email" id="menuUserEmail">未登录</p>
                         </div>
-                        <a href="#" onclick="showProfile(); return false;" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
-                            <i class="fas fa-user text-gray-400"></i> 个人中心
-                        </a>
-                        <a href="#" onclick="syncData(); return false;" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
-                            <i class="fas fa-sync text-gray-400"></i> 同步数据
-                        </a>
-                        <a href="#" onclick="exportData(); return false;" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-sm">
-                            <i class="fas fa-download text-gray-400"></i> 导出数据
-                        </a>
-                        <div class="border-t border-gray-700 mt-2 pt-2" id="authSection">
-                            <button onclick="loginWithGitHub()" class="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 text-sm text-left">
-                                <i class="fab fa-github text-gray-400"></i> GitHub登录
-                            </button>
-                        </div>
+                        <button class="user-menu-item" data-action="show-profile" role="menuitem">
+                            <i class="fas fa-user"></i> 个人中心
+                        </button>
+                        <button class="user-menu-item" data-action="sync-data" role="menuitem">
+                            <i class="fas fa-sync"></i> 同步数据
+                        </button>
+                        <button class="user-menu-item" data-action="export-data" role="menuitem">
+                            <i class="fas fa-download"></i> 导出数据
+                        </button>
+                        <div class="user-menu-divider" id="authSection"></div>
+                        <button class="user-menu-item" data-action="do-logout" role="menuitem" style="display:none;">
+                            <i class="fas fa-sign-out-alt"></i> 退出登录
+                        </button>
+                        <button class="user-menu-item" data-action="show-auth-modal" role="menuitem">
+                            <i class="fas fa-sign-in-alt"></i> 登录 / 注册
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="pt-24 pb-32" id="mainContent">
-        <!-- Content will be loaded by JavaScript -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero" id="heroSection">
+            <div class="hero-bg-grid"></div>
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-sparkles"></i>
+                    <span>AI Tool Hub · 智能工具导航</span>
+                </div>
+                <h1 class="hero-title">发现最佳 AI 工具</h1>
+                <p class="hero-subtitle">一站式 AI 工具聚合导航平台，帮你快速发现优质 AI 工具</p>
+                <div class="hero-search-wrapper">
+                    <i class="fas fa-search hero-search-icon"></i>
+                    <input id="mainSearch" type="text" placeholder="搜索 AI 工具... 按 ⌘K 快速聚焦" autocomplete="off" aria-label="搜索AI工具" class="hero-search-input">
+                    <kbd class="hero-search-kbd">⌘K</kbd>
+                    <button id="clearSearchBtn" class="hero-search-clear hidden" data-action="clear-search" aria-label="清除搜索">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div id="searchSuggestions" class="search-suggestions"></div>
+                    <div id="searchHistory" class="search-suggestions"></div>
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat"><span id="totalToolsCount" style="color:#00d4ff;">0</span> 款工具</div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat"><span style="color:#a855f7;">免费</span> 筛选</div>
+                    <div class="hero-stat-divider"></div>
+                    <div class="hero-stat"><span style="color:#00ff88;">每日</span> 更新</div>
+                </div>
+            </div>
+        </section>
+
+<section class="section">
+            <div class="container">
+                <div id="categoryFilter" class="category-filter" role="navigation" aria-label="工具分类"></div>
+
+                <!-- Sort & Advanced Filters Area -->
+                <div class="sort-bar">
+                    <button class="sort-btn active" data-action="change-sort" data-sort="default">默认</button>
+                    <button class="sort-btn" data-action="change-sort" data-sort="hot">热门</button>
+                    <button class="sort-btn" data-action="change-sort" data-sort="free-first">免费</button>
+                    <button class="sort-btn" data-action="change-sort" data-sort="domestic">国产</button>
+                    <button class="sort-btn" data-action="change-sort" data-sort="name-asc">A-Z</button>
+                    <button class="sort-btn" data-action="change-sort" data-sort="name-desc">Z-A</button>
+                    <button class="sort-btn" data-action="toggle-advanced-filters" style="margin-left:auto;">
+                        <i class="fas fa-sliders-h"></i> 筛选
+                    </button>
+                </div>
+
+                <!-- Advanced Filters -->
+                <div class="advanced-filters">
+                    <div class="advanced-filters-inner">
+                        <div class="filter-group">
+                            <div class="filter-group-label">价格</div>
+                            <label class="filter-checkbox"><input type="checkbox" data-filter-category="price" data-filter-value="free"> 免费</label>
+                            <label class="filter-checkbox"><input type="checkbox" data-filter-category="price" data-filter-value="vip"> VIP</label>
+                        </div>
+                        <div class="filter-group">
+                            <div class="filter-group-label">来源</div>
+                            <label class="filter-checkbox"><input type="checkbox" data-filter-category="origin" data-filter-value="国产"> 国产</label>
+                            <label class="filter-checkbox"><input type="checkbox" data-filter-category="origin" data-filter-value="海外"> 海外</label>
+                            <label class="filter-checkbox"><input type="checkbox" data-filter-category="origin" data-filter-value="开源"> 开源</label>
+                        </div>
+                        <div class="filter-group">
+                            <div class="filter-group-label">状态</div>
+                            <label class="filter-checkbox"><input type="checkbox" data-filter-category="status" data-filter-value="hot"> 热门</label>
+                            <label class="filter-checkbox"><input type="checkbox" data-filter-category="status" data-filter-value="new"> 最新</label>
+                        </div>
+                        <button class="btn btn-secondary" data-action="clear-all-filters" style="margin-top:8px; width:100%; justify-content:center;">
+                            <i class="fas fa-undo"></i> 清除筛选
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hot Tools -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title"><i class="fas fa-fire"></i> 热门推荐</h2>
+                        <p class="section-subtitle">精选热门 AI 工具</p>
+                    </div>
+                </div>
+                <div id="hotToolsGrid" class="hot-tools-grid"></div>
+            </div>
+        </section>
+
+        <!-- Stats Dashboard -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title"><i class="fas fa-chart-bar"></i> 数据概览</h2>
+                        <p class="section-subtitle">平台使用统计数据</p>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalToolsCountStats">0</div>
+                        <div class="stat-label">AI 工具</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="favoritesCount">0</div>
+                        <div class="stat-label">收藏工具</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="categoriesCount">0</div>
+                        <div class="stat-label">工具分类</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalClicksCount">0</div>
+                        <div class="stat-label">总点击</div>
+                    </div>
+                </div>
+                <div id="categoryBars" class="category-bars"></div>
+                <div id="topToolsList" class="top-tools-list"></div>
+            </div>
+        </section>
+
+        <!-- All Tools -->
+        <section id="toolsSection" class="section">
+            <div class="container">
+                <div class="section-header">
+                    <div>
+                        <h2 class="section-title"><i class="fas fa-cubes"></i> 全部工具</h2>
+                        <p class="section-subtitle">浏览所有 AI 工具</p>
+                    </div>
+                </div>
+                <div id="toolsGrid" class="tools-grid" role="grid" aria-label="AI工具列表"></div>
+            </div>
+        </section>
+
+        <!-- Research Page Container (hidden by default) -->
+        <div id="researchPage" class="research-page" style="display:none;"></div>
+
+        <!-- Tool Detail Modal -->
+        <div id="toolDetailModal" class="modal-overlay" role="dialog" aria-modal="true">
+            <div class="modal-panel">
+                <div class="modal-header">
+                    <div class="modal-header-icon detail-header-icon"><i class="fas fa-robot"></i></div>
+                    <div class="modal-header-info">
+                        <div class="modal-title detail-title"></div>
+                        <div class="modal-desc detail-desc"></div>
+                    </div>
+                    <button class="modal-close-btn" data-action="close-tool-detail" aria-label="关闭"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-section">
+                        <div class="modal-section-title">基本信息</div>
+                        <div class="modal-detail-row"><i class="fas fa-folder"></i> <span>分类：</span><span class="detail-category"></span></div>
+                        <div class="modal-detail-row"><i class="fas fa-tags"></i> <span class="detail-tags"></span></div>
+                        <div class="modal-detail-row"><i class="fas fa-layer-group"></i> <span>难度：</span><span class="detail-difficulty"></span></div>
+                        <div class="modal-detail-row"><i class="fas fa-clock"></i> <span>更新：</span><span class="detail-update-time"></span></div>
+                        <div class="modal-detail-row"><i class="fas fa-mouse-pointer"></i> <span>点击：</span><span class="detail-click-count"></span></div>
+                        <div class="modal-detail-row"><i class="fas fa-globe"></i> <span class="detail-platform"></span></div>
+                    </div>
+                    <div class="modal-section">
+                        <div class="modal-section-title">评分</div>
+                        <div class="flex-center" style="gap:4px;">
+                            <div id="toolStarRating" class="star-rating" data-tool-id="">
+                                <button class="star-btn" data-action="rate-tool" data-rating="1" aria-label="1星"><i class="fas fa-star"></i></button>
+                                <button class="star-btn" data-action="rate-tool" data-rating="2" aria-label="2星"><i class="fas fa-star"></i></button>
+                                <button class="star-btn" data-action="rate-tool" data-rating="3" aria-label="3星"><i class="fas fa-star"></i></button>
+                                <button class="star-btn" data-action="rate-tool" data-rating="4" aria-label="4星"><i class="fas fa-star"></i></button>
+                                <button class="star-btn" data-action="rate-tool" data-rating="5" aria-label="5星"><i class="fas fa-star"></i></button>
+                            </div>
+                            <span id="ratingText" class="rating-text">点击评分</span>
+                        </div>
+                    </div>
+                    <div class="modal-section">
+                        <div class="modal-section-title">相关工具</div>
+                        <div class="related-tools-list"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary detail-open-btn"><i class="fas fa-external-link-alt"></i> 使用</button>
+                    <button class="btn btn-secondary detail-favorite-btn"><i class="fas fa-star"></i> 收藏</button>
+                    <button class="btn btn-secondary detail-share-btn" data-action="share-tool"><i class="fas fa-share-alt"></i> 分享</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Share Modal -->
+        <div id="shareModal" class="modal-overlay" role="dialog" aria-modal="true">
+            <div class="modal-panel" style="max-width:360px;">
+                <div class="modal-header">
+                    <div class="modal-header-info">
+                        <div class="modal-title">分享</div>
+                        <div class="modal-desc">分享 AI Tool Hub 给朋友</div>
+                    </div>
+                    <button class="modal-close-btn" data-action="close-share-modal" aria-label="关闭"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="share-options">
+                        <button class="share-btn" data-action="share-to-wechat">
+                            <i class="fab fa-weixin"></i>
+                            <span>微信</span>
+                        </button>
+                        <button class="share-btn" data-action="share-to-qq">
+                            <i class="fab fa-qq"></i>
+                            <span>QQ</span>
+                        </button>
+                        <button class="share-btn" data-action="copy-share-link">
+                            <i class="fas fa-link"></i>
+                            <span>复制链接</span>
+                        </button>
+                        <button class="share-btn" data-action="generate-share-image">
+                            <i class="fas fa-image"></i>
+                            <span>分享图片</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme Modal -->
+        <div id="themeModal" class="modal-overlay" role="dialog" aria-modal="true">
+            <div class="modal-panel" style="max-width:360px;">
+                <div class="modal-header">
+                    <div class="modal-header-info">
+                        <div class="modal-title">选择主题</div>
+                        <div class="modal-desc">选择你喜欢的界面主题</div>
+                    </div>
+                    <button class="modal-close-btn" data-action="close-theme-modal" aria-label="关闭"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="theme-grid">
+                        <button class="theme-option active" data-action="set-theme" data-theme-value="light"><div class="theme-option-name">☀️ 浅色模式</div><div class="theme-option-id">light</div></button>
+                        <button class="theme-option" data-action="set-theme" data-theme-value="dark"><div class="theme-option-name">🌙 深色模式</div><div class="theme-option-id">dark</div></button>
+                    </div>
+                    <button class="btn btn-secondary" data-action="close-theme-modal" style="margin-top:12px; width:100%; justify-content:center;">关闭</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update Modal -->
+        <div id="updateModal" class="modal-overlay" role="dialog" aria-modal="true">
+            <div class="modal-panel" style="max-width:380px; text-align:center;">
+                <div class="modal-body">
+                    <div class="update-icon"><i class="fas fa-arrow-up-from-bracket"></i></div>
+                    <div class="update-title">发现新版本</div>
+                    <div class="update-desc">有新版本可用，建议更新以获得更好的体验</div>
+                    <button class="btn btn-primary" data-action="close-update-modal" style="justify-content:center;"><i class="fas fa-download"></i> 更新</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="authModal" class="modal-overlay" role="dialog" aria-modal="true">
+            <div class="modal-panel" style="max-width:400px;">
+                <div class="modal-header">
+                    <h3 id="authModalTitle">登录</h3>
+                    <button class="modal-close-btn" data-action="close-auth-modal" aria-label="关闭">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" style="padding:24px;">
+                    <div id="authLoginForm">
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;color:rgba(255,255,255,0.65);margin-bottom:6px;font-size:14px;">邮箱</label>
+                            <input id="loginEmail" type="email" autocomplete="email" placeholder="请输入邮箱" style="width:100%;height:44px;padding:0 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:white;font-size:14px;outline:none;" />
+                        </div>
+                        <div style="margin-bottom:20px;">
+                            <label style="display:block;color:rgba(255,255,255,0.65);margin-bottom:6px;font-size:14px;">密码</label>
+                            <input id="loginPassword" type="password" placeholder="请输入密码" style="width:100%;height:44px;padding:0 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:white;font-size:14px;outline:none;" />
+                        </div>
+                        <button data-action="do-login" style="width:100%;height:44px;background:linear-gradient(135deg,#00d4ff,#a855f7);color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-weight:500;">登录</button>
+                        <p style="text-align:center;margin-top:16px;color:rgba(255,255,255,0.45);font-size:13px;">没有账号？<a href="#" data-action="show-register" style="color:#00d4ff;">立即注册</a></p>
+                    </div>
+                    <div id="authRegisterForm" style="display:none;">
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;color:rgba(255,255,255,0.65);margin-bottom:6px;font-size:14px;">用户名</label>
+                            <input id="registerName" type="text" placeholder="请输入用户名" style="width:100%;height:44px;padding:0 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:white;font-size:14px;outline:none;" />
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label style="display:block;color:rgba(255,255,255,0.65);margin-bottom:6px;font-size:14px;">邮箱</label>
+                            <input id="registerEmail" type="email" autocomplete="email" placeholder="请输入邮箱" style="width:100%;height:44px;padding:0 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:white;font-size:14px;outline:none;" />
+                        </div>
+                        <div style="margin-bottom:20px;">
+                            <label style="display:block;color:rgba(255,255,255,0.65);margin-bottom:6px;font-size:14px;">密码</label>
+                            <input id="registerPassword" type="password" placeholder="请输入密码（至少6位）" style="width:100%;height:44px;padding:0 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:white;font-size:14px;outline:none;" />
+                        </div>
+                        <button data-action="do-register" style="width:100%;height:44px;background:linear-gradient(135deg,#00d4ff,#a855f7);color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-weight:500;">注册</button>
+                        <p style="text-align:center;margin-top:16px;color:rgba(255,255,255,0.45);font-size:13px;">已有账号？<a href="#" data-action="show-login" style="color:#00d4ff;">返回登录</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Back to Top -->
+        <button id="backToTopBtn" class="back-to-top" aria-label="返回顶部">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+
+        <!-- Pull to Refresh -->
+        <div id="pullRefresh" class="pull-refresh">
+            <i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> 刷新中...
+        </div>
+
+        <!-- Announcement Bar -->
+        <div id="announcementBar" class="announcement-bar">
+            <span id="announcementText"></span>
+            <button class="announcement-close" data-action="close-announcement" aria-label="关闭公告"><i class="fas fa-times"></i></button>
+        </div>
     </main>
 
-    <!-- Scripts -->
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-inner">
+                <div>
+                    <div class="footer-brand">
+                        <i class="fas fa-robot"></i>
+                        <span>AI Tool Hub</span>
+                    </div>
+                    <p class="footer-desc">一站式 AI 工具聚合导航平台，帮你快速发现优质 AI 工具</p>
+                </div>
+                <div class="footer-links">
+                    <a href="https://github.com/a895411690/ai-tool-hub" target="_blank" rel="noopener"><i class="fab fa-github"></i> GitHub</a>
+                    <a href="#"><i class="fas fa-envelope"></i> 反馈</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span>&copy; 2026 AI Tool Hub</span>
+                <div class="footer-beian-group">
+                    <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">沪ICP备2026013388号</a>
+                    <a href="https://beian.mps.gov.cn/#/query/webSearch?code=31011502405714" target="_blank" rel="noreferrer" class="footer-police">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>沪公网安备31011502405714号</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"><span id="toastMsg"></span></div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="loading-state">
+        <div class="text-center">
+            <div class="spinner" style="border-color: rgba(0,212,255,0.2); border-top-color: #00d4ff;"></div>
+            <p style="font-size:13px; color:var(--ant-text-tertiary); margin:0;">加载中...</p>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation (Mobile) -->
+    <nav class="bottom-nav" aria-label="底部导航">
+        <div class="bottom-nav-inner">
+            <button class="bottom-nav-btn active" data-action="show-all-tools" aria-label="工具列表">
+                <i class="fas fa-th-large"></i>
+                <span>工具</span>
+            </button>
+            <button class="bottom-nav-btn" data-action="show-research" aria-label="深度研究">
+                <i class="fas fa-microscope"></i>
+                <span>研究</span>
+            </button>
+            <button class="bottom-nav-btn" data-action="show-prompts" aria-label="提示词">
+                <i class="fas fa-wand-magic-sparkles"></i>
+                <span>提示词</span>
+            </button>
+            <button class="bottom-nav-btn" data-action="show-share-modal" aria-label="分享">
+                <i class="fas fa-share-alt"></i>
+                <span>分享</span>
+            </button>
+            <button class="bottom-nav-btn" data-action="scroll-to-top" aria-label="返回首页">
+                <i class="fas fa-home"></i>
+                <span>首页</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Scroll Reveal Observer -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        function $(sel) { return document.querySelector(sel); }
-        function $$(sel) { return document.querySelectorAll(sel); }
+        if ('IntersectionObserver' in window) {
+            var observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
 
-        window.toggleUserMenu = function() {
-            var menu = $('#userMenu');
-            if (menu) menu.classList.toggle('show');
-        };
+            var ro = new MutationObserver(function() {
+                document.querySelectorAll('.reveal:not(.visible)').forEach(function(el) { observer.observe(el); });
+            });
+            ro.observe(document.body, { childList: true, subtree: true });
+            document.querySelectorAll('.reveal:not(.visible)').forEach(function(el) { observer.observe(el); });
+        }
+    });
+    </script>
 
-        window.showProfile = function() {
-            var menu = $('#userMenu');
-            if (menu) menu.classList.remove('show');
-            var content = $('#mainContent');
-            if (content) content.dispatchEvent(new CustomEvent('navigate', { detail: { page: 'profile' } }));
-        };
 
-        window.syncData = function() {
-            var menu = $('#userMenu');
-            if (menu) menu.classList.remove('show');
-            if (window._appModule && window._appModule.syncData) {
-                window._appModule.syncData();
-            }
-        };
-
-        window.exportData = function() {
-            var menu = $('#userMenu');
-            if (menu) menu.classList.remove('show');
-            if (window._appModule && window._appModule.exportData) {
-                window._appModule.exportData();
-            }
-        };
-
-        window.loginWithGitHub = function() {
-            var menu = $('#userMenu');
-            if (menu) menu.classList.remove('show');
-            if (window._appModule && window._appModule.loginWithGitHub) {
-                window._appModule.loginWithGitHub();
-            }
-        };
-
-        window.showPromptsPage = function() {
-            var content = $('#mainContent');
-            if (content) content.dispatchEvent(new CustomEvent('navigate', { detail: { page: 'prompts' } }));
-        };
-
-        document.addEventListener('click', function(e) {
-            var menu = $('#userMenu');
-            var btn = $('#userBtn');
-            if (menu && menu.classList.contains('show') && !menu.contains(e.target) && !btn.contains(e.target)) {
-                menu.classList.remove('show');
-            }
-        });
+    <script>
+    window.addEventListener('scroll', () => {
+        const nav = document.getElementById('mainNav');
+        if (nav) nav.classList.toggle('scrolled', window.scrollY > 50);
     });
     </script>
 </body>

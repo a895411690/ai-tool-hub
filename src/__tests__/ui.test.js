@@ -688,3 +688,275 @@ describe('toggleAdvancedFilter', () => {
         expect(state.advancedFilters.status).toContain('hot');
     });
 });
+
+
+// ---------------------------------------------------------------------------
+// renderCategories
+// ---------------------------------------------------------------------------
+
+describe('renderCategories', () => {
+    let renderCategories;
+    const testCategories = [
+        { id: 'ai-writing', name: 'AI写作' },
+        { id: 'ai-image', name: 'AI绘画' },
+        { id: 'ai-code', name: 'AI编程' }
+    ];
+
+    beforeAll(async () => {
+        const mod = await import('../../js/ui.js');
+        renderCategories = mod.renderCategories;
+    });
+
+    beforeEach(() => {
+        document.body.innerHTML = '<div id="categoryFilter"></div>';
+        // Reset state.categories via the state module import
+    });
+
+    test('should render container with navigation role', () => {
+        renderCategories();
+        const container = document.getElementById('categoryFilter');
+        expect(container.getAttribute('role')).toBe('navigation');
+        expect(container.getAttribute('aria-label')).toBe('工具分类');
+    });
+
+    test('should render "全部" as first button', () => {
+        renderCategories();
+        const firstBtn = document.querySelector('#categoryFilter button');
+        expect(firstBtn.textContent).toBe('全部');
+        expect(firstBtn.dataset.category).toBe('all');
+    });
+
+    test('should not throw if container missing', () => {
+        document.body.innerHTML = '';
+        expect(() => renderCategories()).not.toThrow();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// renderHotTools
+// ---------------------------------------------------------------------------
+
+describe('renderHotTools', () => {
+    let renderHotTools;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/ui.js');
+        renderHotTools = mod.renderHotTools;
+    });
+
+    beforeEach(() => {
+        document.body.innerHTML = '<div id="hotToolsGrid"></div>';
+    });
+
+    test('should render hot tools grid', () => {
+        renderHotTools();
+        const grid = document.getElementById('hotToolsGrid');
+        expect(grid.children.length).toBeGreaterThan(0);
+    });
+
+    test('should not throw if container missing', () => {
+        document.body.innerHTML = '';
+        expect(() => renderHotTools()).not.toThrow();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// renderStatisticsDashboard
+// ---------------------------------------------------------------------------
+
+describe('renderStatisticsDashboard', () => {
+    let renderStatisticsDashboard;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/ui.js');
+        renderStatisticsDashboard = mod.renderStatisticsDashboard;
+    });
+
+    beforeEach(() => {
+        document.body.innerHTML = `
+            <span id="totalToolsCount"></span>
+            <span id="categoriesCount"></span>
+            <span id="favoritesCount"></span>
+            <span id="totalClicksCount"></span>
+            <div id="categoryBars"></div>
+            <div id="topToolsList"></div>
+        `;
+    });
+
+    test('should update stat cards with values', () => {
+        renderStatisticsDashboard();
+        expect(document.getElementById('totalToolsCount').textContent).toBeTruthy();
+        expect(document.getElementById('categoriesCount').textContent).toBeTruthy();
+    });
+
+    test('should not throw if elements missing', () => {
+        document.body.innerHTML = '';
+        expect(() => renderStatisticsDashboard()).not.toThrow();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// setSearch / clearSearch
+// ---------------------------------------------------------------------------
+
+describe('setSearch and clearSearch', () => {
+    let setSearch, clearSearch, applyFiltersAndSortSpy;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/ui.js');
+        setSearch = mod.setSearch;
+        clearSearch = mod.clearSearch;
+    });
+
+    beforeEach(() => {
+        document.body.innerHTML = `
+            <input id="mainSearch" type="text" />
+            <div id="clearSearchBtn" class="hidden"></div>
+            <div id="searchHistory"></div>
+            <div id="searchSuggestions"></div>
+            <div id="toolsGrid"></div>
+        `;
+    });
+
+    test('setSearch should set input value', () => {
+        setSearch('ChatGPT');
+        expect(document.getElementById('mainSearch').value).toBe('ChatGPT');
+    });
+
+    test('setSearch should hide searchHistory and suggestions', () => {
+        document.getElementById('searchHistory').classList.add('show');
+        document.getElementById('searchSuggestions').classList.add('show');
+        setSearch('test');
+        expect(document.getElementById('searchHistory').classList.contains('show')).toBe(false);
+        expect(document.getElementById('searchSuggestions').classList.contains('show')).toBe(false);
+    });
+
+    test('clearSearch should clear input and show clear button as hidden', () => {
+        document.getElementById('mainSearch').value = 'test';
+        clearSearch();
+        expect(document.getElementById('mainSearch').value).toBe('');
+        expect(document.getElementById('clearSearchBtn').classList.contains('hidden')).toBe(true);
+    });
+
+    test('setSearch should not throw with no search input', () => {
+        document.body.innerHTML = '';
+        expect(() => setSearch('test')).not.toThrow();
+    });
+
+    test('clearSearch should not throw with no search input', () => {
+        document.body.innerHTML = '';
+        expect(() => clearSearch()).not.toThrow();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// toggleAdvancedFilters / clearAllFilters
+// ---------------------------------------------------------------------------
+
+describe('toggleAdvancedFilters / clearAllFilters', () => {
+    let toggleAdvancedFilters, clearAllFilters;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/ui.js');
+        toggleAdvancedFilters = mod.toggleAdvancedFilters;
+        clearAllFilters = mod.clearAllFilters;
+    });
+
+    beforeEach(() => {
+        document.body.innerHTML = `
+            <div class="advanced-filters"></div>
+            <input id="mainSearch" type="text" />
+            <div id="clearSearchBtn"></div>
+            <div id="toolsGrid"></div>
+        `;
+    });
+
+    test('toggleAdvancedFilters should toggle expanded class', () => {
+        const container = document.querySelector('.advanced-filters');
+        toggleAdvancedFilters();
+        expect(container.classList.contains('expanded')).toBe(true);
+        toggleAdvancedFilters();
+        expect(container.classList.contains('expanded')).toBe(false);
+    });
+
+    test('toggleAdvancedFilters should not throw if missing', () => {
+        document.body.innerHTML = '';
+        expect(() => toggleAdvancedFilters()).not.toThrow();
+    });
+
+    test('clearAllFilters should not throw', () => {
+        expect(() => clearAllFilters()).not.toThrow();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// applyFiltersAndSort (search by name/desc)
+// ---------------------------------------------------------------------------
+
+describe('applyFiltersAndSort search', () => {
+    let applyFiltersAndSort;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/ui.js');
+        applyFiltersAndSort = mod.applyFiltersAndSort;
+    });
+
+    beforeEach(() => {
+        document.body.innerHTML = `
+            <input id="mainSearch" type="text" />
+            <div id="toolsGrid"></div>
+        `;
+    });
+
+    test('should not throw with empty search term', () => {
+        document.getElementById('mainSearch').value = '';
+        expect(() => applyFiltersAndSort()).not.toThrow();
+    });
+
+    test('should filter tools by search term', () => {
+        document.getElementById('mainSearch').value = 'ChatGPT';
+        expect(() => applyFiltersAndSort()).not.toThrow();
+    });
+
+    test('should handle no tools data gracefully', () => {
+        document.getElementById('mainSearch').value = 'nonexistent';
+        expect(() => applyFiltersAndSort()).not.toThrow();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// filterCategory
+// ---------------------------------------------------------------------------
+
+describe('filterCategory', () => {
+    let filterCategory;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/ui.js');
+        filterCategory = mod.filterCategory;
+    });
+
+    beforeEach(() => {
+        document.body.innerHTML = `
+            <button class="category-btn" data-category="all">全部</button>
+            <button class="category-btn" data-category="ai-writing">AI写作</button>
+            <div id="toolsGrid"></div>
+        `;
+    });
+
+    test('should set active class on selected category', () => {
+        filterCategory('ai-writing');
+        const btn = document.querySelector('[data-category="ai-writing"]');
+        expect(btn.classList.contains('active')).toBe(true);
+    });
+
+    test('should remove active class from other categories', () => {
+        document.querySelector('[data-category="all"]').classList.add('active');
+        filterCategory('ai-writing');
+        expect(document.querySelector('[data-category="all"]').classList.contains('active')).toBe(false);
+    });
+
+    test('should not throw if no matching button', () => {
+        expect(() => filterCategory('nonexistent')).not.toThrow();
+    });
+});

@@ -1,6 +1,7 @@
 // Import state from centralized state module (no circular dependency!)
 import state, { addToSearchHistory } from './state.js';
-import { escapeHtml, escapeAttr, SEARCH_DEBOUNCE_TIME, showToast, generateTagsHtml, generatePlatformBadgesHtml, generateStatusBadgeHtml } from './utils.js';
+import { escapeHtml, escapeAttr, SEARCH_DEBOUNCE_TIME, showToast } from './utils.js';
+import { generateTagsHtml, generatePlatformBadgesHtml, generateStatusBadgeHtml } from './renderer.js';
 
 /**
  * Filter/Sort functions
@@ -24,7 +25,6 @@ function setCurrentSort(sortBy) {
 
 // Advanced Filters State (v4.3.0)
 function sortTools(tools, sortBy) {
-    state.currentSort = sortBy;
 
     const sorted = [...tools];
     switch (sortBy) {
@@ -116,9 +116,19 @@ function applyFiltersAndSort() {
  */
 function loadSavedFilters() {
     const savedCategory = localStorage.getItem('ai-tool-hub-filter-category');
-    if (savedCategory && savedCategory !== 'all') {
-        setTimeout(() => filterCategory(savedCategory), 500);
+    if (!savedCategory || savedCategory === 'all') return;
+    
+    // If tools are already loaded, apply filter immediately.
+    // Otherwise wait for the tools:loaded event from app.js.
+    if (state.tools.length > 0) {
+        filterCategory(savedCategory);
+        return;
     }
+    
+    document.addEventListener('tools:loaded', function onReady() {
+        document.removeEventListener('tools:loaded', onReady);
+        filterCategory(savedCategory);
+    }, { once: true });
 }
 
 /**
@@ -168,15 +178,15 @@ function setupSearch() {
     let searchDebounceTimeout = null;
     let currentSearchTerm = '';
 
-    // Search suggestions container (v5.1.0 Modern Command Bar Design)
-    const suggestionsContainer = document.createElement('div');
-    suggestionsContainer.id = 'searchSuggestions';
-    suggestionsContainer.className = 'search-dropdown';
-    const searchContainer = searchInput.closest('.search-container');
-    if (searchContainer) {
-        searchContainer.appendChild(suggestionsContainer);
-    } else {
+    // Reuse existing #searchSuggestions from HTML, or create one if missing
+    let suggestionsContainer = document.getElementById('searchSuggestions');
+    if (!suggestionsContainer) {
+        suggestionsContainer = document.createElement('div');
+        suggestionsContainer.id = 'searchSuggestions';
         searchInput.parentNode.appendChild(suggestionsContainer);
+    }
+    if (!suggestionsContainer.classList.contains('search-dropdown')) {
+        suggestionsContainer.classList.add('search-dropdown');
     }
 
     // Search history container also needs consistent class
@@ -262,7 +272,9 @@ function setupSearch() {
                 hideSearchSuggestions(suggestionsContainer);
                 if (searchHistoryContainer) searchHistoryContainer.classList.remove('show');
                 searchInput.blur();
-                setSearch(item.dataset.searchText || '');
+                if (typeof window.showToolDetail === 'function') {
+                    window.showToolDetail(parseInt(toolId));
+                }
                 return;
             }
 
@@ -531,6 +543,8 @@ function toggleAdvancedFilters() {
  * @param {boolean} checked - Whether the filter is checked
  */
 function toggleAdvancedFilter(category, value, checked) {
+    // Guard against unknown categories
+    if (!state.advancedFilters[category]) return;
     if (checked) {
         if (!state.advancedFilters[category].includes(value)) {
             state.advancedFilters[category].push(value);

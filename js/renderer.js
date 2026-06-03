@@ -1,6 +1,6 @@
 // Import state from centralized state module
 import state, { getCategoryName, isFavorite } from './state.js';
-import { escapeHtml, escapeAttr, generateTagsHtml, generatePlatformBadgesHtml, generateStatusBadgeHtml } from './utils.js';
+import { escapeHtml, escapeAttr } from './utils.js';
 
 /**
  * Render category filter buttons
@@ -49,7 +49,7 @@ function renderHotTools() {
 
         return `
             <div class="hot-tool-card" data-tool-id="${tool.id}">
-                <div class="hot-tool-icon">
+                <div class="hot-tool-icon" style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(168,85,247,0.1)); color: #00d4ff;">
                     <i class="fas ${escapeAttr(tool.icon)}"></i>
                 </div>
                 <div class="hot-tool-info">
@@ -57,7 +57,7 @@ function renderHotTools() {
                     <div class="hot-tool-desc">${escapeHtml(tool.desc)}</div>
                     <div class="hot-tool-tags">${tagsHtml}</div>
                 </div>
-                <i class="fas fa-arrow-right hot-tool-arrow"></i>
+                <i class="fas fa-arrow-right hot-tool-arrow" style="color: #00d4ff;"></i>
             </div>
         `;
     }).join('');
@@ -77,6 +77,8 @@ function renderStatisticsDashboard() {
     const categoriesEl = document.getElementById('categoriesCount');
 
     if (totalToolsEl) totalToolsEl.textContent = state.tools.length;
+    const totalToolsStatsEl = document.getElementById('totalToolsCountStats');
+    if (totalToolsStatsEl) totalToolsStatsEl.textContent = state.tools.length;
     if (categoriesEl) categoriesEl.textContent = state.categories.length;
     if (favoritesEl) favoritesEl.textContent = state.favorites.length;
 
@@ -89,9 +91,9 @@ function renderStatisticsDashboard() {
     const categoryBarsContainer = document.getElementById('categoryBars');
     if (categoryBarsContainer && state.categories.length > 0) {
         const categoryColors = [
-            '#1677ff', '#ff4d4f', '#52c41a', '#faad14',
-            '#13c2c2', '#722ed1', '#eb2f96', '#fa8c16',
-            '#2f54eb', '#a0d911'
+            '#00d4ff', '#a855f7', '#00ff88', '#faad14',
+            '#ff4d4f', '#13c2c2', '#722ed1', '#eb2f96',
+            '#fa8c16', '#2f54eb'
         ];
 
         const maxToolsInCategory = Math.max(...state.categories.map(cat =>
@@ -128,15 +130,16 @@ function renderStatisticsDashboard() {
         const listHtml = sortedTools.map((tool, index) => {
             const clicks = state.clickStats[tool.id] || 0;
             const rankClass = index === 0 ? 'top-rank-1' : index === 1 ? 'top-rank-2' : index === 2 ? 'top-rank-3' : 'top-rank-default';
+            const rankColor = index === 0 ? '#00d4ff' : index === 1 ? '#a855f7' : index === 2 ? '#00ff88' : '';
 
             return `
                 <div class="top-tool-item" data-tool-id="${tool.id}">
-                    <span class="top-rank ${rankClass}">${index + 1}</span>
+                    <span class="top-rank ${rankClass}" ${rankColor ? `style="color: ${rankColor};"` : ''}>${index + 1}</span>
                     <div class="top-tool-info">
                         <div class="top-tool-name">${escapeHtml(tool.name)}</div>
                         <div class="top-tool-clicks">${clicks} 次点击</div>
                     </div>
-                    <i class="fas ${escapeAttr(tool.icon)} top-tool-icon" style="color: var(--text-muted);"></i>
+                    <i class="fas ${escapeAttr(tool.icon)} top-tool-icon" style="color: var(--ant-text-tertiary);"></i>
                 </div>
             `;
         }).join('');
@@ -187,14 +190,14 @@ function createToolCard(tool) {
     return `
         <div class="tool-card" data-tool-id="${tool.id}">
             <div class="card-header">
-                <div class="card-icon">
+                <div class="card-icon" style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(168,85,247,0.1));">
                     <i class="fas ${escapeAttr(tool.icon)}"></i>
                 </div>
                 <div class="card-badges">
                     ${statusBadge}
                     ${difficultyLabel}
                 </div>
-                <button data-action="toggle-favorite" data-tool-id="${tool.id}" class="favorite-btn ${favorite ? 'active' : ''}" aria-label="${favorite ? '取消收藏' : '收藏'} ${escapeHtml(tool.name)}">
+                <button data-action="toggle-favorite" data-tool-id="${tool.id}" class="favorite-btn ${favorite ? 'active' : ''}" aria-label="${favorite ? '取消收藏' : '收藏'} ${escapeHtml(tool.name)}" ${favorite ? 'style="color: #00d4ff;"' : ''}>
                     <i class="fas fa-star"></i>
                 </button>
             </div>
@@ -209,7 +212,7 @@ function createToolCard(tool) {
             </div>
             <div class="card-footer">
                 <span class="card-category">${escapeHtml(categoryName)}</span>
-                <button data-action="open-tool" data-tool-id="${tool.id}" data-tool-url="${escapeAttr(tool.url)}" class="card-action-btn">
+                <button data-action="open-tool" data-tool-id="${tool.id}" data-tool-url="${escapeAttr(tool.url)}" class="card-action-btn" style="background: linear-gradient(135deg, #00d4ff, #a855f7);">
                     <i class="fas fa-external-link-alt"></i> 使用
                 </button>
             </div>
@@ -259,4 +262,44 @@ function renderTools(tools) {
     grid.appendChild(fragment);
 }
 
+
+// ── UI helper functions (moved from utils.js for clearer responsibility boundary) ──
+
+const RATING_LABELS = ['', '很差', '较差', '一般', '很好', '极好'];
+
+function generateTagsHtml(tool) {
+    let html = '';
+    if (tool.tags) {
+        if (tool.tags.includes('free')) html += '<span class="tag tag-free">免费</span>';
+        else if (tool.tags.includes('vip')) html += '<span class="tag tag-vip">VIP</span>';
+        if (tool.tags.includes('new')) html += '<span class="tag tag-new">NEW</span>';
+        if (tool.tags.includes('hot')) html += '<span class="tag tag-hot">热门</span>';
+    }
+    if (tool.toolTags) {
+        if (tool.toolTags.includes('国产')) html += '<span class="tag tag-domestic">国产</span>';
+        if (tool.toolTags.includes('海外')) html += '<span class="tag tag-overseas">海外</span>';
+        if (tool.toolTags.includes('开源')) html += '<span class="tag tag-open-source">开源</span>';
+        if (tool.toolTags.includes('无需登录')) html += '<span class="tag tag-no-login">无需登录</span>';
+    }
+    return html;
+}
+
+function generatePlatformBadgesHtml(platform) {
+    if (!platform || !Array.isArray(platform)) return '';
+    const icons = { web: 'fa-globe', local: 'fa-server', mobile: 'fa-mobile-alt', desktop: 'fa-desktop' };
+    return `<div class="platform-badges">${platform.map(p =>
+        `<i class="fas ${icons[p] || 'fa-cog'}" title="${escapeAttr(p)}"></i>`
+    ).join('')}</div>`;
+}
+
+function generateStatusBadgeHtml(status) {
+    if (status === 'hot') return '<span class="status-badge status-hot"><i class="fas fa-fire"></i> 热门推荐</span>';
+    if (status === 'stable') return '<span class="status-badge status-stable"><i class="fas fa-check-circle"></i> 稳定可靠</span>';
+    return '';
+}
+
 export { createToolCard, renderCategories, renderHotTools, renderStatisticsDashboard, renderTools };
+
+// UI helper re-exports for consumers that import from renderer.js
+export { RATING_LABELS, generateTagsHtml, generatePlatformBadgesHtml, generateStatusBadgeHtml };
+

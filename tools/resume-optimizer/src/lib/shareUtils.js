@@ -162,8 +162,7 @@ class ShareUtils {
         const shareLog = JSON.parse(localStorage.getItem('shareLogs') || '[]');
         shareLog.push({
             platform,
-            timestamp: new Date().toISOString(),
-            resumeData: this.shareData
+            timestamp: new Date().toISOString()
         });
         localStorage.setItem('shareLogs', JSON.stringify(shareLog.slice(-50)));
     }

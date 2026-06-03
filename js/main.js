@@ -1,5 +1,5 @@
 import { loadTools } from './app.js';
-import { renderTools, filterCategory, loadSavedFilters, clearSearch, setupSearch, setCurrentSort, applyFiltersAndSort, toggleAdvancedFilters, clearAllFilters } from './ui.js';
+import { renderTools, filterCategory, loadSavedFilters, clearSearch, setupSearch, setCurrentSort, applyFiltersAndSort, toggleAdvancedFilters, clearAllFilters, toggleAdvancedFilter } from './ui.js';
 import { openTool, toggleFavorite, showToolDetail, closeToolDetail, rateTool } from './tool.js';
 import { showShareModal, closeShareModal, shareToWeChat, shareToQQ, copyShareLink, generateShareImage } from './share.js';
 import { setupKeyboardShortcuts, setupPullToRefresh, toggleTheme, showToast, loadAnnouncement, closeAnnouncement, checkForUpdate, closeUpdateModal, registerServiceWorker, closeThemeModal, setTheme, loadSavedTheme } from './utils.js';
@@ -9,7 +9,6 @@ function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
     document.querySelector('.bottom-nav button[data-action="scroll-to-top"]')?.classList.add('active');
-    showToast('已返回首页');
 }
 
 function showAllTools() {
@@ -18,7 +17,6 @@ function showAllTools() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
     document.querySelector('.bottom-nav button[data-action="show-all-tools"]')?.classList.add('active');
-    showToast('显示所有工具');
 }
 
 function changeSort(sortBy) {
@@ -99,9 +97,14 @@ const actionHandlers = {
     'show-all-tools': () => showAllTools(),
     'close-tool-detail': () => closeToolDetail(),
     'close-share-modal': (e) => closeShareModal(e),
-    'close-update-modal': () => closeUpdateModal(),
+    'close-update-modal': () => {
+        closeUpdateModal();
+        window.open('https://github.com/a895411690/ai-tool-hub/releases', '_blank');
+    },
     'close-theme-modal': (e) => closeThemeModal(e),
     'clear-all-filters': () => { clearAllFilters(); clearSearch(); },
+    'clear-search': () => clearSearch(),
+    'clear-search-history': () => { localStorage.removeItem('ai-tool-hub-search-history'); document.getElementById('searchHistory')?.classList.remove('show'); showToast('搜索历史已清除'); },
     'toggle-advanced-filters': () => toggleAdvancedFilters(),
     'export-favorites': () => exportFavorites(),
     'import-favorites': () => importFavorites(),
@@ -109,6 +112,25 @@ const actionHandlers = {
     'share-to-qq': () => shareToQQ(),
     'copy-share-link': () => copyShareLink(),
     'generate-share-image': () => generateShareImage(),
+    'share-tool': () => showShareModal(),
+    'show-research': () => window.showResearchPage?.(),
+    'show-prompts': () => window.showPromptsPage?.(),
+    'toggle-user-menu': () => window.toggleUserMenu?.(),
+    'show-profile': () => window.showProfile?.(),
+    'sync-data': () => window.syncData?.(),
+    'export-data': () => window.exportData?.(),
+    'show-auth-modal': () => showAuthModal(),
+    'close-auth-modal': () => closeAuthModal(),
+    'show-register': (e) => { e.preventDefault(); showAuthForm('register'); },
+    'show-login': (e) => { e.preventDefault(); showAuthForm('login'); },
+    'do-login': () => doLogin(),
+    'do-register': () => doRegister(),
+    'do-logout': () => doLogout(),
+    'focus-search': () => document.getElementById('mainSearch')?.focus(),
+    'scroll-search': () => {
+        document.getElementById('mainSearch')?.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('mainSearch')?.focus();
+    },
 };
 
 document.addEventListener('click', function globalClickHandler(e) {
@@ -170,6 +192,14 @@ document.addEventListener('DOMContentLoaded', () => {
             menu.classList.remove('show');
         }
     });
+
+    // Delegated change handler for advanced filter checkboxes (replaces inline onchange)
+    document.addEventListener('change', (e) => {
+        const input = e.target;
+        if (input.matches('.advanced-filters input[type="checkbox"][data-filter-category]')) {
+            toggleAdvancedFilter(input.dataset.filterCategory, input.dataset.filterValue, input.checked);
+        }
+    });
 });
 
 // ---------------------------------------------------------------------------
@@ -180,8 +210,15 @@ window.showPromptsPage = function() {
 };
 
 window.showResearchPage = async function() {
-    var mod = await import('./research.js');
-    mod.initResearchPage();
+    try {
+        const mod = await import('./research.js');
+        if (typeof mod.initResearchPage === 'function') {
+            mod.initResearchPage();
+        }
+    } catch (err) {
+        console.error('Failed to load research module:', err);
+        showToast('研究模块加载失败，请刷新页面重试');
+    }
 };
 
 window.toggleUserMenu = function() {
@@ -201,13 +238,95 @@ window.exportData = function() {
     exportFavorites();
 };
 
-window.loginWithGitHub = function() {
-    showToast('GitHub OAuth 需后端服务器支持，当前为前端演示模式');
-};
+function showAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) { showAuthForm('login'); modal.classList.add('active'); }
+}
+function closeAuthModal() {
+    const modal = document.getElementById('authModal');
+    if (modal) modal.classList.remove('active');
+}
+function showAuthForm(type) {
+    const loginForm = document.getElementById('authLoginForm');
+    const registerForm = document.getElementById('authRegisterForm');
+    const title = document.getElementById('authModalTitle');
+    if (type === 'register') {
+        if (loginForm) loginForm.style.display = 'none';
+        if (registerForm) registerForm.style.display = 'block';
+        if (title) title.textContent = '注册';
+    } else {
+        if (loginForm) loginForm.style.display = 'block';
+        if (registerForm) registerForm.style.display = 'none';
+        if (title) title.textContent = '登录';
+    }
+}
+function doRegister() {
+    const name = document.getElementById('registerName')?.value?.trim();
+    const email = document.getElementById('registerEmail')?.value?.trim();
+    const password = document.getElementById('registerPassword')?.value;
+    if (!name || !email || !password) { showToast('请填写所有字段'); return; }
+    if (password.length < 6) { showToast('密码至少6位'); return; }
+    const users = JSON.parse(localStorage.getItem('ai-tool-hub-users') || '[]');
+    if (users.find(u => u.email === email)) { showToast('该邮箱已注册'); return; }
+    const user = { id: Date.now(), name, email, password, createdAt: new Date().toISOString() };
+    users.push(user);
+    localStorage.setItem('ai-tool-hub-users', JSON.stringify(users));
+    localStorage.setItem('ai-tool-hub-current-user', JSON.stringify({ id: user.id, name: user.name, email: user.email }));
+    closeAuthModal();
+    updateUserMenu(user);
+    showToast('注册成功，欢迎 ' + name);
+}
+function doLogin() {
+    const email = document.getElementById('loginEmail')?.value?.trim();
+    const password = document.getElementById('loginPassword')?.value;
+    if (!email || !password) { showToast('请填写邮箱和密码'); return; }
+    const users = JSON.parse(localStorage.getItem('ai-tool-hub-users') || '[]');
+    const user = users.find(u => u.email === email && u.password === password);
+    if (!user) { showToast('邮箱或密码错误'); return; }
+    localStorage.setItem('ai-tool-hub-current-user', JSON.stringify({ id: user.id, name: user.name, email: user.email }));
+    closeAuthModal();
+    updateUserMenu(user);
+    showToast('登录成功，欢迎回来 ' + user.name);
+}
+function doLogout() {
+    localStorage.removeItem('ai-tool-hub-current-user');
+    updateUserMenu(null);
+    showToast('已退出登录');
+}
+function updateUserMenu(user) {
+    const loginItem = document.querySelector('[data-action="show-auth-modal"]');
+    const logoutItem = document.querySelector('[data-action="do-logout"]');
+    const userNameEl = document.getElementById('userName');
+    const menuUserNameEl = document.getElementById('menuUserName');
+    const menuUserEmailEl = document.getElementById('menuUserEmail');
+    const userAvatarEl = document.getElementById('userAvatar');
+    const userIconEl = document.getElementById('userIcon');
+    if (user) {
+        if (loginItem) loginItem.innerHTML = '<i class="fas fa-user"></i> ' + user.name;
+        if (logoutItem) logoutItem.style.display = '';
+        if (userNameEl) userNameEl.textContent = user.name;
+        if (menuUserNameEl) menuUserNameEl.textContent = user.name;
+        if (menuUserEmailEl) menuUserEmailEl.textContent = user.email;
+        if (userAvatarEl) userAvatarEl.classList.add('hidden');
+        if (userIconEl) userIconEl.classList.remove('hidden');
+    } else {
+        if (loginItem) loginItem.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登录 / 注册';
+        if (logoutItem) logoutItem.style.display = 'none';
+        if (userNameEl) userNameEl.textContent = '游客';
+        if (menuUserNameEl) menuUserNameEl.textContent = '游客';
+        if (menuUserEmailEl) menuUserEmailEl.textContent = '未登录';
+        if (userAvatarEl) userAvatarEl.classList.add('hidden');
+        if (userIconEl) userIconEl.classList.remove('hidden');
+    }
+}
+
+const savedUser = JSON.parse(localStorage.getItem('ai-tool-hub-current-user') || 'null');
+if (savedUser) updateUserMenu(savedUser);
 
 // Expose commonly-used close functions on window for inline onclick handlers
 window.closeAnnouncement = closeAnnouncement;
 window.closeToolDetail = closeToolDetail;
+window.showToolDetail = showToolDetail;
 window.closeShareModal = closeShareModal;
 window.closeThemeModal = closeThemeModal;
 window.closeUpdateModal = closeUpdateModal;

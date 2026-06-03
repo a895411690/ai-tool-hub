@@ -8,6 +8,7 @@ function loadHtml2Canvas() {
         }
         const script = document.createElement('script');
         script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        script.crossOrigin = 'anonymous';
         script.onload = () => resolve(window.html2canvas);
         script.onerror = () => reject(new Error('html2canvas 加载失败'));
         document.head.appendChild(script);
@@ -28,7 +29,7 @@ function showShareModal() {
 function closeShareModal(event) {
     const modal = document.getElementById('shareModal');
     if (!modal) return;
-    if (!event || event.target === modal || event.target.closest('.share-close-btn')) {
+    if (!event || event.target === modal || event.target.closest('.modal-close-btn')) {
         modal.classList.remove('active');
     }
 }
@@ -66,7 +67,8 @@ function copyShareLink() {
  * @async
  */
 async function generateShareImage() {
-    const toolCount = window.__AI_TOOL_HUB_COUNT__ || '80+';
+    const rawCount = window.__AI_TOOL_HUB_COUNT__;
+    const toolCount = (typeof rawCount === 'number') ? rawCount : '80+';
 
     const shareCard = document.createElement('div');
     shareCard.innerHTML = `

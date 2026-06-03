@@ -1,21 +1,22 @@
 import config from '../config.js';
-import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, unlinkSync } from 'fs';
+import { promises as fsp, existsSync, mkdirSync, readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { scryptSync, randomBytes, timingSafeEqual } from 'crypto';
 
 function hashPassword(password) {
-    const salt = randomBytes(16).toString('hex');
+    const salt = randomBytes(16);
     const derivedKey = scryptSync(password + config.JWT_SECRET, salt, 64);
-    return `${salt}:${derivedKey.toString('hex')}`;
+    return `${salt.toString('hex')}:${derivedKey.toString('hex')}`;
 }
 
 function verifyPasswordHash(password, storedHash) {
     try {
-        const [salt, key] = storedHash.split(':');
-        if (!salt || !key) return false;
-        const derivedKey = scryptSync(password + config.JWT_SECRET, Buffer.from(salt, 'hex'), 64);
-        return timingSafeEqual(Buffer.from(key, 'hex'), derivedKey);
+        const [saltHex, keyHex] = storedHash.split(':');
+        if (!saltHex || !keyHex) return false;
+        const salt = Buffer.from(saltHex, 'hex');
+        const derivedKey = scryptSync(password + config.JWT_SECRET, salt, 64);
+        return timingSafeEqual(Buffer.from(keyHex, 'hex'), derivedKey);
     } catch {
         return false;
     }
@@ -24,9 +25,15 @@ function verifyPasswordHash(password, storedHash) {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 class QuotaService {
-    constructor() {
-        this.dataPath = join(__dirname, '../../data', 'quota.json');
+    /**
+     * @param {string} [dataPath] - Optional custom data path (for testing)
+     */
+    constructor(dataPath) {
+        this.dataPath = dataPath || join(__dirname, '../../data', 'quota.json');
         this.data = null;
+        // Promise chain that serializes all write operations so concurrent
+        // mutations (e.g. two incrementUsage calls) never race on the file.
+        this._writeQueue = Promise.resolve();
         this._ensureDataDir();
         this._load();
     }
@@ -44,18 +51,42 @@ class QuotaService {
                 this.data = JSON.parse(readFileSync(this.dataPath, 'utf8'));
             } else {
                 this.data = { users: [], usage: {} };
-                this._atomicSave();
+                this._enqueueWrite();
             }
         } catch {
             this.data = { users: [], usage: {} };
-            this._atomicSave();
+            this._enqueueWrite();
         }
     }
 
-    _atomicSave() {
-        const tmpPath = this.dataPath + '.tmp';
-        writeFileSync(tmpPath, JSON.stringify(this.data, null, 2), 'utf8');
-        renameSync(tmpPath, this.dataPath);
+    /**
+     * Enqueue an atomic file write on the serialization promise chain.
+     * Async, non-blocking -- the caller does not have to await this.
+     * Write errors are logged and silently swallowed since the in-memory
+     * state is the source of truth during this server's lifetime.
+     */
+    /**
+     * Await the write queue to flush all pending writes to disk.
+     * Used by tests to verify persistence before cleanup.
+     */
+    async flush() {
+        await this._writeQueue;
+    }
+
+    _enqueueWrite() {
+        const dataPath = this.dataPath;
+        const serialized = JSON.stringify(this.data, null, 2);
+        this._writeQueue = this._writeQueue.then(async () => {
+            const tmpPath = dataPath + '.tmp';
+            await fsp.writeFile(tmpPath, serialized, 'utf8');
+            await fsp.rename(tmpPath, dataPath);
+        });
+        this._writeQueue.catch(err => {
+            // ENOENT is benign (temp dir cleaned up before async write).
+            if (err.code !== 'ENOENT') {
+                console.error('[QuotaService] Write error:', err);
+            }
+        });
     }
 
     _generateUserId() {
@@ -66,7 +97,7 @@ class QuotaService {
         return this.data.users.find(u => u.email === email);
     }
 
-    async register(email, password) {
+    register(email, password) {
         if (this._findUser(email)) {
             return { error: '该邮箱已注册' };
         }
@@ -80,11 +111,11 @@ class QuotaService {
             createdAt: new Date().toISOString()
         };
         this.data.users.push(user);
-        this._atomicSave();
+        this._enqueueWrite();
         return { user: { id: user.id, email: user.email } };
     }
 
-    async verifyPassword(email, password) {
+    verifyPassword(email, password) {
         const user = this._findUser(email);
         if (!user) return null;
 
@@ -116,7 +147,7 @@ class QuotaService {
         const today = new Date().toISOString().split('T')[0];
         const key = `${userId}_${today}`;
         this.data.usage[key] = (this.data.usage[key] || 0) + 1;
-        this._atomicSave();
+        this._enqueueWrite();
         return this.checkQuota(userId);
     }
 }

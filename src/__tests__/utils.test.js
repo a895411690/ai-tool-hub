@@ -10,14 +10,16 @@ import {
     escapeHtml,
     escapeAttr,
     isValidUrl,
-    generateTagsHtml,
-    generatePlatformBadgesHtml,
-    generateStatusBadgeHtml,
-    RATING_LABELS,
     MAX_SEARCH_HISTORY,
     TOAST_DISPLAY_TIME,
     SEARCH_DEBOUNCE_TIME
 } from '../../js/utils.js';
+import {
+    generateTagsHtml,
+    generatePlatformBadgesHtml,
+    generateStatusBadgeHtml,
+    RATING_LABELS
+} from '../../js/renderer.js';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -274,8 +276,8 @@ describe('generatePlatformBadgesHtml', () => {
     let generatePlatformBadgesHtml;
 
     beforeAll(async () => {
-        const utils = await import('../../js/utils.js');
-        generatePlatformBadgesHtml = utils.generatePlatformBadgesHtml;
+        const mod = await import('../../js/renderer.js');
+        generatePlatformBadgesHtml = mod.generatePlatformBadgesHtml;
     });
 
     test('should generate HTML for web platform', () => {
@@ -318,8 +320,8 @@ describe('generateStatusBadgeHtml', () => {
     let generateStatusBadgeHtml;
 
     beforeAll(async () => {
-        const utils = await import('../../js/utils.js');
-        generateStatusBadgeHtml = utils.generateStatusBadgeHtml;
+        const mod = await import('../../js/renderer.js');
+        generateStatusBadgeHtml = mod.generateStatusBadgeHtml;
     });
 
     test('should generate hot status badge', () => {
@@ -343,5 +345,326 @@ describe('generateStatusBadgeHtml', () => {
     test('should return empty string for null/undefined', () => {
         expect(generateStatusBadgeHtml(null)).toBe('');
         expect(generateStatusBadgeHtml(undefined)).toBe('');
+    });
+});
+
+
+// ---------------------------------------------------------------------------
+// showToast
+// ---------------------------------------------------------------------------
+
+describe('showToast', () => {
+    let showToast;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/utils.js');
+        showToast = mod.showToast;
+    });
+
+    beforeEach(() => {
+        document.body.innerHTML = '<div id="toast"><span id="toastMsg"></span></div>';
+        jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    test('should set message and show toast', () => {
+        showToast('测试消息');
+        expect(document.getElementById('toastMsg').textContent).toBe('测试消息');
+        expect(document.getElementById('toast').classList.contains('show')).toBe(true);
+    });
+
+    test('should hide toast after timeout', () => {
+        showToast('测试消息');
+        jest.advanceTimersByTime(2000);
+        expect(document.getElementById('toast').classList.contains('show')).toBe(false);
+    });
+
+    test('should not throw if toast element missing', () => {
+        document.body.innerHTML = '';
+        expect(() => showToast('test')).not.toThrow();
+    });
+
+    test('should reset timer on multiple calls', () => {
+        showToast('第一条');
+        showToast('第二条');
+        expect(document.getElementById('toastMsg').textContent).toBe('第二条');
+    });
+});
+
+// ---------------------------------------------------------------------------
+// isValidUrl (edge cases)
+// ---------------------------------------------------------------------------
+
+describe('isValidUrl (edge cases)', () => {
+    let isValidUrl;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/utils.js');
+        isValidUrl = mod.isValidUrl;
+    });
+
+    test('should reject ftp protocol', () => expect(isValidUrl('ftp://example.com')).toBe(false));
+    test('should reject javascript protocol', () => expect(isValidUrl('javascript:alert(1)')).toBe(false));
+    test('should reject blob URLs', () => expect(isValidUrl('blob:null/uuid')).toBe(false));
+    test('should reject data URLs', () => expect(isValidUrl('data:text/plain,hello')).toBe(false));
+    test('should accept URLs with query and fragment', () => expect(isValidUrl('https://example.com/path?q=a#sec')).toBe(true));
+    test('should reject malformed URLs', () => expect(isValidUrl('not a url')).toBe(false));
+    test('should reject non-string', () => { expect(isValidUrl(123)).toBe(false); expect(isValidUrl({})).toBe(false); });
+});
+
+// ---------------------------------------------------------------------------
+// setupKeyboardShortcuts
+// ---------------------------------------------------------------------------
+
+describe('setupKeyboardShortcuts', () => {
+    let setupKeyboardShortcuts;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/utils.js');
+        setupKeyboardShortcuts = mod.setupKeyboardShortcuts;
+    });
+
+    beforeEach(() => {
+        document.body.innerHTML = '<input id="mainSearch" type="text" />';
+    });
+
+    test('should focus search on slash key', () => {
+        const onEscape = jest.fn();
+        setupKeyboardShortcuts({ onEscape });
+        const spy = jest.spyOn(document.getElementById('mainSearch'), 'focus');
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: '/' }));
+        expect(spy).toHaveBeenCalled();
+    });
+
+    test('should focus search on s key', () => {
+        const onEscape = jest.fn();
+        setupKeyboardShortcuts({ onEscape });
+        const spy = jest.spyOn(document.getElementById('mainSearch'), 'focus');
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 's' }));
+        expect(spy).toHaveBeenCalled();
+    });
+
+    test('should not focus when editing textarea', () => {
+        document.body.innerHTML = '<textarea id="editor"></textarea><input id="mainSearch" />';
+        const onEscape = jest.fn();
+        setupKeyboardShortcuts({ onEscape });
+        document.getElementById('editor').focus();
+        const spy = jest.spyOn(document.getElementById('mainSearch'), 'focus');
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: '/' }));
+        expect(spy).not.toHaveBeenCalled();
+    });
+
+    test('should call onEscape on Escape key', () => {
+        const onEscape = jest.fn();
+        setupKeyboardShortcuts({ onEscape });
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        expect(onEscape).toHaveBeenCalled();
+    });
+
+    test('should not throw without callbacks', () => {
+        setupKeyboardShortcuts();
+        expect(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }))).not.toThrow();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// setTheme / loadSavedTheme
+// ---------------------------------------------------------------------------
+
+describe('setTheme / loadSavedTheme', () => {
+    let setTheme, loadSavedTheme;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/utils.js');
+        setTheme = mod.setTheme;
+        loadSavedTheme = mod.loadSavedTheme;
+    });
+
+    beforeEach(() => {
+        localStorage.clear();
+        document.documentElement.classList.remove('dark');
+        document.body.innerHTML = '<i id="themeIconNav" class="fas fa-palette"></i>';
+    });
+
+    test('setTheme should add/remove dark class', () => {
+        setTheme('dark');
+        expect(document.documentElement.classList.contains('dark')).toBe(true);
+        setTheme('light');
+        expect(document.documentElement.classList.contains('dark')).toBe(false);
+    });
+
+    test('setTheme should save to localStorage', () => {
+        setTheme('dark');
+        expect(localStorage.getItem('ai-tool-hub-dark-mode')).toBe('true');
+        setTheme('light');
+        expect(localStorage.getItem('ai-tool-hub-dark-mode')).toBe('false');
+    });
+
+    test('setTheme should update theme icon', () => {
+        setTheme('dark');
+        expect(document.getElementById('themeIconNav').className).toContain('fa-sun');
+        setTheme('light');
+        expect(document.getElementById('themeIconNav').className).toContain('fa-moon');
+    });
+
+    test('loadSavedTheme should restore dark mode', () => {
+        localStorage.setItem('ai-tool-hub-dark-mode', 'true');
+        loadSavedTheme();
+        expect(document.documentElement.classList.contains('dark')).toBe(true);
+    });
+
+    test('loadSavedTheme should default to light', () => {
+        loadSavedTheme();
+        expect(typeof loadSavedTheme).toBe('function');
+    });
+
+    test('loadSavedTheme should handle bogus storage', () => {
+        localStorage.setItem('ai-tool-hub-dark-mode', 'bogus');
+        expect(() => loadSavedTheme()).not.toThrow();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// loadAnnouncement / closeAnnouncement
+// ---------------------------------------------------------------------------
+
+describe('loadAnnouncement / closeAnnouncement', () => {
+    let loadAnnouncement, closeAnnouncement;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/utils.js');
+        loadAnnouncement = mod.loadAnnouncement;
+        closeAnnouncement = mod.closeAnnouncement;
+    });
+
+    beforeEach(() => {
+        localStorage.clear();
+        document.body.innerHTML = '<div id="announcementBar"><span id="announcementText"></span></div>';
+    });
+
+    test('should show announcement when available', () => {
+        localStorage.setItem('ai-tool-hub-announcement', '通知');
+        loadAnnouncement();
+        expect(document.getElementById('announcementText').textContent).toBe('通知');
+        expect(document.getElementById('announcementBar').style.display).not.toBe('none');
+    });
+
+    test('should not show if dismissed', () => {
+        localStorage.setItem('ai-tool-hub-announcement', '通知');
+        localStorage.setItem('ai-tool-hub-announcement-closed', 'true');
+        loadAnnouncement();
+        expect(document.getElementById('announcementBar').style.display).not.toBe('block');
+    });
+
+    test('closeAnnouncement should dismiss', () => {
+        closeAnnouncement();
+        expect(document.getElementById('announcementBar').style.display).toBe('none');
+        expect(localStorage.getItem('ai-tool-hub-announcement-closed')).toBe('true');
+    });
+
+    test('should not throw when elements missing', () => {
+        document.body.innerHTML = '';
+        expect(() => loadAnnouncement()).not.toThrow();
+        expect(() => closeAnnouncement()).not.toThrow();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// checkForUpdate / closeUpdateModal
+// ---------------------------------------------------------------------------
+
+describe('checkForUpdate / closeUpdateModal', () => {
+    let checkForUpdate, closeUpdateModal;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/utils.js');
+        checkForUpdate = mod.checkForUpdate;
+        closeUpdateModal = mod.closeUpdateModal;
+    });
+
+    beforeEach(() => {
+        localStorage.clear();
+        document.body.innerHTML = '<div id="updateModal"></div>';
+    });
+
+    test('should show update modal on first visit', () => {
+        checkForUpdate();
+        expect(document.getElementById('updateModal').classList.contains('active')).toBe(true);
+        expect(localStorage.getItem('ai-tool-hub-v2-5-shown')).toBe('true');
+    });
+
+    test('should not show on subsequent visits', () => {
+        localStorage.setItem('ai-tool-hub-v2-5-shown', 'true');
+        checkForUpdate();
+        expect(document.getElementById('updateModal').classList.contains('active')).toBe(false);
+    });
+
+    test('closeUpdateModal should remove active', () => {
+        document.getElementById('updateModal').classList.add('active');
+        closeUpdateModal();
+        expect(document.getElementById('updateModal').classList.contains('active')).toBe(false);
+    });
+
+    test('should not throw when modal missing', () => {
+        document.body.innerHTML = '';
+        expect(() => checkForUpdate()).not.toThrow();
+        expect(() => closeUpdateModal()).not.toThrow();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// registerServiceWorker
+// ---------------------------------------------------------------------------
+
+describe('registerServiceWorker', () => {
+    let registerServiceWorker;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/utils.js');
+        registerServiceWorker = mod.registerServiceWorker;
+    });
+
+    test('should register sw.js', () => {
+        const mock = jest.fn().mockResolvedValue();
+        Object.defineProperty(navigator, 'serviceWorker', {
+            value: { register: mock }, writable: true, configurable: true
+        });
+        registerServiceWorker();
+        expect(mock).toHaveBeenCalledWith('sw.js');
+    });
+
+    test('should not throw when unsupported', () => {
+        delete navigator.serviceWorker;
+        expect(() => registerServiceWorker()).not.toThrow();
+    });
+});
+
+// ---------------------------------------------------------------------------
+// setupPullToRefresh
+// ---------------------------------------------------------------------------
+
+describe('setupPullToRefresh', () => {
+    let setupPullToRefresh;
+
+    beforeAll(async () => {
+        const mod = await import('../../js/utils.js');
+        setupPullToRefresh = mod.setupPullToRefresh;
+    });
+
+    test('should add touch event listeners', () => {
+        document.body.innerHTML = '<div id="pullRefresh"></div>';
+        const spy = jest.spyOn(document, 'addEventListener');
+        setupPullToRefresh();
+        expect(spy).toHaveBeenCalledWith('touchstart', expect.any(Function), { passive: true });
+        expect(spy).toHaveBeenCalledWith('touchmove', expect.any(Function), { passive: true });
+        expect(spy).toHaveBeenCalledWith('touchend', expect.any(Function));
+    });
+
+    test('should not throw without element', () => {
+        document.body.innerHTML = '';
+        expect(() => setupPullToRefresh()).not.toThrow();
     });
 });

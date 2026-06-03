@@ -14,13 +14,18 @@ function copyToolsPlugin() {
         if (existsSync('tools')) {
           cpSync('tools', 'dist/tools', { recursive: true, force: true })
         }
-        if (existsSync('src/tools.json')) {
-          cpSync('src/tools.json', 'dist/tools.json', { force: true })
-        } else if (existsSync('tools.json')) {
+        if (existsSync('tools.json')) {
           cpSync('tools.json', 'dist/tools.json', { force: true })
         }
         if (existsSync('sw.js')) {
           copyFileSync('sw.js', 'dist/sw.js')
+        }
+        if (existsSync('manifest.json')) {
+          copyFileSync('manifest.json', 'dist/manifest.json')
+        }
+        if (existsSync('favicon.svg')) {
+          copyFileSync('favicon.svg', 'dist/favicon.svg')
+          copyFileSync('favicon.svg', 'dist/assets/favicon.svg')
         }
         console.log('✓ Files copied to dist/')
       } catch (err) {
@@ -48,7 +53,11 @@ export default defineConfig(({ mode }) => ({
     terserOptions: {
       compress: {
         drop_console: mode === 'production',
-        drop_debugger: mode === 'production'
+        drop_debugger: mode === 'production',
+        // Prevent terser from optimizing away DOM operations
+        side_effects: true,
+        reduce_vars: false,
+        collapse_vars: false
       }
     },
     assetsInlineLimit: 4096,

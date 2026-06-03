@@ -5,6 +5,10 @@
  */
 import { escapeHtml, showToast } from './utils.js';
 
+// ── Testability hook: allows tests to inject a mock fetch ──────────────────
+let _researchFetch = typeof fetch !== 'undefined' ? fetch : globalThis.fetch;
+export function __setFetch(fn) { _researchFetch = fn; }
+
 // ── Utility ────────────────────────────────────────────────────────────────
 
 function $(sel, ctx = document) { return ctx.querySelector(sel); }
@@ -50,7 +54,7 @@ const researchState = {
 async function fetchWikipedia(topic) {
   try {
     const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic)}`;
-    const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    const resp = await _researchFetch(url, { signal: AbortSignal.timeout(8000) });
     if (!resp.ok) return null;
     const data = await resp.json();
     if (data.type === 'disambiguation') return null;
@@ -71,7 +75,7 @@ async function fetchWikipedia(topic) {
 async function fetchWikipediaSearch(query, limit = 5) {
   try {
     const url = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&origin=*&srlimit=${limit}`;
-    const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    const resp = await _researchFetch(url, { signal: AbortSignal.timeout(8000) });
     if (!resp.ok) return [];
     const data = await resp.json();
     return (data.query?.search || []).map(r => ({
@@ -90,7 +94,7 @@ async function fetchWikipediaSearch(query, limit = 5) {
 async function fetchWikipediaContent(pageTitle) {
   try {
     const url = `https://en.wikipedia.org/w/api.php?action=query&prop=extracts&exintro&explaintext&titles=${encodeURIComponent(pageTitle)}&format=json&origin=*`;
-    const resp = await fetch(url, { signal: AbortSignal.timeout(8000) });
+    const resp = await _researchFetch(url, { signal: AbortSignal.timeout(8000) });
     if (!resp.ok) return '';
     const data = await resp.json();
     const pages = data.query?.pages || {};
@@ -107,7 +111,7 @@ async function fetchWikipediaContent(pageTitle) {
 async function fetchDuckDuckGo(query) {
   try {
     const url = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
-    const resp = await fetch(url, { signal: AbortSignal.timeout(6000) });
+    const resp = await _researchFetch(url, { signal: AbortSignal.timeout(6000) });
     if (!resp.ok) return null;
     const data = await resp.json();
     return {
@@ -156,7 +160,7 @@ async function runResearch(topic, category, depth) {
   researchState.totalSteps = totalSteps;
 
   const findings = [];
-  const sources = new Set();
+  const sources = new Map();
   let mainSummary = null;
 
   // Step 1: Fetch main Wikipedia page
@@ -165,13 +169,13 @@ async function runResearch(topic, category, depth) {
   const wiki = await fetchWikipedia(topic);
   if (wiki) {
     mainSummary = wiki.extract;
-    sources.add({ title: wiki.title, url: wiki.url, type: 'Wikipedia' });
+    sources.set(wiki.url, { title: wiki.title, url: wiki.url, type: 'Wikipedia' });
   }
 
   // Also search for the topic
   const searchResults = await fetchWikipediaSearch(topic, 5);
   for (const sr of searchResults.slice(0, 3)) {
-    sources.add({ title: sr.title, url: `https://en.wikipedia.org/wiki/${encodeURIComponent(sr.title)}`, type: 'Wikipedia' });
+    sources.set(`https://en.wikipedia.org/wiki/${encodeURIComponent(sr.title)}`, { title: sr.title, url: `https://en.wikipedia.org/wiki/${encodeURIComponent(sr.title)}`, type: 'Wikipedia' });
   }
 
   // Step 2: Fetch DuckDuckGo
@@ -180,7 +184,7 @@ async function runResearch(topic, category, depth) {
   const ddg = await fetchDuckDuckGo(topic);
   if (ddg?.abstract) {
     findings.push({ type: 'abstract', content: ddg.abstract, source: ddg.source });
-    if (ddg.url) sources.add({ title: ddg.source || topic, url: ddg.url, type: 'DuckDuckGo' });
+    if (ddg.url) sources.set(ddg.url, { title: ddg.source || topic, url: ddg.url, type: 'DuckDuckGo' });
   }
 
   // Steps 3-N: Explore subtopics
@@ -192,7 +196,7 @@ async function runResearch(topic, category, depth) {
     const subWiki = await fetchWikipedia(selectedSubtopics[i]);
     if (subWiki?.extract) {
       findings.push({ type: 'subtopic', subtopic: selectedSubtopics[i], content: subWiki.extract });
-      sources.add({ title: subWiki.title, url: subWiki.url, type: 'Wikipedia' });
+      sources.set(subWiki.url, { title: subWiki.title, url: subWiki.url, type: 'Wikipedia' });
     } else {
       // Try the Wikipedia search as fallback
       const subSearch = await fetchWikipediaSearch(selectedSubtopics[i], 2);
@@ -200,7 +204,7 @@ async function runResearch(topic, category, depth) {
         const content = await fetchWikipediaContent(sr.title);
         if (content) {
           findings.push({ type: 'subtopic', subtopic: selectedSubtopics[i], content: content.slice(0, 1000) });
-          sources.add({ title: sr.title, url: `https://en.wikipedia.org/wiki/${encodeURIComponent(sr.title)}`, type: 'Wikipedia' });
+          sources.set(`https://en.wikipedia.org/wiki/${encodeURIComponent(sr.title)}`, { title: sr.title, url: `https://en.wikipedia.org/wiki/${encodeURIComponent(sr.title)}`, type: 'Wikipedia' });
         }
       }
     }
@@ -214,14 +218,14 @@ async function runResearch(topic, category, depth) {
   updateStepProgress('正在综合生成研究报告...', totalSteps, totalSteps);
   await sleep(500); // Simulate processing time
 
-  const report = synthesizeReport(topic, mainSummary, findings, [...sources], ddg);
+  const report = synthesizeReport(topic, mainSummary, findings, [...sources.values()], ddg);
 
   return {
     topic,
     category,
     depth,
     report,
-    sources: [...sources],
+    sources: [...sources.values()],
     findings,
     mainSummary,
     timestamp: new Date().toISOString(),
@@ -304,7 +308,7 @@ function synthesizeReport(topic, mainSummary, findings, sources, ddg) {
 // ── UI Rendering ──────────────────────────────────────────────────────────
 
 function renderResearchPage() {
-  const content = document.getElementById('mainContent');
+  const content = document.querySelector('main') || document.getElementById('mainContent');
   if (!content) return;
   researchState.isRunning = false;
   researchState.results = null;
@@ -312,47 +316,45 @@ function renderResearchPage() {
   content.innerHTML = `
     <div class="research-page" style="max-width:900px;margin:0 auto;padding:20px 16px 80px;">
       <div class="research-header" style="text-align:center;margin-bottom:28px;position:relative;">
-        <button id="researchBackBtn" style="position:absolute;left:0;top:0;padding:6px 12px;border-radius:6px;border:1px solid var(--border-color);background:var(--bg-container);color:var(--text-secondary);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .2s;" onmouseover="this.style.borderColor='var(--color-primary)';this.style.color='var(--color-primary)'" onmouseout="this.style.borderColor='var(--border-color)';this.style.color='var(--text-secondary)'">
+        <button id="researchBackBtn" class="research-back-btn">
           <i class="fas fa-arrow-left"></i> 返回首页
         </button>
         <div style="font-size:40px;margin-bottom:8px;">
-          <i class="fas fa-microscope" style="color:var(--color-primary);"></i>
+          <i class="fas fa-microscope" style="color:var(--ant-primary);"></i>
         </div>
-        <h1 style="font-size:24px;font-weight:700;margin:0 0 4px;color:var(--text-primary);">
+        <h1 style="font-size:24px;font-weight:700;margin:0 0 4px;color:var(--ant-text-primary);">
           Deep Research Agent
         </h1>
-        <p style="margin:0;font-size:14px;color:var(--text-tertiary);">
+        <p style="margin:0;font-size:14px;color:var(--ant-text-tertiary);">
           多源智能深度研究助手 — 输入主题，自动获取百科信息和网络资料，生成结构化研究报告
         </p>
       </div>
 
       <!-- Input section -->
-      <div class="research-input-section" style="background:var(--bg-container);border:1px solid var(--border-color);border-radius:12px;padding:24px;margin-bottom:20px;">
+      <div class="research-input-section">
         <div style="margin-bottom:16px;">
-          <label style="display:block;font-size:14px;font-weight:500;margin-bottom:6px;color:var(--text-secondary);">
-            研究主题 <span style="color:var(--color-error);">*</span>
+          <label class="research-label">
+            研究主题 <span style="color:var(--ant-error);">*</span>
           </label>
           <div style="position:relative;">
             <input id="researchTopicInput" type="text" placeholder="输入您想研究的话题，例如：Quantum Computing, CRISPR, 气候变化..." 
-              style="width:100%;padding:12px 16px;border-radius:8px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:15px;outline:none;box-sizing:border-box;"
-              onfocus="this.style.borderColor='var(--color-primary)';this.style.boxShadow='var(--input-focus-shadow)'"
-              onblur="this.style.borderColor='var(--input-border)';this.style.boxShadow='none'"
+              class="research-input"
             >
           </div>
         </div>
 
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;margin-bottom:4px;color:var(--text-secondary);">研究类别</label>
-            <select id="researchCategorySelect" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:14px;outline:none;cursor:pointer;">
+            <label class="research-label" style="font-size:13px;">研究类别</label>
+            <select id="researchCategorySelect" class="research-select">
               ${RESEARCH_CATEGORIES.map(c =>
                 `<option value="${c.id}">${c.label}</option>`
               ).join('')}
             </select>
           </div>
           <div>
-            <label style="display:block;font-size:13px;font-weight:500;margin-bottom:4px;color:var(--text-secondary);">研究深度</label>
-            <select id="researchDepthSelect" style="width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--input-border);background:var(--input-bg);color:var(--text-primary);font-size:14px;outline:none;cursor:pointer;">
+            <label class="research-label" style="font-size:13px;">研究深度</label>
+            <select id="researchDepthSelect" class="research-select">
               ${DEPTH_LEVELS.map(d =>
                 `<option value="${d.id}" ${d.id === 'standard' ? 'selected' : ''}>${d.label} — ${d.desc}</option>`
               ).join('')}
@@ -361,28 +363,26 @@ function renderResearchPage() {
         </div>
 
         <div style="display:flex;gap:10px;">
-          <button id="researchStartBtn" style="flex:1;padding:12px 20px;border:none;border-radius:8px;background:var(--color-primary);color:#fff;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;"
-            onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+          <button id="researchStartBtn" class="research-btn-primary" style="flex:1;">
             <i class="fas fa-flask"></i> 开始研究
           </button>
-          <button id="researchClearBtn" style="padding:12px 20px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-container);color:var(--text-secondary);font-size:14px;cursor:pointer;transition:all .2s;"
-            onmouseover="this.style.borderColor='var(--color-primary)'" onmouseout="this.style.borderColor='var(--border-color)'">
+          <button id="researchClearBtn" class="research-btn-secondary">
             <i class="fas fa-eraser"></i>
           </button>
         </div>
       </div>
 
       <!-- Progress section (hidden by default) -->
-      <div id="researchProgress" style="display:none;background:var(--bg-container);border:1px solid var(--border-color);border-radius:12px;padding:24px;margin-bottom:20px;">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-          <div id="researchProgressSpinner" style="width:20px;height:20px;border:2px solid var(--border-color);border-top-color:var(--color-primary);border-radius:50%;animation:research-spin 0.8s linear infinite;"></div>
+      <div id="researchProgress" class="research-progress-section" style="display:none;">
+        <div class="research-progress-header">
+          <div id="researchProgressSpinner" class="research-spinner"></div>
           <div>
-            <div style="font-size:14px;font-weight:500;color:var(--text-primary);" id="researchProgressLabel">正在初始化...</div>
-            <div style="font-size:12px;color:var(--text-tertiary);" id="researchProgressStep">步骤 0/0</div>
+            <div style="font-size:14px;font-weight:500;color:var(--ant-text-primary);" id="researchProgressLabel">正在初始化...</div>
+            <div style="font-size:12px;color:var(--ant-text-tertiary);" id="researchProgressStep">步骤 0/0</div>
           </div>
         </div>
-        <div style="height:6px;background:var(--border-color);border-radius:3px;overflow:hidden;">
-          <div id="researchProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,var(--color-primary),var(--color-primary-hover));border-radius:3px;transition:width .4s ease;"></div>
+        <div class="research-progress-bar-track">
+          <div id="researchProgressBar" class="research-progress-bar-fill"></div>
         </div>
       </div>
 
@@ -390,18 +390,19 @@ function renderResearchPage() {
       <div id="researchResults" style="display:none;"></div>
 
       <!-- Error section (hidden by default) -->
-      <div id="researchError" style="display:none;background:var(--bg-container);border:1px solid #ff4d4f;border-radius:12px;padding:24px;text-align:center;">
-        <i class="fas fa-exclamation-triangle" style="font-size:32px;color:var(--color-error);margin-bottom:8px;"></i>
-        <div id="researchErrorMessage" style="font-size:14px;color:var(--text-secondary);"></div>
+      <div id="researchError" class="research-error-section" style="display:none;">
+        <i class="fas fa-exclamation-triangle" style="font-size:32px;color:var(--ant-error);margin-bottom:8px;"></i>
+        <div id="researchErrorMessage" style="font-size:14px;color:var(--ant-text-secondary);"></div>
+        <button id="researchRetryBtn" class="research-btn-primary" style="margin:16px auto 0;display:inline-flex;">
+          <i class="fas fa-redo"></i> 重试
+        </button>
       </div>
 
       <!-- Examples / Tips -->
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:12px;">
         ${['Artificial Intelligence', 'Climate Change', 'CRISPR Gene Editing', 'Quantum Computing', 'Renaissance Art', 'Blockchain'].map(ex =>
-          `<button class="research-example-btn" data-topic="${escapeHtml(ex)}" style="padding:8px 14px;border-radius:20px;border:1px solid var(--border-color);background:var(--bg-container);color:var(--text-tertiary);font-size:12px;cursor:pointer;transition:all .2s;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-            onmouseover="this.style.borderColor='var(--color-primary)';this.style.color='var(--color-primary)'"
-            onmouseout="this.style.borderColor='var(--border-color)';this.style.color='var(--text-tertiary)'">
-            <i class="fas fa-magnifying-glass" style="margin-right:4px;"></i> ${ex}
+          `<button class="research-example-btn" data-topic="${escapeHtml(ex)}">
+            ${escapeHtml(ex)} <i class="fas fa-arrow-right" style="font-size:10px;margin-left:2px;"></i>
           </button>`
         ).join('')}
       </div>
@@ -409,7 +410,7 @@ function renderResearchPage() {
 
     <style>
       @keyframes research-spin { to { transform: rotate(360deg); } }
-      .research-page input:focus, .research-page select:focus { border-color:var(--color-primary); box-shadow:var(--input-focus-shadow); }
+      .research-page input:focus, .research-page select:focus { border-color:var(--ant-primary); box-shadow:var(--input-focus-shadow); }
     </style>
   `;
 
@@ -544,69 +545,64 @@ function renderResearchResults(result) {
   const esc = (s) => escapeHtml(s || '');
 
   const sectionsHtml = report.sections.map((s, i) => `
-    <div class="research-section" style="margin-bottom:20px;">
-      <h3 style="font-size:16px;font-weight:600;margin:0 0 10px;padding:0 0 8px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;gap:8px;color:var(--text-primary);">
-        <i class="fas ${s.icon}" style="color:var(--color-primary);font-size:14px;"></i>
+    <div class="research-section-block">
+      <h3 class="research-section-title">
+        <i class="fas ${s.icon}" style="color:var(--ant-primary);font-size:14px;"></i>
         ${esc(s.title)}
       </h3>
-      <div style="font-size:14px;line-height:1.7;color:var(--text-secondary);white-space:pre-wrap;">
+      <div class="research-section-body">
         ${formatReportContent(s.content)}
       </div>
     </div>
   `).join('');
 
   const keyFindingsHtml = report.keyFindings.slice(0, 6).map((kf, i) => `
-    <div style="display:flex;gap:10px;padding:10px 12px;margin-bottom:8px;background:var(--bg-body);border-radius:8px;border-left:3px solid var(--color-primary);">
-      <span style="flex-shrink:0;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--color-primary);color:#fff;font-size:11px;font-weight:600;">${i + 1}</span>
+    <div class="research-finding-item">
+      <span class="research-finding-number">${i + 1}</span>
       <div>
-        <div style="font-weight:500;font-size:13px;margin-bottom:2px;color:var(--text-primary);">${esc(kf.label)}</div>
-        <div style="font-size:13px;color:var(--text-tertiary);line-height:1.5;">${esc(kf.text)}</div>
+        <div class="research-finding-label">${esc(kf.label)}</div>
+        <div class="research-finding-text">${esc(kf.text)}</div>
       </div>
     </div>
   `).join('');
 
   const sourcesHtml = sources.map(s => `
-    <a href="${esc(s.url)}" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;padding:8px 12px;text-decoration:none;border-radius:6px;transition:background .15s;" onmouseover="this.style.background='var(--bg-body)'" onmouseout="this.style.background='transparent'">
-      <i class="fas fa-external-link-alt" style="font-size:10px;color:var(--color-primary);flex-shrink:0;"></i>
-      <span style="font-size:13px;color:var(--text-link);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(s.title)}</span>
-      <span style="font-size:11px;color:var(--text-tertiary);flex-shrink:0;">${esc(s.type)}</span>
+    <a href="${esc(s.url)}" target="_blank" rel="noopener" class="research-source-link">
+      <i class="fas fa-external-link-alt" style="font-size:10px;color:var(--ant-primary);flex-shrink:0;"></i>
+      <span class="research-source-title">${esc(s.title)}</span>
+      <span class="research-source-type">${esc(s.type)}</span>
     </a>
   `).join('');
 
   container.innerHTML = `
-    <div class="research-results-panel" style="background:var(--bg-container);border:1px solid var(--border-color);border-radius:12px;overflow:hidden;">
-
-      <!-- Report header -->
-      <div style="padding:24px 24px 16px;border-bottom:1px solid var(--border-color);">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:0;">
-            <h2 style="font-size:20px;font-weight:700;margin:0 0 4px;color:var(--text-primary);display:flex;align-items:center;gap:8px;">
-              <i class="fas fa-file-lines" style="color:var(--color-primary);font-size:18px;"></i>
-              ${esc(topic)}
-            </h2>
-            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--text-tertiary);">
-              <span><i class="fas fa-calendar"></i> ${report.dateStr}</span>
-              <span>·</span>
-              <span><i class="fas fa-gauge-high"></i> ${DEPTH_LEVELS.find(d => d.id === depth)?.label || depth}</span>
-              <span>·</span>
-              <span><i class="fas fa-link"></i> ${sources.length} 个来源</span>
+    <div class="research-results-panel">
+      <div class="research-results-header">
+        <div class="research-results-meta">
+          <h2 class="research-results-title">
+            <i class="fas fa-file-lines" style="color:var(--ant-primary);font-size:18px;"></i>
+            ${esc(topic)}
+          </h2>
+          <div class="research-results-info">
+            <span><i class="fas fa-calendar"></i> ${report.dateStr}</span>
+            <span>·</span>
+            <span><i class="fas fa-gauge-high"></i> ${DEPTH_LEVELS.find(d => d.id === depth)?.label || depth}</span>
+            <span>·</span>
+            <span><i class="fas fa-link"></i> ${sources.length} 个来源</span>
             </div>
           </div>
-          <button id="exportResearchBtn" style="padding:8px 16px;border-radius:6px;border:1px solid var(--border-color);background:var(--bg-container);color:var(--text-secondary);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;flex-shrink:0;"
-            onmouseover="this.style.borderColor='var(--color-primary)';this.style.color='var(--color-primary)'"
-            onmouseout="this.style.borderColor='var(--border-color)';this.style.color='var(--text-secondary)'">
-            <i class="fas fa-copy"></i> 复制报告
+          <button id="exportResearchBtn" class="research-action-btn">
+            <i class="fas fa-download"></i> 导出报告
           </button>
         </div>
       </div>
 
       <!-- Tabs -->
-      <div id="researchTabBar" style="display:flex;border-bottom:1px solid var(--border-color);padding:0 16px;">
-        <button class="research-tab active" data-tab="report" style="flex:1;padding:12px 8px;border:none;background:none;color:var(--color-primary);font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid var(--color-primary);transition:all .2s;">
-          <i class="fas fa-file-alt"></i> 研究报告
+      <div id="researchTabBar" class="research-tab-bar">
+        <button class="research-tab active" data-tab="report">
+          <i class="fas fa-file-lines"></i> 研究报告
         </button>
-        <button class="research-tab" data-tab="sources" style="flex:1;padding:12px 8px;border:none;background:none;color:var(--text-tertiary);font-size:14px;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;">
-          <i class="fas fa-bookmark"></i> 资料来源 (${sources.length})
+        <button class="research-tab" data-tab="sources">
+          <i class="fas fa-bookmark"></i> 参考来源 (${sources.length})
         </button>
       </div>
 
@@ -615,27 +611,25 @@ function renderResearchResults(result) {
         <!-- Report tab -->
         <div class="research-tab-panel" data-panel="report">
           <!-- Executive Summary -->
-          <div style="margin-bottom:24px;padding:16px;background:linear-gradient(135deg, rgba(22,119,255,0.05), rgba(22,119,255,0.02));border-radius:10px;border:1px solid rgba(22,119,255,0.1);">
-            <h3 style="font-size:14px;font-weight:600;margin:0 0 8px;color:var(--color-primary);display:flex;align-items:center;gap:6px;">
+          <div class="research-exec-summary">
+            <h3 class="research-exec-title">
               <i class="fas fa-star"></i> 执行摘要
             </h3>
-            <p style="font-size:14px;line-height:1.7;margin:0;color:var(--text-secondary);">
-              ${esc(report.execSummary)}
-            </p>
+            <p class="research-exec-text">${esc(report.execSummary)}</p>
           </div>
 
           <!-- Key Findings -->
-          <div style="margin-bottom:24px;">
-            <h3 style="font-size:15px;font-weight:600;margin:0 0 12px;color:var(--text-primary);display:flex;align-items:center;gap:6px;">
-              <i class="fas fa-list-check" style="color:var(--color-primary);"></i> 关键发现
+          <div class="research-section-block">
+            <h3 class="research-key-finding">
+              <i class="fas fa-list-check" style="color:var(--ant-primary);"></i> 关键发现
             </h3>
             ${keyFindingsHtml}
           </div>
 
           <!-- Detailed Sections -->
           <div>
-            <h3 style="font-size:15px;font-weight:600;margin:0 0 12px;color:var(--text-primary);display:flex;align-items:center;gap:6px;">
-              <i class="fas fa-book-open" style="color:var(--color-primary);"></i> 详细分析
+            <h3 class="research-analysis-title">
+              <i class="fas fa-book-open" style="color:var(--ant-primary);"></i> 详细分析
             </h3>
             ${sectionsHtml}
           </div>
@@ -643,22 +637,25 @@ function renderResearchResults(result) {
 
         <!-- Sources tab -->
         <div class="research-tab-panel" data-panel="sources" style="display:none;">
-          <p style="font-size:13px;color:var(--text-tertiary);margin:0 0 12px;">
+          <p style="font-size:13px;color:var(--ant-text-tertiary);margin:0 0 12px;">
             以下为本研究引用的资料来源，点击可跳转查看原文。
           </p>
           <div style="display:flex;flex-direction:column;gap:2px;">
             ${sourcesHtml}
           </div>
-          <p style="font-size:12px;color:var(--text-tertiary);margin-top:16px;padding-top:12px;border-top:1px solid var(--border-color);">
+          <p class="research-sources-footer">
             <i class="fas fa-info-circle"></i> 数据来源包括 Wikipedia API、DuckDuckGo Instant Answer API 等公开知识接口。
           </p>
         </div>
       </div>
 
       <!-- Footer actions -->
-      <div style="padding:12px 24px;border-top:1px solid var(--border-color);display:flex;gap:8px;justify-content:flex-end;">
-        <button class="research-action-btn" data-action="new" style="padding:8px 14px;border-radius:6px;border:1px solid var(--border-color);background:var(--bg-container);color:var(--text-secondary);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;">
+      <div class="research-report-footer">
+        <button class="research-action-btn" data-action="new">
           <i class="fas fa-plus"></i> 新研究
+        </button>
+        <button class="research-action-btn" data-action="copy">
+          <i class="fas fa-copy"></i> 复制
         </button>
       </div>
     </div>
@@ -669,12 +666,8 @@ function renderResearchResults(result) {
   // --- Bind tab events ---
   $$('.research-tab').forEach(tab => {
     tab.addEventListener('click', () => {
-      $$('.research-tab').forEach(t => {
-        t.style.color = 'var(--text-tertiary)';
-        t.style.borderBottomColor = 'transparent';
-      });
-      tab.style.color = 'var(--color-primary)';
-      tab.style.borderBottomColor = 'var(--color-primary)';
+      $$('.research-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
 
       const panel = tab.dataset.tab;
       $$('.research-tab-panel').forEach(p => {
@@ -709,8 +702,10 @@ function renderResearchResults(result) {
 
 function formatReportContent(content) {
   if (!content) return '';
-  // Convert markdown-style **bold** to <strong>
-  return content
+  // First escape HTML to prevent XSS from external API content,
+  // then convert markdown-style **bold** to <strong> on the escaped text.
+  const escaped = escapeHtml(content);
+  return escaped
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/\n/g, '<br>');
 }
@@ -751,5 +746,10 @@ function generateFullTextReport(result) {
 export function initResearchPage() {
   renderResearchPage();
 }
+
+// Exported for testing — pure functions with no DOM dependencies
+export { generateSubtopics, synthesizeReport, formatReportContent, generateFullTextReport };
+export { RESEARCH_CATEGORIES, DEPTH_LEVELS };
+export { sleep, fetchWikipedia, fetchWikipediaSearch, fetchWikipediaContent, fetchDuckDuckGo };
 
 export default { initResearchPage };

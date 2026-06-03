@@ -16,7 +16,7 @@ const SEARCH_DEBOUNCE_TIME = 300;
  * // returns: '&lt;script&gt;alert("xss")&lt;/script&gt;'
  */
 function escapeHtml(text) {
-    if (typeof text !== 'string') return '';
+    if (text == null) return ''; if (typeof text !== 'string') text = String(text);
     return text
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -34,7 +34,7 @@ function escapeHtml(text) {
  * // returns: 'value&quot;with&#39;quotes'
  */
 function escapeAttr(text) {
-    if (typeof text !== 'string') return '';
+    if (text == null) return ''; if (typeof text !== 'string') text = String(text);
     return text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
@@ -91,8 +91,10 @@ function setupPullToRefresh() {
         const pullRefresh = document.getElementById('pullRefresh');
         if (pullRefresh && pullRefresh.classList.contains('visible')) {
             refreshing = true;
+            showToast('正在刷新数据...');
             setTimeout(() => {
-                location.reload();
+                document.dispatchEvent(new CustomEvent('app:refresh'));
+                refreshing = false;
             }, 500);
         }
     });
@@ -101,16 +103,9 @@ function setupPullToRefresh() {
 /**
  * Theme configuration with all available themes
  */
-const THEMES = {
-    default: { name: '默认紫蓝', icon: 'fa-palette' },
-    midnight: { name: '深夜模式', icon: 'fa-moon' },
-    lavender: { name: '薰衣草紫', icon: 'fa-spa' },
-    ocean: { name: '海洋蓝', icon: 'fa-water' },
-    sakura: { name: '樱花粉', icon: 'fa-heart' },
-    forest: { name: '森林绿', icon: 'fa-leaf' },
-    sunset: { name: '日落橙', icon: 'fa-sun' }
-};
+let isDarkMode = false;
 
+/** Current theme name for display */
 let currentTheme = localStorage.getItem('ai-tool-hub-theme') || 'default';
 
 /**
@@ -118,7 +113,15 @@ let currentTheme = localStorage.getItem('ai-tool-hub-theme') || 'default';
  * Opens theme modal for full selection
  */
 function toggleTheme() {
-    showThemeModal();
+    isDarkMode = !isDarkMode;
+    if (isDarkMode) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('ai-tool-hub-dark-mode', isDarkMode ? 'true' : 'false');
+    updateThemeIcon();
+    showToast(isDarkMode ? '已切换到深色模式' : '已切换到浅色模式');
 }
 
 /**
@@ -137,11 +140,10 @@ function showThemeModal() {
  * @param {Event} [event] - Click event (optional)
  */
 function closeThemeModal(event) {
-    if (!event || event.target === document.getElementById('themeModal')) {
-        const modal = document.getElementById('themeModal');
-        if (modal) {
-            modal.classList.remove('active');
-        }
+    const modal = document.getElementById('themeModal');
+    if (!modal) return;
+    if (!event || event.target === modal || event.target.closest('.modal-close-btn')) {
+        modal.classList.remove('active');
     }
 }
 
@@ -149,37 +151,20 @@ function closeThemeModal(event) {
  * Set active theme and apply it to the document
  * @param {string} themeName - Theme identifier (default, midnight, lavender, etc.)
  */
-function setTheme(themeName) {
-    // Validate theme name
-    if (!THEMES[themeName]) {
-        themeName = 'default';
+function setTheme(mode) {
+    if (mode === 'dark') {
+        isDarkMode = true;
+        document.documentElement.classList.add('dark');
+    } else {
+        isDarkMode = false;
+        document.documentElement.classList.remove('dark');
     }
-
-    // Remove existing theme attribute
-    document.documentElement.removeAttribute('data-theme');
-
-    // Apply new theme (default theme doesn't need data-theme attribute)
-    if (themeName !== 'default') {
-        document.documentElement.setAttribute('data-theme', themeName);
-    }
-
-    // Update current theme state
-    currentTheme = themeName;
-
-    // Save to localStorage
-    localStorage.setItem('ai-tool-hub-theme', themeName);
-
-    // Update UI icons
-    updateThemeIcons(themeName);
-
-    // Update modal selection UI
+    currentTheme = mode;
+    localStorage.setItem('ai-tool-hub-theme', mode);
+    localStorage.setItem('ai-tool-hub-dark-mode', isDarkMode ? 'true' : 'false');
+    updateThemeIcon();
     updateThemeSelectionUI();
-
-    // Show toast notification
-    const themeInfo = THEMES[themeName];
-    showToast(`已切换到「${themeInfo.name}」主题`);
-
-    // Close modal after short delay
+    showToast(isDarkMode ? '已切换到深色模式' : '已切换到浅色模式');
     setTimeout(() => {
         closeThemeModal();
     }, 300);
@@ -189,32 +174,13 @@ function setTheme(themeName) {
  * Update theme icons (sun/moon/palette) based on current theme
  * @param {string} themeName - Current theme name
  */
-function updateThemeIcons(themeName) {
+function updateThemeIcon() {
     const icons = ['themeIcon', 'themeIconNav'];
-    
+    const isDark = document.documentElement.classList.contains('dark');
     icons.forEach(iconId => {
         const icon = document.getElementById(iconId);
         if (icon) {
-            let iconClass, colorClass;
-            
-            if (themeName === 'midnight') {
-                iconClass = 'fas fa-sun';
-                colorClass = 'text-yellow-400';
-            } else if (['lavender', 'sakura'].includes(themeName)) {
-                iconClass = 'fas fa-heart';
-                colorClass = 'text-pink-400';
-            } else if (['ocean', 'forest'].includes(themeName)) {
-                iconClass = 'fas fa-leaf';
-                colorClass = 'text-green-400';
-            } else if (themeName === 'sunset') {
-                iconClass = 'fas fa-sun';
-                colorClass = 'text-orange-400';
-            } else {
-                iconClass = 'fas fa-moon';
-                colorClass = 'text-primary';
-            }
-            
-            icon.className = `${iconClass} ${colorClass}`;
+            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         }
     });
 }
@@ -223,14 +189,12 @@ function updateThemeIcons(themeName) {
  * Update the visual selection state in theme modal
  */
 function updateThemeSelectionUI() {
+    const isDark = document.documentElement.classList.contains('dark');
     const options = document.querySelectorAll('.theme-option');
     options.forEach(option => {
         const value = option.getAttribute('data-theme-value');
-        if (value === currentTheme) {
-            option.classList.add('active');
-        } else {
-            option.classList.remove('active');
-        }
+        const matches = (value === 'dark' && isDark) || (value === 'light' && !isDark);
+        option.classList.toggle('active', matches);
     });
 }
 
@@ -238,10 +202,34 @@ function updateThemeSelectionUI() {
  * Load saved theme on page initialization
  */
 function loadSavedTheme() {
-    const savedTheme = localStorage.getItem('ai-tool-hub-theme') || 'default';
-    if (savedTheme && THEMES[savedTheme]) {
-        setTheme(savedTheme);
+    // Check localStorage first, then system preference
+    const savedDark = localStorage.getItem('ai-tool-hub-dark-mode');
+    if (savedDark !== null) {
+        if (savedDark === 'true') {
+            document.documentElement.classList.add('dark');
+            isDarkMode = true;
+        } else {
+            document.documentElement.classList.remove('dark');
+            isDarkMode = false;
+        }
+    } else {
+        // Follow system preference (guard for test environments)
+        if (typeof window.matchMedia === 'function') {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (prefersDark) {
+                document.documentElement.classList.add('dark');
+                isDarkMode = true;
+            } else {
+                document.documentElement.classList.remove('dark');
+                isDarkMode = false;
+            }
+        } else {
+            // No matchMedia available (e.g. test environments) — default light
+            document.documentElement.classList.remove('dark');
+            isDarkMode = false;
+        }
     }
+    updateThemeIcon();
 }
 
 /**
@@ -336,39 +324,6 @@ function registerServiceWorker() {
         navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed:', err));
     }
 }
-const RATING_LABELS = ['', '很差', '较差', '一般', '很好', '极好'];
-
-function generateTagsHtml(tool) {
-    let html = '';
-    if (tool.tags) {
-        if (tool.tags.includes('free')) html += '<span class="tag tag-free">免费</span>';
-        else if (tool.tags.includes('vip')) html += '<span class="tag tag-vip">VIP</span>';
-        if (tool.tags.includes('new')) html += '<span class="tag tag-new">NEW</span>';
-        if (tool.tags.includes('hot')) html += '<span class="tag tag-hot">热门</span>';
-    }
-    if (tool.toolTags) {
-        if (tool.toolTags.includes('国产')) html += '<span class="tag tag-domestic">国产</span>';
-        if (tool.toolTags.includes('海外')) html += '<span class="tag tag-overseas">海外</span>';
-        if (tool.toolTags.includes('开源')) html += '<span class="tag tag-open-source">开源</span>';
-        if (tool.toolTags.includes('无需登录')) html += '<span class="tag tag-no-login">无需登录</span>';
-    }
-    return html;
-}
-
-function generatePlatformBadgesHtml(platform) {
-    if (!platform || !Array.isArray(platform)) return '';
-    const icons = { web: 'fa-globe', local: 'fa-server', mobile: 'fa-mobile-alt', desktop: 'fa-desktop' };
-    return `<div class="platform-badges">${platform.map(p =>
-        `<i class="fas ${icons[p] || 'fa-cog'}" title="${escapeAttr(p)}"></i>`
-    ).join('')}</div>`;
-}
-
-function generateStatusBadgeHtml(status) {
-    if (status === 'hot') return '<span class="status-badge status-hot"><i class="fas fa-fire"></i> 热门推荐</span>';
-    if (status === 'stable') return '<span class="status-badge status-stable"><i class="fas fa-check-circle"></i> 稳定可靠</span>';
-    return '';
-}
-
 // Export functions, constants, and utilities
 export { 
     setupKeyboardShortcuts, 
@@ -390,10 +345,6 @@ export {
     MAX_SEARCH_HISTORY,
     TOAST_DISPLAY_TIME,
     SEARCH_DEBOUNCE_TIME,
-    generateTagsHtml,
-    generatePlatformBadgesHtml,
-    generateStatusBadgeHtml,
-    RATING_LABELS
 };
 
 

@@ -531,46 +531,14 @@ ${safeText}
             return result;
         }
 
-        // Backward compatibility: markdown fallback
-        const parts = content.split('---');
-        const optimizedContent = parts[0]?.trim() || content;
-        const reportSection = parts.length > 1 ? parts.slice(1).join('---').trim() : '';
-
+        // Minimal fallback when JSON extraction fails (rare with current models)
         const result = {
             level,
-            optimizedContent,
-            model: 'DeepSeek-V3'
+            optimizedContent: content,
+            model: 'DeepSeek-V3',
+            score: level === 'light' ? 85 : level === 'medium' ? 82 : 90,
+            suggestions: this._getDefaultSuggestions(level, {})
         };
-
-        if (level === 'medium') {
-            const notes = this._parseMediumNotes(reportSection);
-            result.score = notes.matchRate || 82;
-            result.suggestions = [
-                { icon: '🔑', title: '关键词对齐', desc: `已对齐${notes.addedKeywords?.length || 0}个JD核心关键词` },
-                { icon: '📊', title: '成果量化', desc: '为工作经历添加了具体的数字和指标' },
-                { icon: '💪', title: '行为动词强化', desc: '使用了更强有力的动词' },
-                { icon: '📄', title: 'ATS优化', desc: '排版和关键词密度已优化' }
-            ];
-        } else if (level === 'deep') {
-            const report = this._parseDeepReport(reportSection);
-            result.score = report.matchRate || 90;
-            result.brandPosition = report.brandPosition;
-            result.starApplications = report.starCount;
-            result.suggestions = [
-                { icon: '⭐', title: 'STAR法则重构', desc: '所有经历都按照STARR结构重组' },
-                { icon: '👔', title: '个人品牌塑造', desc: '打造独特的职业定位和价值主张' },
-                { icon: '🔍', title: '终极ATS优化', desc: '关键词密度和格式都已优化到极致' },
-                { icon: '💡', title: '差异化亮点', desc: '突出了独特成就和竞争优势' }
-            ];
-        } else {
-            result.score = 85;
-            result.suggestions = [
-                { icon: '✨', title: '语言润色', desc: '已优化表达方式，更专业流畅' },
-                { icon: '📝', title: '格式规范', desc: '统一了格式和标点符号' },
-                { icon: '✅', title: '语法检查', desc: '修正了潜在的语法问题' }
-            ];
-        }
-
         return result;
     }
 
@@ -627,38 +595,9 @@ ${safeText}
         ];
     }
 
-    _parseMediumNotes(text) {
-        const result = {};
-        const matchRateMatch = text.match(/匹配度[：:]\s*(\d+)/);
-        result.matchRate = matchRateMatch ? parseInt(matchRateMatch[1]) : null;
 
-        const keywordsMatch = text.match(/新增关键词[：:]\s*(.+)/);
-        if (keywordsMatch) {
-            result.addedKeywords = keywordsMatch[1]
-                .split(/[,，、]/)
-                .map(s => s.trim())
-                .filter(Boolean);
-        }
 
-        return result;
-    }
 
-    _parseDeepReport(text) {
-        const result = {};
-        const brandMatch = text.match(/Brand Position[：:]\s*(.+)/i);
-        result.brandPosition = brandMatch ? brandMatch[1].trim() : '';
-
-        const starMatch = text.match(/STAR Applications[：:]\s*(\d+)/i);
-        result.starCount = starMatch ? parseInt(starMatch[1]) : 0;
-
-        const matchMatch = text.match(/Match Rate[：:]\s*(\d+)/i);
-        result.matchRate = matchMatch ? parseInt(matchMatch[1]) : 90;
-
-        const keywordsMatch = text.match(/Keywords Optimized[：:]\s*(\d+)/i);
-        result.keywordsOptimized = keywordsMatch ? parseInt(keywordsMatch[1]) : 0;
-
-        return result;
-    }
 
     _shouldRetry(status) {
         return [408, 429, 500, 502, 503, 504].includes(status);

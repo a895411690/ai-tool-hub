@@ -300,7 +300,12 @@ function importUserData(jsonString) {
                     validStats[key] = value;
                 }
             }
-            state.clickStats = { ...state.clickStats, ...validStats };
+            // Merge with Math.max to avoid overwriting higher local click counts
+            const merged = { ...state.clickStats };
+            for (const [key, value] of Object.entries(validStats)) {
+                merged[key] = Math.max(merged[key] || 0, value);
+            }
+            state.clickStats = merged;
             localStorage.setItem('ai-tool-hub-click-stats', JSON.stringify(state.clickStats));
         }
 
