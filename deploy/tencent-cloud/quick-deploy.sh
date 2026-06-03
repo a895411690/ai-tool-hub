@@ -36,7 +36,7 @@ NC='\033[0m'
 # 配置变量（请修改为你的实际配置）
 SERVER_USER="root"           # 服务器用户名
 SERVER_IP="101.43.35.235"    # 服务器公网IP
-SERVER_PATH="/var/www/ai-tool-hub"  # 服务器项目路径
+SERVER_PATH="/var/www/html/ai-tool-hub"  # 服务器项目路径（nginx root）
 DOMAIN_NAME="weihub.cloud" # 你的域名
 
 # 显示帮助信息
