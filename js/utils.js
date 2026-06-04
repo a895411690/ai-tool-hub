@@ -41,7 +41,7 @@ function escapeAttr(text) {
 /**
  * Setup global keyboard shortcuts
  * Supports:
- * - '/' or 'S' or 's': Focus search input
+ * - '/': Focus search input
  * - 'Escape': Clear search, close modals
  * @param {Object} callbacks - Optional callbacks to avoid circular imports
  * @param {Function} [callbacks.onEscape] - Called on Escape key with no args
@@ -50,7 +50,7 @@ function setupKeyboardShortcuts(callbacks = {}) {
     document.addEventListener('keydown', (e) => {
         const searchInput = document.getElementById('mainSearch');
 
-        if (e.key === '/' || e.key === 's' || e.key === 'S') {
+        if (e.key === '/') {
             const active = document.activeElement;
             const isEditing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
             if (searchInput && !isEditing) {
@@ -103,10 +103,17 @@ function setupPullToRefresh() {
 /**
  * Theme configuration with all available themes
  */
-let isDarkMode = false;
+let isDarkMode = localStorage.getItem('ai-tool-hub-dark-mode') === 'true';
+
+// Apply theme class immediately to prevent flash
+if (isDarkMode) {
+    document.documentElement.classList.add('dark');
+} else {
+    document.documentElement.classList.remove('dark');
+}
 
 /** Current theme name for display */
-let currentTheme = localStorage.getItem('ai-tool-hub-theme') || 'default';
+let currentTheme = isDarkMode ? 'dark' : 'light';
 
 /**
  * Toggle between light and dark themes (quick switch)

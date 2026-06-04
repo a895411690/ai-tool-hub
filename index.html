@@ -2,10 +2,18 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Tool Hub - 发现最佳 AI 工具</title>
     <meta name="description" content="一站式AI工具聚合导航平台，帮你快速发现82+优质AI工具，涵盖写作、绘画、代码、视频、语音、设计、办公等领域">
     <meta name="keywords" content="AI工具,人工智能,AI写作,AI绘画,AI代码,AI视频">
+    <link rel="canonical" href="https://weihub.cloud/" />
+    <meta property="og:title" content="AI Tool Hub - 发现最佳 AI 工具" />
+    <meta property="og:description" content="一站式 AI 工具聚合导航平台，帮你快速发现优质 AI 工具。94款工具，10大分类。" />
+    <meta property="og:url" content="https://weihub.cloud/" />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AI Tool Hub - 发现最佳 AI 工具" />
+    <meta name="twitter:description" content="一站式 AI 工具聚合导航平台，帮你快速发现优质 AI 工具。" />
     <meta name="theme-color" content="#0f0c29">
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" type="image/svg+xml" href="./favicon.svg">
@@ -14,7 +22,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="./css/main.css">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://api.deepseek.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net; frame-ancestors 'none';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://js.sentry-cdn.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; connect-src 'self' https://api.deepseek.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://*.ingest.sentry.io;">
+
+    <!-- Sentry Error Tracking -->
+    <script src="https://js.sentry-cdn.com/placeholder-replace-with-real-dsn.min.js" crossorigin="anonymous"></script>
+    <script>
+        if (typeof Sentry !== 'undefined') {
+            Sentry.onLoad(function() {
+                Sentry.init({
+                    environment: 'production',
+                    release: 'ai-tool-hub@6.1.0',
+                    tracesSampleRate: 0.1,
+                    replaysSessionSampleRate: 0,
+                    replaysOnErrorSampleRate: 0.1
+                });
+            });
+        }
+    </script>
 </head>
 <body>
 
@@ -25,7 +49,7 @@
                 <div class="navbar-brand-icon">
                     <i class="fas fa-robot"></i>
                 </div>
-                <span class="navbar-brand-text" style="color: #00d4ff;">AI Tool Hub</span>
+                <span class="navbar-brand-text" style="color: var(--neon-blue);">AI Tool Hub</span>
             </a>
 
             <!-- New Tools Badge (Desktop) -->
@@ -107,11 +131,11 @@
                     <div id="searchHistory" class="search-suggestions"></div>
                 </div>
                 <div class="hero-stats">
-                    <div class="hero-stat"><span id="totalToolsCount" style="color:#00d4ff;">0</span> 款工具</div>
+                    <div class="hero-stat"><span id="totalToolsCount" style="color:var(--neon-blue);">0</span>+ 优质 AI 工具</div>
                     <div class="hero-stat-divider"></div>
-                    <div class="hero-stat"><span style="color:#a855f7;">免费</span> 筛选</div>
+                    <div class="hero-stat"><span style="color:var(--neon-purple);">完全</span> 免费</div>
                     <div class="hero-stat-divider"></div>
-                    <div class="hero-stat"><span style="color:#00ff88;">每日</span> 更新</div>
+                    <div class="hero-stat"><span style="color:var(--neon-green);">持续</span> 更新收录</div>
                 </div>
             </div>
         </section>
@@ -222,12 +246,12 @@
         <div id="researchPage" class="research-page" style="display:none;"></div>
 
         <!-- Tool Detail Modal -->
-        <div id="toolDetailModal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div id="toolDetailModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="toolDetailTitle">
             <div class="modal-panel">
                 <div class="modal-header">
                     <div class="modal-header-icon detail-header-icon"><i class="fas fa-robot"></i></div>
                     <div class="modal-header-info">
-                        <div class="modal-title detail-title"></div>
+                        <div class="modal-title detail-title" id="toolDetailTitle"></div>
                         <div class="modal-desc detail-desc"></div>
                     </div>
                     <button class="modal-close-btn" data-action="close-tool-detail" aria-label="关闭"><i class="fas fa-times"></i></button>
@@ -269,11 +293,11 @@
         </div>
 
         <!-- Share Modal -->
-        <div id="shareModal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div id="shareModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="shareModalTitle">
             <div class="modal-panel" style="max-width:360px;">
                 <div class="modal-header">
                     <div class="modal-header-info">
-                        <div class="modal-title">分享</div>
+                        <div class="modal-title" id="shareModalTitle">分享</div>
                         <div class="modal-desc">分享 AI Tool Hub 给朋友</div>
                     </div>
                     <button class="modal-close-btn" data-action="close-share-modal" aria-label="关闭"><i class="fas fa-times"></i></button>
@@ -302,11 +326,11 @@
         </div>
 
         <!-- Theme Modal -->
-        <div id="themeModal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div id="themeModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="themeModalTitle">
             <div class="modal-panel" style="max-width:360px;">
                 <div class="modal-header">
                     <div class="modal-header-info">
-                        <div class="modal-title">选择主题</div>
+                        <div class="modal-title" id="themeModalTitle">选择主题</div>
                         <div class="modal-desc">选择你喜欢的界面主题</div>
                     </div>
                     <button class="modal-close-btn" data-action="close-theme-modal" aria-label="关闭"><i class="fas fa-times"></i></button>
@@ -322,18 +346,18 @@
         </div>
 
         <!-- Update Modal -->
-        <div id="updateModal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div id="updateModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="updateModalTitle">
             <div class="modal-panel" style="max-width:380px; text-align:center;">
                 <div class="modal-body">
                     <div class="update-icon"><i class="fas fa-arrow-up-from-bracket"></i></div>
-                    <div class="update-title">发现新版本</div>
+                    <div class="update-title" id="updateModalTitle">发现新版本</div>
                     <div class="update-desc">有新版本可用，建议更新以获得更好的体验</div>
                     <button class="btn btn-primary" data-action="close-update-modal" style="justify-content:center;"><i class="fas fa-download"></i> 更新</button>
                 </div>
             </div>
         </div>
 
-        <div id="authModal" class="modal-overlay" role="dialog" aria-modal="true">
+        <div id="authModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
             <div class="modal-panel" style="max-width:400px;">
                 <div class="modal-header">
                     <h3 id="authModalTitle">登录</h3>
@@ -351,8 +375,8 @@
                             <label style="display:block;color:rgba(255,255,255,0.65);margin-bottom:6px;font-size:14px;">密码</label>
                             <input id="loginPassword" type="password" autocomplete="current-password" placeholder="请输入密码" style="width:100%;height:44px;padding:0 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:white;font-size:14px;outline:none;" />
                         </div>
-                        <button data-action="do-login" style="width:100%;height:44px;background:linear-gradient(135deg,#00d4ff,#a855f7);color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-weight:500;">登录</button>
-                        <p style="text-align:center;margin-top:16px;color:rgba(255,255,255,0.45);font-size:13px;">没有账号？<a href="#" data-action="show-register" style="color:#00d4ff;">立即注册</a></p>
+                        <button data-action="do-login" style="width:100%;height:44px;background:linear-gradient(135deg,var(--neon-blue),var(--neon-purple));color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-weight:500;">登录</button>
+                        <p style="text-align:center;margin-top:16px;color:rgba(255,255,255,0.45);font-size:13px;">没有账号？<a href="#" data-action="show-register" style="color:var(--neon-blue);">立即注册</a></p>
                     </div>
                     <div id="authRegisterForm" style="display:none;">
                         <div style="margin-bottom:16px;">
@@ -367,8 +391,8 @@
                             <label style="display:block;color:rgba(255,255,255,0.65);margin-bottom:6px;font-size:14px;">密码</label>
                             <input id="registerPassword" type="password" autocomplete="new-password" placeholder="请输入密码（至少6位）" style="width:100%;height:44px;padding:0 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:white;font-size:14px;outline:none;" />
                         </div>
-                        <button data-action="do-register" style="width:100%;height:44px;background:linear-gradient(135deg,#00d4ff,#a855f7);color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-weight:500;">注册</button>
-                        <p style="text-align:center;margin-top:16px;color:rgba(255,255,255,0.45);font-size:13px;">已有账号？<a href="#" data-action="show-login" style="color:#00d4ff;">返回登录</a></p>
+                        <button data-action="do-register" style="width:100%;height:44px;background:linear-gradient(135deg,var(--neon-blue),var(--neon-purple));color:white;border:none;border-radius:8px;font-size:15px;cursor:pointer;font-weight:500;">注册</button>
+                        <p style="text-align:center;margin-top:16px;color:rgba(255,255,255,0.45);font-size:13px;">已有账号？<a href="#" data-action="show-login" style="color:var(--neon-blue);">返回登录</a></p>
                     </div>
                 </div>
             </div>
@@ -421,12 +445,12 @@
     </footer>
 
     <!-- Toast -->
-    <div id="toast" class="toast"><span id="toastMsg"></span></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"><span id="toastMsg"></span></div>
 
     <!-- Loading State -->
     <div id="loadingState" class="loading-state">
         <div class="text-center">
-            <div class="spinner" style="border-color: rgba(0,212,255,0.2); border-top-color: #00d4ff;"></div>
+            <div class="spinner" style="border-color: rgba(0,212,255,0.2); border-top-color: var(--neon-blue);"></div>
             <p style="font-size:13px; color:var(--ant-text-tertiary); margin:0;">加载中...</p>
         </div>
     </div>
@@ -484,8 +508,8 @@
     <script>
     window.addEventListener('scroll', () => {
         const nav = document.getElementById('mainNav');
-        if (nav) nav.classList.toggle('scrolled', window.scrollY > 50);
-    });
+        if (nav) nav.classList.toggle('scrolled', window.scrollY > 100);
+    }, { passive: true });
     </script>
 </body>
 </html>

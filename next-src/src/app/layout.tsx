@@ -1,0 +1,41 @@
+import type { Metadata, Viewport } from 'next';
+import './globals.css';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { AuthProvider } from '@/components/auth/AuthProvider';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
+import CompareBar from '@/components/compare/CompareBar';
+import BottomNav from '@/components/layout/BottomNav';
+
+export const metadata: Metadata = {
+  title: 'AI Tool Hub - 发现最佳 AI 工具',
+  description: '探索和发现最佳 AI 工具，提升你的工作效率。涵盖 ChatGPT、Midjourney、Stable Diffusion 等热门 AI 工具的导航与推荐。',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#0f0c29',
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="zh-CN" className="dark">
+      <body className="antialiased min-h-screen bg-gray-950 text-white">
+        <Navbar />
+        <AuthProvider>
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
+        </AuthProvider>
+        <Footer />
+        <CompareBar />
+        <BottomNav />
+      </body>
+    </html>
+  );
+}

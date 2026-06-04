@@ -1,5 +1,5 @@
 // Import state and functions
-import state, { toggleFavorite, recordToolClick, getToolClickCount, setToolRating, getToolRating } from './state.js';
+import state, { toggleFavorite, recordToolClick, getToolClickCount, setToolRating, getToolRating, PLATFORM_ICONS } from './state.js';
 import { renderTools } from './ui.js';
 import { showToast, isValidUrl, escapeHtml, escapeAttr } from './utils.js';
 import { generateTagsHtml, generateStatusBadgeHtml, RATING_LABELS } from './renderer.js';
@@ -27,7 +27,7 @@ function openTool(id, url, event) {
     }
 
     recordToolClick(id);
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 /**
@@ -75,7 +75,7 @@ function showToolDetail(id) {
     const tagsHtml = generateTagsHtml(tool);
 
     const platformBadges = tool.platform?.map(p =>
-        `<span class="platform-badge"><i class="fas ${{web:'fa-globe',local:'fa-server',mobile:'fa-mobile-alt',desktop:'fa-desktop'}[p] || 'fa-cog'}"></i> ${escapeHtml(p)}</span>`
+        `<span class="platform-badge"><i class="fas ${PLATFORM_ICONS[p] || 'fa-cog'}"></i> ${escapeHtml(p)}</span>`
     ).join('') || '';
 
     const difficultyLabels = { beginner: '入门级', intermediate: '进阶级', advanced: '高级' };

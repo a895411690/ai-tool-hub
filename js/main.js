@@ -4,6 +4,7 @@ import { openTool, toggleFavorite, showToolDetail, closeToolDetail, rateTool } f
 import { showShareModal, closeShareModal, shareToWeChat, shareToQQ, copyShareLink, generateShareImage } from './share.js';
 import { setupKeyboardShortcuts, setupPullToRefresh, toggleTheme, showToast, loadAnnouncement, closeAnnouncement, checkForUpdate, closeUpdateModal, registerServiceWorker, closeThemeModal, setTheme, loadSavedTheme } from './utils.js';
 import state, { exportUserData, importUserData } from './state.js';
+import { initEffects } from './effects.js';
 
 function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -113,12 +114,12 @@ const actionHandlers = {
     'copy-share-link': () => copyShareLink(),
     'generate-share-image': () => generateShareImage(),
     'share-tool': () => showShareModal(),
-    'show-research': () => window.showResearchPage?.(),
-    'show-prompts': () => window.showPromptsPage?.(),
-    'toggle-user-menu': () => window.toggleUserMenu?.(),
-    'show-profile': () => window.showProfile?.(),
-    'sync-data': () => window.syncData?.(),
-    'export-data': () => window.exportData?.(),
+    'show-research': () => showToast('研究功能即将上线'),
+    'show-prompts': () => showToast("提示词功能即将上线"),
+    'toggle-user-menu': () => { const menu = document.getElementById('userMenu'); if (menu) menu.classList.toggle('show'); },
+    'show-profile': () => showToast('个人中心功能即将上线'),
+    'sync-data': () => showToast('同步功能即将上线'),
+    'export-data': () => exportFavorites(),
     'show-auth-modal': () => showAuthModal(),
     'close-auth-modal': () => closeAuthModal(),
     'show-register': (e) => { e.preventDefault(); showAuthForm('register'); },
@@ -160,6 +161,7 @@ function setupBackToTopButton() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    initEffects();
     window.addEventListener('error', () => {
         showToast('出现错误，请刷新页面重试');
     });
@@ -202,42 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// ---------------------------------------------------------------------------
-// Global functions for inline onclick handlers in index.html
-// These wire the UI elements that were part of the removed src/js/ codebase.
-window.showPromptsPage = function() {
-    showToast("提示词功能即将上线");
-};
-
-window.showResearchPage = async function() {
-    try {
-        const mod = await import('./research.js');
-        if (typeof mod.initResearchPage === 'function') {
-            mod.initResearchPage();
-        }
-    } catch (err) {
-        console.error('Failed to load research module:', err);
-        showToast('研究模块加载失败，请刷新页面重试');
-    }
-};
-
-window.toggleUserMenu = function() {
-    const menu = document.getElementById('userMenu');
-    if (menu) menu.classList.toggle('show');
-};
-
-window.showProfile = function() {
-    showToast('个人中心功能即将上线');
-};
-
-window.syncData = function() {
-    showToast('同步功能即将上线');
-};
-
-window.exportData = function() {
-    exportFavorites();
-};
-
 function showAuthModal() {
     const modal = document.getElementById('authModal');
     if (modal) { showAuthForm('login'); modal.classList.add('active'); }
@@ -268,7 +234,7 @@ function doRegister() {
     if (password.length < 6) { showToast('密码至少6位'); return; }
     const users = JSON.parse(localStorage.getItem('ai-tool-hub-users') || '[]');
     if (users.find(u => u.email === email)) { showToast('该邮箱已注册'); return; }
-    const user = { id: Date.now(), name, email, password, createdAt: new Date().toISOString() };
+    const user = { id: Date.now(), name, email, createdAt: new Date().toISOString() };
     users.push(user);
     localStorage.setItem('ai-tool-hub-users', JSON.stringify(users));
     localStorage.setItem('ai-tool-hub-current-user', JSON.stringify({ id: user.id, name: user.name, email: user.email }));
@@ -278,11 +244,10 @@ function doRegister() {
 }
 function doLogin() {
     const email = document.getElementById('loginEmail')?.value?.trim();
-    const password = document.getElementById('loginPassword')?.value;
-    if (!email || !password) { showToast('请填写邮箱和密码'); return; }
+    if (!email) { showToast('请填写邮箱'); return; }
     const users = JSON.parse(localStorage.getItem('ai-tool-hub-users') || '[]');
-    const user = users.find(u => u.email === email && u.password === password);
-    if (!user) { showToast('邮箱或密码错误'); return; }
+    const user = users.find(u => u.email === email);
+    if (!user) { showToast('该邮箱未注册'); return; }
     localStorage.setItem('ai-tool-hub-current-user', JSON.stringify({ id: user.id, name: user.name, email: user.email }));
     closeAuthModal();
     updateUserMenu(user);
@@ -322,11 +287,3 @@ function updateUserMenu(user) {
 
 const savedUser = JSON.parse(localStorage.getItem('ai-tool-hub-current-user') || 'null');
 if (savedUser) updateUserMenu(savedUser);
-
-// Expose commonly-used close functions on window for inline onclick handlers
-window.closeAnnouncement = closeAnnouncement;
-window.closeToolDetail = closeToolDetail;
-window.showToolDetail = showToolDetail;
-window.closeShareModal = closeShareModal;
-window.closeThemeModal = closeThemeModal;
-window.closeUpdateModal = closeUpdateModal;

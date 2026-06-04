@@ -2,6 +2,7 @@
 import { showToast, escapeHtml } from './utils.js';
 import state, { updateData } from './state.js';
 import { renderCategories, renderHotTools, renderStatisticsDashboard, renderTools, loadSavedFilters } from './ui.js';
+import { setupCard3DEffect, setupStatsAnimations } from './renderer.js';
 
 // Load Tools
 async function loadTools() {
@@ -41,6 +42,10 @@ async function loadTools() {
         renderStatisticsDashboard();
         renderTools(state.tools);
         
+        // Setup interactive effects
+        setupCard3DEffect();
+        setupStatsAnimations();
+        
         // Hide loading state
         const loadingState = document.getElementById('loadingState');
         if (loadingState) {
@@ -55,13 +60,11 @@ async function loadTools() {
         const loadingState = document.getElementById('loadingState');
         if (loadingState) {
             loadingState.innerHTML = `
-                <div class="text-center">
-                    <i class="fas fa-exclamation-circle text-red-500 text-4xl mb-4"></i>
-                    <h3 class="text-xl font-bold mb-2">加载失败</h3>
-                    <p class="text-gray-400 mb-4">${escapeHtml(error.message)}</p>
-                    <button id="retryLoadBtn" class="px-6 py-2 text-white rounded-lg hover:shadow-lg transition-all" style="background: var(--ant-primary);">
-                        重试
-                    </button>
+                <div style="text-align:center;padding:40px;">
+                    <p style="font-size:2rem;margin-bottom:16px;color:var(--neon-blue);">⚠️</p>
+                    <p style="font-size:18px;font-weight:600;color:var(--text-primary);margin-bottom:8px;">加载失败</p>
+                    <p style="color:var(--text-secondary);margin-bottom:16px;">${escapeHtml(error.message)}</p>
+                    <button id="retryLoadBtn" style="padding:10px 28px;border:none;border-radius:8px;background:linear-gradient(135deg,var(--neon-blue),var(--neon-purple));color:white;font-size:14px;cursor:pointer;font-weight:500;">重试</button>
                 </div>
             `;
             const retryBtn = document.getElementById('retryLoadBtn');

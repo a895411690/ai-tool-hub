@@ -125,6 +125,7 @@ function toggleFavorite(toolId) {
     }
     
     // Save to localStorage immediately for critical user action
+    checkStorageQuota();
     localStorage.setItem('ai-tool-hub-favorites', JSON.stringify(state.favorites));
     
     return state.favorites.includes(toolId);
@@ -140,6 +141,7 @@ function addToSearchHistory(term) {
         if (state.searchHistory.length > 10) {
             state.searchHistory.splice(10);
         }
+        checkStorageQuota();
         localStorage.setItem('ai-tool-hub-search-history', JSON.stringify(state.searchHistory));
     }
 }
@@ -155,6 +157,7 @@ function recordToolClick(toolId) {
     state.clickStats[toolId]++;
 
     // Debounce save to localStorage (save every 5 clicks or use setTimeout)
+    checkStorageQuota();
     if (state.clickStats[toolId] % 5 === 0) {
         localStorage.setItem('ai-tool-hub-click-stats', JSON.stringify(state.clickStats));
     } else {
@@ -207,6 +210,7 @@ function setToolRating(toolId, rating) {
     state.ratings[toolId] = rating;
 
     // Debounce save to localStorage
+    checkStorageQuota();
     clearTimeout(_ratingSaveTimeout);
     _ratingSaveTimeout = setTimeout(() => {
         localStorage.setItem('ai-tool-hub-ratings', JSON.stringify(state.ratings));
@@ -276,6 +280,7 @@ function importUserData(jsonString) {
         }
 
         // Merge favorites (validate each item is a number)
+        checkStorageQuota();
         if (Array.isArray(data.favorites)) {
             const validFavorites = data.favorites.filter(id => typeof id === 'number');
             state.favorites = [...new Set([...state.favorites, ...validFavorites])];
@@ -320,6 +325,40 @@ function importUserData(jsonString) {
         };
     }
 }
+
+/**
+ * 检查 localStorage 配额使用情况
+ * 估算所有键的总大小，若超过 4MB（典型 5MB 限制的 80%）则自动清理搜索历史
+ * @returns {boolean} true 表示存储空间正常，false 表示接近满载
+ */
+export function checkStorageQuota() {
+    let totalSize = 0;
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key);
+        // 每个字符占 2 字节（UTF-16），加上键名本身的长度
+        totalSize += (key.length + value.length) * 2;
+    }
+
+    const FOUR_MB = 4 * 1024 * 1024;
+    if (totalSize > FOUR_MB) {
+        console.warn(`[StorageQuota] localStorage 使用量约 ${(totalSize / 1024 / 1024).toFixed(2)}MB，已超过 4MB 阈值，正在清理搜索历史...`);
+        localStorage.removeItem('ai-tool-hub-search-history');
+        state.searchHistory = [];
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Platform icon mapping for consistent icon display across modules
+ */
+export const PLATFORM_ICONS = {
+    web: 'fa-globe',
+    local: 'fa-server',
+    mobile: 'fa-mobile-alt',
+    desktop: 'fa-desktop'
+};
 
 // Export state object and management functions
 export default state;

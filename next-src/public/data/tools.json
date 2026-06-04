@@ -1,0 +1,3635 @@
+{
+  "version": "2.0",
+  "lastUpdated": "2026-05-31",
+  "categories": [
+    {
+      "id": "writing",
+      "name": "AI写作",
+      "icon": "fa-pen-nib"
+    },
+    {
+      "id": "painting",
+      "name": "AI绘画",
+      "icon": "fa-palette"
+    },
+    {
+      "id": "code",
+      "name": "AI代码",
+      "icon": "fa-code"
+    },
+    {
+      "id": "video",
+      "name": "AI视频",
+      "icon": "fa-video"
+    },
+    {
+      "id": "voice",
+      "name": "AI语音",
+      "icon": "fa-microphone"
+    },
+    {
+      "id": "design",
+      "name": "AI设计",
+      "icon": "fa-paint-brush"
+    },
+    {
+      "id": "office",
+      "name": "AI办公",
+      "icon": "fa-briefcase"
+    },
+    {
+      "id": "music",
+      "name": "AI音乐",
+      "icon": "fa-music"
+    },
+    {
+      "id": "agent",
+      "name": "AI智能体",
+      "icon": "fa-robot"
+    },
+    {
+      "id": "search",
+      "name": "AI搜索",
+      "icon": "fa-search"
+    }
+  ],
+  "tools": [
+    {
+      "id": 1,
+      "name": "秘塔写作猫",
+      "category": "writing",
+      "icon": "fa-cat",
+      "desc": "AI写作校对、文案生成",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "无需登录",
+        "网页版"
+      ],
+      "url": "https://xiezuocat.com",
+      "updateTime": "2024-12",
+      "status": "stable",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "relatedTools": [
+        3,
+        4,
+        5
+      ],
+      "categories": [
+        "writing",
+        "office"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础写作校对",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 39,
+          "unit": "CNY/月",
+          "quota": "高级AI写作",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI写作校对",
+        "智能续写",
+        "多语言翻译",
+        "文档排版优化"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "ChatGPT",
+      "category": "writing",
+      "icon": "fa-comment-dots",
+      "desc": "全能AI对话、文案创作",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://chatgpt.com",
+      "categories": [
+        "writing",
+        "search",
+        "agent"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "GPT-4o mini",
+          "highlight": true
+        },
+        {
+          "plan": "Plus",
+          "price": 20,
+          "unit": "USD/月",
+          "quota": "GPT-4o + DALL·E",
+          "highlight": false
+        },
+        {
+          "plan": "Pro",
+          "price": 200,
+          "unit": "USD/月",
+          "quota": "无限制Pro模式",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "GPT-4o多模态",
+        "DALL·E 3绘图",
+        "代码解释器",
+        "自定义GPTs",
+        "语音对话"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "文心一言",
+      "category": "writing",
+      "icon": "fa-brain",
+      "desc": "百度AI大模型、文案撰写",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://yiyan.baidu.com",
+      "categories": [
+        "writing"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础对话",
+          "highlight": true
+        },
+        {
+          "plan": "VIP",
+          "price": 59.9,
+          "unit": "CNY/月",
+          "quota": "文心大模型4.0",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "百度大模型",
+        "中文理解强",
+        "多轮对话",
+        "图片理解",
+        "插件生态"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "讯飞星火",
+      "category": "writing",
+      "icon": "fa-star",
+      "desc": "讯飞AI写作、内容生成",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://xinghuo.xfyun.cn",
+      "categories": [
+        "writing",
+        "voice"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础对话",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 49.9,
+          "unit": "CNY/月",
+          "quota": "高级模型",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "豆包",
+      "category": "writing",
+      "icon": "fa-cookie",
+      "desc": "字节AI写作、问答、文案",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.doubao.com",
+      "categories": [
+        "writing",
+        "agent"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "全功能免费",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "字节跳动出品",
+        "完全免费",
+        "多模态理解",
+        "长文本处理",
+        "智能体支持"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Claude",
+      "category": "writing",
+      "icon": "fa-robot",
+      "desc": "Anthropic AI助手、长文本处理",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://claude.ai",
+      "categories": [
+        "writing",
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "有限对话",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 20,
+          "unit": "USD/月",
+          "quota": "扩展用量",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "超长上下文(200K)",
+        "文档分析",
+        "代码生成",
+        "多语言支持"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "通义千问",
+      "category": "writing",
+      "icon": "fa-cloud",
+      "desc": "阿里AI大模型、智能问答",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://tongyi.aliyun.com",
+      "categories": [
+        "writing",
+        "painting"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础对话+绘图",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 49.9,
+          "unit": "CNY/月",
+          "quota": "高级模型",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Kimi",
+      "category": "writing",
+      "icon": "fa-moon",
+      "desc": "月之暗面AI、长文本理解",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://kimi.moonshot.cn",
+      "categories": [
+        "writing",
+        "search"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "长文本处理",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "超长文本(200万字)",
+        "文件解析",
+        "联网搜索",
+        "多模态理解"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "智谱清言",
+      "category": "writing",
+      "icon": "fa-comments",
+      "desc": "清华ChatGLM、中文AI助手",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://chatglm.cn",
+      "categories": [
+        "writing",
+        "agent"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础对话",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Midjourney",
+      "category": "painting",
+      "icon": "fa-image",
+      "desc": "AI绘画、艺术创作",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "Discord"
+      ],
+      "url": "https://www.midjourney.com",
+      "categories": [
+        "painting",
+        "design"
+      ],
+      "pricing": [
+        {
+          "plan": "Basic",
+          "price": 10,
+          "unit": "USD/月",
+          "quota": "200张图",
+          "highlight": true
+        },
+        {
+          "plan": "Standard",
+          "price": 30,
+          "unit": "USD/月",
+          "quota": "900张图",
+          "highlight": false
+        },
+        {
+          "plan": "Pro",
+          "price": 60,
+          "unit": "USD/月",
+          "quota": "无限放松",
+          "highlight": false
+        }
+      ],
+      "valueTag": "纯付费",
+      "highlights": [
+        "顶级画质",
+        "艺术风格多样",
+        "V6模型升级",
+        "细节控制精确"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Stable Diffusion",
+      "category": "painting",
+      "icon": "fa-layer-group",
+      "desc": "开源AI绘画、图像生成",
+      "tags": [
+        "free",
+        "local"
+      ],
+      "toolTags": [
+        "开源",
+        "无需登录",
+        "本地部署"
+      ],
+      "url": "https://github.com/AUTOMATIC1111/stable-diffusion-webui",
+      "categories": [
+        "painting"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "完全开源免费",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "完全开源",
+        "本地运行",
+        "丰富模型",
+        "ControlNet",
+        "社区生态强大"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "文心一格",
+      "category": "painting",
+      "icon": "fa-paint-brush",
+      "desc": "百度AI绘画、海报生成",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://yige.baidu.com",
+      "categories": [
+        "painting"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础生图",
+          "highlight": true
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "醒图AI",
+      "category": "painting",
+      "icon": "fa-wand-magic-sparkles",
+      "desc": "AI绘画、图片创作",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.xingtu.com",
+      "categories": [
+        "painting",
+        "design"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础修图",
+          "highlight": true
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 17,
+      "name": "通义万相",
+      "category": "painting",
+      "icon": "fa-images",
+      "desc": "阿里AI绘画、图片生成",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://tongyi.aliyun.com/wanxiang",
+      "categories": [
+        "painting"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础生图",
+          "highlight": true
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 19,
+      "name": "DALL·E 3",
+      "category": "painting",
+      "icon": "fa-palette",
+      "desc": "OpenAI图像生成",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "ChatGPT内"
+      ],
+      "url": "https://chatgpt.com",
+      "categories": [
+        "painting"
+      ],
+      "pricing": [
+        {
+          "plan": "Plus",
+          "price": 20,
+          "unit": "USD/月",
+          "quota": "ChatGPT Plus含",
+          "highlight": true
+        }
+      ],
+      "valueTag": "需订阅ChatGPT Plus",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 20,
+      "name": "Leonardo.ai",
+      "category": "painting",
+      "icon": "fa-brush",
+      "desc": "游戏素材AI绘画",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://leonardo.ai",
+      "categories": [
+        "painting",
+        "design"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "150 tokens/天",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 12,
+          "unit": "USD/月",
+          "quota": "8400 tokens/月",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 21,
+      "name": "GitHub Copilot",
+      "category": "code",
+      "icon": "fa-github",
+      "desc": "AI代码补全、编程辅助",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "IDE插件"
+      ],
+      "url": "https://github.com/features/copilot",
+      "categories": [
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "预览功能免费",
+          "highlight": false
+        },
+        {
+          "plan": "Business",
+          "price": 19,
+          "unit": "USD/月",
+          "quota": "完整Copilot",
+          "highlight": true
+        },
+        {
+          "plan": "Enterprise",
+          "price": 39,
+          "unit": "USD/月",
+          "quota": "企业级",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "IDE深度集成",
+        "代码补全精准",
+        "多语言支持",
+        "Copilot Chat"
+      ]
+    },
+    {
+      "id": 22,
+      "name": "CodeGeeX",
+      "category": "code",
+      "icon": "fa-code",
+      "desc": "开源AI代码生成、注释",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "无需登录",
+        "客户端"
+      ],
+      "url": "https://codegeex.cn",
+      "categories": [
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "完全免费",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "完全免费",
+        "开源",
+        "中文支持好",
+        "多IDE插件"
+      ]
+    },
+    {
+      "id": 23,
+      "name": "Cursor",
+      "category": "code",
+      "icon": "fa-terminal",
+      "desc": "AI编程编辑器、代码生成",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "客户端"
+      ],
+      "url": "https://cursor.sh",
+      "categories": [
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "2000次补全/月",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 20,
+          "unit": "USD/月",
+          "quota": "无限补全",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI原生编辑器",
+        "代码库理解",
+        "Composer模式",
+        "多模型切换"
+      ]
+    },
+    {
+      "id": 24,
+      "name": "通义灵码",
+      "category": "code",
+      "icon": "fa-laptop-code",
+      "desc": "阿里AI代码助手、编程",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "客户端"
+      ],
+      "url": "https://lingma.aliyun.com",
+      "categories": [
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础补全",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 26,
+      "name": "Codeium",
+      "category": "code",
+      "icon": "fa-robot",
+      "desc": "AI代码生成、开发辅助",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "无需登录",
+        "客户端"
+      ],
+      "url": "https://codeium.com",
+      "categories": [
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础补全",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 12,
+          "unit": "USD/月",
+          "quota": "高级模型",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 27,
+      "name": "字节MarsCode",
+      "category": "code",
+      "icon": "fa-rocket",
+      "desc": "字节AI编程助手",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.marscode.cn",
+      "categories": [
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "完全免费",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 28,
+      "name": "商汤小浣熊",
+      "category": "code",
+      "icon": "fa-paw",
+      "desc": "商汤AI编程助手",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "客户端"
+      ],
+      "url": "https://raccoon.sensetime.com",
+      "categories": [
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础编程辅助",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 29,
+      "name": "Amazon CodeWhisperer",
+      "category": "code",
+      "icon": "fa-aws",
+      "desc": "AWS AI代码助手",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "IDE插件"
+      ],
+      "url": "https://aws.amazon.com/codewhisperer",
+      "categories": [
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础建议",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 19,
+          "unit": "USD/月",
+          "quota": "高级功能",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 30,
+      "name": "JetBrains AI",
+      "category": "code",
+      "icon": "fa-jet-fighter",
+      "desc": "JetBrains IDE AI助手",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "IDE插件"
+      ],
+      "url": "https://www.jetbrains.com/ai",
+      "categories": [
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Pro",
+          "price": 10,
+          "unit": "USD/月",
+          "quota": "AI补全+聊天",
+          "highlight": true
+        },
+        {
+          "plan": "Enterprise",
+          "price": 25,
+          "unit": "USD/月",
+          "quota": "企业级",
+          "highlight": false
+        }
+      ],
+      "valueTag": "纯付费",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 31,
+      "name": "Runway Gen-2",
+      "category": "video",
+      "icon": "fa-film",
+      "desc": "AI视频生成、剪辑",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://runwayml.com",
+      "categories": [
+        "video"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "有限导出",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 12,
+          "unit": "USD/月",
+          "quota": "高清导出",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "文生视频",
+        "运动笔刷",
+        "Gen-3 Alpha",
+        "多风格支持"
+      ]
+    },
+    {
+      "id": 33,
+      "name": "剪映AI",
+      "category": "video",
+      "icon": "fa-scissors",
+      "desc": "AI视频剪辑、文案生成",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "客户端"
+      ],
+      "url": "https://www.capcut.cn",
+      "categories": [
+        "video",
+        "voice"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础剪辑",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "抖音生态集成",
+        "AI字幕",
+        "智能剪辑",
+        "丰富特效"
+      ]
+    },
+    {
+      "id": 35,
+      "name": "即梦AI",
+      "category": "video",
+      "icon": "fa-video",
+      "desc": "AI视频生成、短视频创作",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://jimeng.jianying.com",
+      "categories": [
+        "video",
+        "painting"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础生成",
+          "highlight": true
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 36,
+      "name": "万彩动画",
+      "category": "video",
+      "icon": "fa-film",
+      "desc": "AI视频制作、动画生成",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "无需登录",
+        "客户端"
+      ],
+      "url": "https://www.animiz.cn",
+      "categories": [
+        "video"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础制作",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 299,
+          "unit": "CNY/年",
+          "quota": "去水印+高清",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 37,
+      "name": "HeyGen",
+      "category": "video",
+      "icon": "fa-user-video",
+      "desc": "AI数字人视频生成",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.heygen.com",
+      "categories": [
+        "video"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "1分钟视频",
+          "highlight": true
+        },
+        {
+          "plan": "Creator",
+          "price": 24,
+          "unit": "USD/月",
+          "quota": "15分钟/月",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 39,
+      "name": "可灵AI",
+      "category": "video",
+      "icon": "fa-clapperboard",
+      "desc": "快手AI视频生成",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://klingai.com",
+      "categories": [
+        "video",
+        "painting"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "每日免费额度",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 66,
+          "unit": "CNY/月",
+          "quota": "扩展额度",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "国产最强视频模型",
+        "文生视频",
+        "图生视频",
+        "运动控制"
+      ]
+    },
+    {
+      "id": 40,
+      "name": "PixVerse",
+      "category": "video",
+      "icon": "fa-wand-magic",
+      "desc": "AI视频生成工具",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://pixverse.ai",
+      "categories": [
+        "video"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础生成",
+          "highlight": true
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 41,
+      "name": "讯飞配音",
+      "category": "voice",
+      "icon": "fa-microphone-alt",
+      "desc": "AI语音合成、真人配音",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "无需登录",
+        "网页版"
+      ],
+      "url": "https://peiyin.xunfei.cn",
+      "categories": [
+        "voice"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "有限配音",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 99,
+          "unit": "CNY/月",
+          "quota": "高级音色",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 42,
+      "name": "ElevenLabs",
+      "category": "voice",
+      "icon": "fa-volume-up",
+      "desc": "AI真人语音、音色生成",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://elevenlabs.io",
+      "categories": [
+        "voice"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "10000字符/月",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 5,
+          "unit": "USD/月",
+          "quota": "30000字符",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "最真实语音克隆",
+        "多语言支持",
+        "API完善",
+        "音色丰富"
+      ]
+    },
+    {
+      "id": 44,
+      "name": "魔音工坊",
+      "category": "voice",
+      "icon": "fa-music",
+      "desc": "AI配音、有声书制作",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.moyin.com",
+      "categories": [
+        "voice"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础配音",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 99,
+          "unit": "CNY/月",
+          "quota": "高级音色",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 45,
+      "name": "百度语音",
+      "category": "voice",
+      "icon": "fa-assistive-listening-systems",
+      "desc": "AI语音合成、识别",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "无需登录",
+        "API服务"
+      ],
+      "url": "https://ai.baidu.com/tech/speech",
+      "categories": [
+        "voice"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "API调用额度",
+          "highlight": true
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 46,
+      "name": "微软Azure语音",
+      "category": "voice",
+      "icon": "fa-microsoft",
+      "desc": "Azure TTS语音合成",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "云服务"
+      ],
+      "url": "https://azure.microsoft.com/en-us/products/ai-services/speech-service",
+      "categories": [
+        "voice"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "每月500万字符",
+          "highlight": true
+        },
+        {
+          "plan": "Standard",
+          "price": 1,
+          "unit": "USD/百万字符",
+          "quota": "按量付费",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 47,
+      "name": "剪映文字成片",
+      "category": "voice",
+      "icon": "fa-file-audio",
+      "desc": "文字转视频配音",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "客户端"
+      ],
+      "url": "https://www.capcut.cn",
+      "categories": [
+        "voice",
+        "video"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础功能",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 49,
+      "name": "Resemble AI",
+      "category": "voice",
+      "icon": "fa-wave-square",
+      "desc": "AI语音克隆",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.resemble.ai",
+      "categories": [
+        "voice"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础克隆",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 0.006,
+          "unit": "USD/秒",
+          "quota": "按量付费",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 50,
+      "name": "Murf AI",
+      "category": "voice",
+      "icon": "fa-microphone-lines",
+      "desc": "AI专业配音",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://murf.ai",
+      "categories": [
+        "voice"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "10分钟/月",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 23,
+          "unit": "USD/月",
+          "quota": "2小时",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 51,
+      "name": "稿定设计",
+      "category": "design",
+      "icon": "fa-object-group",
+      "desc": "AI海报、PPT设计",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.gaoding.com",
+      "categories": [
+        "design",
+        "office"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础模板",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 39,
+          "unit": "CNY/月",
+          "quota": "高清导出",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "中文设计模板",
+        "AI海报生成",
+        "智能抠图",
+        "一键套用"
+      ]
+    },
+    {
+      "id": 53,
+      "name": "WPS AI",
+      "category": "office",
+      "icon": "fa-file-word",
+      "desc": "AI办公、文档生成",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "客户端"
+      ],
+      "url": "https://ai.wps.cn",
+      "categories": [
+        "office",
+        "writing"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "WPS基础AI",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 89,
+          "unit": "CNY/年",
+          "quota": "WPS AI会员",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "Office全家桶AI",
+        "文档智能排版",
+        "PPT一键生成",
+        "表格AI处理"
+      ]
+    },
+    {
+      "id": 54,
+      "name": "飞书AI",
+      "category": "office",
+      "icon": "fa-paper-plane",
+      "desc": "AI办公协作、文案处理",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.feishu.cn",
+      "categories": [
+        "office",
+        "agent"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础协作",
+          "highlight": true
+        },
+        {
+          "plan": "Business",
+          "price": 360,
+          "unit": "CNY/年",
+          "quota": "高级功能",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 55,
+      "name": "创客贴",
+      "category": "design",
+      "icon": "fa-compass-drafting",
+      "desc": "AI设计、营销素材",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.chuangkit.com",
+      "categories": [
+        "design"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础模板",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 29,
+          "unit": "CNY/月",
+          "quota": "商用模板",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 56,
+      "name": "Figma AI",
+      "category": "design",
+      "icon": "fa-figma",
+      "desc": "Figma AI设计助手",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.figma.com/ai",
+      "categories": [
+        "design"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础设计",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 15,
+          "unit": "USD/月",
+          "quota": "高级功能",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 57,
+      "name": "即时设计",
+      "category": "design",
+      "icon": "fa-pen-ruler",
+      "desc": "国产UI设计工具AI版",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://js.design/ai",
+      "categories": [
+        "design"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础设计",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 29,
+          "unit": "CNY/月",
+          "quota": "高级功能",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 58,
+      "name": "MasterGo AI",
+      "category": "design",
+      "icon": "fa-shapes",
+      "desc": "AI设计协作平台",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://mastergo.com/ai",
+      "categories": [
+        "design"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础设计",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 9,
+          "unit": "USD/月",
+          "quota": "高级功能",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 59,
+      "name": "钉钉AI",
+      "category": "office",
+      "icon": "fa-dingding",
+      "desc": "钉钉智能办公助手",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "客户端"
+      ],
+      "url": "https://www.dingtalk.com",
+      "categories": [
+        "office",
+        "agent"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础AI功能",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 60,
+      "name": "Notion AI",
+      "category": "office",
+      "icon": "fa-n",
+      "desc": "Notion智能写作助手",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.notion.so/product/ai",
+      "categories": [
+        "office",
+        "writing"
+      ],
+      "pricing": [
+        {
+          "plan": "Plus",
+          "price": 10,
+          "unit": "USD/月",
+          "quota": "AI功能需Plus",
+          "highlight": true
+        },
+        {
+          "plan": "Business",
+          "price": 15,
+          "unit": "USD/月",
+          "quota": "团队功能",
+          "highlight": false
+        }
+      ],
+      "valueTag": "纯付费",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 61,
+      "name": "Suno AI",
+      "category": "music",
+      "icon": "fa-sun",
+      "desc": "文字转歌曲、AI音乐生成",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://suno.com",
+      "updateTime": "2026-01",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "music"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "10首/天",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 10,
+          "unit": "USD/月",
+          "quota": "500首/月",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "文字生成歌曲",
+        "多风格音乐",
+        "人声合成",
+        "歌词创作"
+      ]
+    },
+    {
+      "id": 62,
+      "name": "Udio",
+      "category": "music",
+      "icon": "fa-headphones",
+      "desc": "高质量AI音乐创作平台",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.udio.com",
+      "updateTime": "2026-02",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "music"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础生成",
+          "highlight": true
+        },
+        {
+          "plan": "Standard",
+          "price": 10,
+          "unit": "USD/月",
+          "quota": "扩展功能",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 63,
+      "name": "网易天音",
+      "category": "music",
+      "icon": "fa-music-note",
+      "desc": "网易AI作曲、音乐生成",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://tianyin.music.163.com",
+      "updateTime": "2025-12",
+      "status": "stable",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "music"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础作曲",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 64,
+      "name": "Soundraw",
+      "category": "music",
+      "icon": "fa-waveform-lines",
+      "desc": "无版权AI音乐生成",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://soundraw.com",
+      "updateTime": "2026-01",
+      "status": "stable",
+      "difficulty": "intermediate",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "music"
+      ],
+      "pricing": [
+        {
+          "plan": "Creator",
+          "price": 16.99,
+          "unit": "USD/月",
+          "quota": "无限制下载",
+          "highlight": true
+        },
+        {
+          "plan": "Artist",
+          "price": 29.99,
+          "unit": "USD/月",
+          "quota": "商用授权",
+          "highlight": false
+        }
+      ],
+      "valueTag": "纯付费",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 65,
+      "name": "AIVA",
+      "category": "music",
+      "icon": "fa-guitar",
+      "desc": "专业AI影视配乐生成",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.aiva.ai",
+      "updateTime": "2025-11",
+      "status": "stable",
+      "difficulty": "advanced",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "music"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "3首/月",
+          "highlight": true
+        },
+        {
+          "plan": "Standard",
+          "price": 11,
+          "unit": "EUR/月",
+          "quota": "30首/月",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 66,
+      "name": "Coze (扣子)",
+      "category": "agent",
+      "icon": "fa-cube",
+      "desc": "字节出品零代码AI Bot构建平台",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.coze.cn",
+      "updateTime": "2026-03",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "agent",
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础Bot创建",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "零代码构建Bot",
+        "插件市场丰富",
+        "多平台发布",
+        "知识库管理"
+      ]
+    },
+    {
+      "id": 67,
+      "name": "Dify",
+      "category": "agent",
+      "icon": "fa-cogs",
+      "desc": "开源LLM应用开发平台",
+      "tags": [
+        "free",
+        "local"
+      ],
+      "toolTags": [
+        "开源",
+        "无需登录",
+        "自部署"
+      ],
+      "url": "https://dify.ai",
+      "updateTime": "2026-02",
+      "status": "hot",
+      "difficulty": "intermediate",
+      "platform": [
+        "web",
+        "local"
+      ],
+      "categories": [
+        "agent"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "开源免费自部署",
+          "highlight": true
+        },
+        {
+          "plan": "Cloud",
+          "price": 59,
+          "unit": "USD/月",
+          "quota": "云服务",
+          "highlight": false
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "开源LLMOps",
+        "可视化编排",
+        "RAG引擎",
+        "多模型支持"
+      ]
+    },
+    {
+      "id": 68,
+      "name": "FastGPT",
+      "category": "agent",
+      "icon": "fa-bolt",
+      "desc": "快速构建知识库问答系统",
+      "tags": [
+        "free",
+        "local"
+      ],
+      "toolTags": [
+        "开源",
+        "无需登录",
+        "自部署"
+      ],
+      "url": "https://fastgpt.run",
+      "updateTime": "2026-01",
+      "status": "hot",
+      "difficulty": "intermediate",
+      "platform": [
+        "web",
+        "local"
+      ],
+      "categories": [
+        "agent"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "开源免费",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 69,
+      "name": "GPTs Store",
+      "category": "agent",
+      "icon": "fa-store",
+      "desc": "OpenAI官方GPTs应用市场",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需会员",
+        "ChatGPT内"
+      ],
+      "url": "https://chatgpt.com/gpts",
+      "updateTime": "2026-03",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "agent"
+      ],
+      "pricing": [
+        {
+          "plan": "Plus",
+          "price": 20,
+          "unit": "USD/月",
+          "quota": "ChatGPT Plus含",
+          "highlight": true
+        }
+      ],
+      "valueTag": "需订阅ChatGPT Plus",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 70,
+      "name": "LangChain",
+      "category": "agent",
+      "icon": "fa-link",
+      "desc": "LLM应用开发框架",
+      "tags": [
+        "free",
+        "local"
+      ],
+      "toolTags": [
+        "开源",
+        "无需登录",
+        "开发框架"
+      ],
+      "url": "https://langchain.com",
+      "updateTime": "2026-02",
+      "status": "stable",
+      "difficulty": "advanced",
+      "platform": [
+        "local"
+      ],
+      "categories": [
+        "agent",
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "开源框架",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 71,
+      "name": "Perplexity AI",
+      "category": "search",
+      "icon": "fa-brain-circle-check",
+      "desc": "对话式AI搜索引擎，带引用来源",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "可选登录",
+        "网页版"
+      ],
+      "url": "https://www.perplexity.ai",
+      "updateTime": "2026-04",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "search"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "每日5次Pro搜索",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 20,
+          "unit": "USD/月",
+          "quota": "无限Pro搜索",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "引用来源透明",
+        "实时搜索",
+        "学术模式",
+        "代码搜索"
+      ]
+    },
+    {
+      "id": 72,
+      "name": "秘塔AI搜索",
+      "category": "search",
+      "icon": "fa-magnifying-glass-location",
+      "desc": "国产AI搜索、无广告直达答案",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "无需登录",
+        "网页版"
+      ],
+      "url": "https://metaso.cn",
+      "updateTime": "2026-03",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "search"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "完全免费",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "国产AI搜索",
+        "无广告",
+        "结构化答案",
+        "多维度分析"
+      ]
+    },
+    {
+      "id": 73,
+      "name": "You.com",
+      "category": "search",
+      "icon": "fa-y",
+      "desc": "隐私保护AI搜索聚合引擎",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "无需登录",
+        "网页版"
+      ],
+      "url": "https://you.com",
+      "updateTime": "2026-02",
+      "status": "stable",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "search"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础搜索",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 15,
+          "unit": "USD/月",
+          "quota": "高级AI模式",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 74,
+      "name": "Phind",
+      "category": "search",
+      "icon": "fa-code-search",
+      "desc": "面向开发者AI搜索引擎",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "无需登录",
+        "网页版"
+      ],
+      "url": "https://www.phind.com",
+      "updateTime": "2026-01",
+      "status": "stable",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "search",
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础搜索",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 75,
+      "name": "Gamma",
+      "category": "office",
+      "icon": "fa-presentation-screen",
+      "desc": "AI一键生成PPT演示文稿",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://gamma.app",
+      "updateTime": "2026-03",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "office",
+        "design"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础PPT",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 10,
+          "unit": "USD/月",
+          "quota": "无限PPT+高级模板",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI一键PPT",
+        "模板丰富",
+        "数据可视化",
+        "协作编辑"
+      ]
+    },
+    {
+      "id": 76,
+      "name": "ChatExcel",
+      "category": "office",
+      "icon": "fa-file-excel",
+      "desc": "北大出品自然语言操作表格",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "无需登录",
+        "网页版"
+      ],
+      "url": "https://chatexcel.com",
+      "updateTime": "2026-02",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "office"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "完全免费",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "自然语言操作Excel",
+        "完全免费",
+        "中文友好",
+        "北大出品"
+      ]
+    },
+    {
+      "id": 77,
+      "name": "Mem.ai",
+      "category": "office",
+      "icon": "fa-memory",
+      "desc": "AI知识管理笔记助手",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://mem.ai",
+      "updateTime": "2026-01",
+      "status": "stable",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "office"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础笔记",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 15,
+          "unit": "USD/月",
+          "quota": "AI功能",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 78,
+      "name": "腾讯文档AI",
+      "category": "office",
+      "icon": "fa-file-lines",
+      "desc": "腾讯AI文档编辑与协作",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://docs.qq.com",
+      "updateTime": "2026-02",
+      "status": "stable",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "office"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础文档",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 79,
+      "name": "Gemini",
+      "category": "writing",
+      "icon": "fa-gem",
+      "desc": "Google多模态AI助手、全球市占率21.5%",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://gemini.google.com",
+      "updateTime": "2026-04",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "writing",
+        "painting",
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础对话",
+          "highlight": true
+        },
+        {
+          "plan": "Advanced",
+          "price": 20,
+          "unit": "USD/月",
+          "quota": "1M token上下文",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "多模态理解",
+        "谷歌生态整合",
+        "百万token上下文",
+        "代码执行"
+      ]
+    },
+    {
+      "id": 80,
+      "name": "DeepSeek",
+      "category": "writing",
+      "icon": "fa-whale",
+      "desc": "国产开源大模型、API成本极低",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "开源",
+        "网页版"
+      ],
+      "url": "https://chat.deepseek.com",
+      "updateTime": "2026-04",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "writing",
+        "code",
+        "search"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "全功能免费",
+          "highlight": true
+        },
+        {
+          "plan": "API",
+          "price": 0.14,
+          "unit": "USD/百万token",
+          "quota": "API调用",
+          "highlight": false
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "开源大模型",
+        "API成本极低",
+        "推理能力强",
+        "完全免费"
+      ]
+    },
+    {
+      "id": 81,
+      "name": "Grok",
+      "category": "writing",
+      "icon": "fa-bolt-lightning",
+      "desc": "xAI/Elon Musk出品、实时信息获取强",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "X平台"
+      ],
+      "url": "https://grok.com",
+      "updateTime": "2026-03",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "writing"
+      ],
+      "pricing": [
+        {
+          "plan": "Premium+",
+          "price": 30,
+          "unit": "USD/月",
+          "quota": "高级功能",
+          "highlight": true
+        },
+        {
+          "plan": "SuperGrok",
+          "price": 300,
+          "unit": "USD/月",
+          "quota": "无限深度搜索",
+          "highlight": false
+        }
+      ],
+      "valueTag": "纯付费",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 82,
+      "name": "Claude Code",
+      "category": "code",
+      "icon": "fa-terminal",
+      "desc": "Anthropic终端AI编程、SWE-bench第一(80.8%)",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "CLI工具"
+      ],
+      "url": "https://claude.ai/code",
+      "updateTime": "2026-04",
+      "status": "hot",
+      "difficulty": "advanced",
+      "platform": [
+        "cli",
+        "web"
+      ],
+      "categories": [
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Pro",
+          "price": 20,
+          "unit": "USD/月",
+          "quota": "Max套餐含",
+          "highlight": true
+        }
+      ],
+      "valueTag": "纯付费",
+      "highlights": [
+        "SWE-bench第一",
+        "终端编程",
+        "代码库级理解",
+        "自动化开发"
+      ]
+    },
+    {
+      "id": 83,
+      "name": "Trae",
+      "category": "code",
+      "icon": "fa-code-branch",
+      "desc": "字节跳动出品、国产AI编程黑马、完全免费",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "无需登录",
+        "客户端"
+      ],
+      "url": "https://www.trae.ai",
+      "updateTime": "2026-03",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "desktop"
+      ],
+      "categories": [
+        "code"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "完全免费",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "完全免费",
+        "字节跳动出品",
+        "AI原生IDE",
+        "多模型支持"
+      ]
+    },
+    {
+      "id": 84,
+      "name": "Flux Pro",
+      "category": "painting",
+      "icon": "fa-image-portrait",
+      "desc": "Black Forest Labs出品、真实感照片生成最强",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "开源",
+        "可选登录",
+        "网页版"
+      ],
+      "url": "https://flux.blackforestlabs.com",
+      "updateTime": "2026-02",
+      "status": "hot",
+      "difficulty": "intermediate",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "painting"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础生成",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 12,
+          "unit": "USD/月",
+          "quota": "高质量模型",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "真实感照片生成",
+        "开源模型",
+        "API调用",
+        "多版本选择"
+      ]
+    },
+    {
+      "id": 85,
+      "name": "Adobe Firefly",
+      "category": "design",
+      "icon": "fa-wand-sparkles",
+      "desc": "Adobe官方AI设计工具、商用版权无忧",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://firefly.adobe.com",
+      "updateTime": "2026-03",
+      "status": "stable",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "design",
+        "painting"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "25积分/月",
+          "highlight": true
+        },
+        {
+          "plan": "Premium",
+          "price": 5,
+          "unit": "USD/月",
+          "quota": "2000积分",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 86,
+      "name": "Canva AI",
+      "category": "design",
+      "icon": "fa-palette",
+      "desc": "全球最大在线设计平台、AI一键生成设计",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.canva.com",
+      "updateTime": "2026-04",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "design"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础设计",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 13,
+          "unit": "USD/月",
+          "quota": "高级模板+AI",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "全球最大设计平台",
+        "AI一键生成",
+        "丰富模板",
+        "团队协作"
+      ]
+    },
+    {
+      "id": 87,
+      "name": "Sora",
+      "category": "video",
+      "icon": "fa-film",
+      "desc": "OpenAI视频生成旗舰、电影级画质文生视频",
+      "tags": [
+        "vip",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://sora.com",
+      "updateTime": "2026-04",
+      "status": "hot",
+      "difficulty": "intermediate",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "video"
+      ],
+      "pricing": [
+        {
+          "plan": "Plus",
+          "price": 20,
+          "unit": "USD/月",
+          "quota": "500视频信用",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 200,
+          "unit": "USD/月",
+          "quota": "无限下载",
+          "highlight": false
+        }
+      ],
+      "valueTag": "纯付费",
+      "highlights": [
+        "电影级画质",
+        "文生视频",
+        "图生视频",
+        "OpenAI出品"
+      ]
+    },
+    {
+      "id": 88,
+      "name": "NotebookLM",
+      "category": "office",
+      "icon": "fa-book-open",
+      "desc": "Google AI研究笔记、知识库+引用来源",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://notebooklm.google.com",
+      "updateTime": "2026-04",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "office",
+        "search"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础笔记",
+          "highlight": true
+        },
+        {
+          "plan": "Plus",
+          "price": 20,
+          "unit": "USD/月",
+          "quota": "AI音频概述",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "知识库管理",
+        "AI音频概述",
+        "引用来源",
+        "谷歌生态"
+      ]
+    },
+    {
+      "id": 89,
+      "name": "Coze International",
+      "category": "agent",
+      "icon": "fa-cube",
+      "desc": "字节Coze国际版、零代码AI Bot构建",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.coze.com",
+      "updateTime": "2026-03",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "agent"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础Bot",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 90,
+      "name": "Perplexity 4.0",
+      "category": "search",
+      "icon": "fa-brain-circle-check",
+      "desc": "升级版AI搜索、深度研究模式+引用来源",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "可选登录",
+        "网页版"
+      ],
+      "url": "https://www.perplexity.ai",
+      "updateTime": "2026-04",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "search"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "每日5次Pro",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 20,
+          "unit": "USD/月",
+          "quota": "无限Pro",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 91,
+      "name": "Gamma 2.0",
+      "category": "office",
+      "icon": "fa-presentation-screen",
+      "desc": "升级版AI PPT、一键生成专业演示文稿",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://gamma.app",
+      "updateTime": "2026-04",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "office",
+        "design"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础PPT",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 10,
+          "unit": "USD/月",
+          "quota": "高级功能",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 92,
+      "name": "Kling AI 2.0",
+      "category": "video",
+      "icon": "fa-clapperboard",
+      "desc": "快手可灵升级版、O1级视频大模型",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://klingai.com",
+      "updateTime": "2026-04",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "video",
+        "painting"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "每日免费额度",
+          "highlight": true
+        },
+        {
+          "plan": "Pro",
+          "price": 66,
+          "unit": "CNY/月",
+          "quota": "扩展额度",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 93,
+      "name": "Udio 2.0",
+      "category": "music",
+      "icon": "fa-headphones",
+      "desc": "升级版AI音乐、音质和创作能力大幅提升",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "海外",
+        "需登录",
+        "网页版"
+      ],
+      "url": "https://www.udio.com",
+      "updateTime": "2026-03",
+      "status": "hot",
+      "difficulty": "intermediate",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "music"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "基础生成",
+          "highlight": true
+        },
+        {
+          "plan": "Standard",
+          "price": 10,
+          "unit": "USD/月",
+          "quota": "高级功能",
+          "highlight": false
+        }
+      ],
+      "valueTag": "有免费额度",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    },
+    {
+      "id": 94,
+      "name": "Deep Research Agent",
+      "category": "search",
+      "icon": "fa-microscope",
+      "desc": "多功能深度研究助手 — 输入主题自动获取百科与网络资料，生成结构化研究报告",
+      "tags": [
+        "free",
+        "online"
+      ],
+      "toolTags": [
+        "内置工具",
+        "无需登录",
+        "网页版"
+      ],
+      "url": "#research",
+      "updateTime": "2026-05",
+      "status": "hot",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "categories": [
+        "search"
+      ],
+      "pricing": [
+        {
+          "plan": "Free",
+          "price": 0,
+          "unit": "",
+          "quota": "完全免费",
+          "highlight": true
+        }
+      ],
+      "valueTag": "免费够用",
+      "highlights": [
+        "AI驱动",
+        "高效便捷",
+        "持续更新"
+      ]
+    }
+  ]
+}

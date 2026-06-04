@@ -59,3 +59,14 @@ E2E_TEST_REPORT.md
 agent-browser.json
 index.html.built
 *.backup
+
+# Next.js
+next-src/.next/
+next-src/node_modules/
+next-src/out/
+
+# Screenshots
+dogfood-output/
+
+# Trae IDE
+.trae/
