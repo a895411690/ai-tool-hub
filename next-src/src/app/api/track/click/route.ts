@@ -6,7 +6,7 @@ const clickCounts = new Map<string, number>();
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { tool_id, tool_slug, from_page, from_section } = body;
+    const { tool_id, tool_slug } = body;
 
     if (!tool_id && !tool_slug) {
       return NextResponse.json({ error: 'tool_id or tool_slug required' }, { status: 400 });

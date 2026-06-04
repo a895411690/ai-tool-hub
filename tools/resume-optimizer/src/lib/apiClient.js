@@ -278,6 +278,106 @@ class ApiClient {
         return headers;
     }
 
+    // ===== 会员与支付 =====
+
+    async getPlans() {
+        const response = await fetch(`${this.baseURL}/payment/plans`);
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '获取会员方案失败');
+        return data;
+    }
+
+    async getMembershipStatus() {
+        const response = await fetch(`${this.baseURL}/payment/status`, {
+            headers: this._getHeaders(),
+            credentials: 'include'
+        });
+        if (response.status === 401) {
+            this.logout();
+            throw new Error('登录已过期，请重新登录');
+        }
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '获取会员状态失败');
+        return data;
+    }
+
+    async createOrder(plan, paymentMethod) {
+        const response = await fetch(`${this.baseURL}/payment/order`, {
+            method: 'POST',
+            headers: {
+                ...this._getHeaders(),
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include',
+            body: JSON.stringify({ plan, paymentMethod })
+        });
+        if (response.status === 401) {
+            this.logout();
+            throw new Error('登录已过期，请重新登录');
+        }
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '创建订单失败');
+        return data;
+    }
+
+    async getOrder(orderId) {
+        const response = await fetch(`${this.baseURL}/payment/order/${orderId}`, {
+            headers: this._getHeaders(),
+            credentials: 'include'
+        });
+        if (response.status === 401) {
+            this.logout();
+            throw new Error('登录已过期，请重新登录');
+        }
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '查询订单失败');
+        return data;
+    }
+
+    async getOrders() {
+        const response = await fetch(`${this.baseURL}/payment/orders`, {
+            headers: this._getHeaders(),
+            credentials: 'include'
+        });
+        if (response.status === 401) {
+            this.logout();
+            throw new Error('登录已过期，请重新登录');
+        }
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || '查询订单列表失败');
+        return data;
+    }
+
+    // 轮询订单状态，直到支付完成或超时
+    pollOrderStatus(orderId, { interval = 3000, timeout = 300000, onStatusChange } = {}) {
+        return new Promise((resolve, reject) => {
+            const start = Date.now();
+            const poll = async () => {
+                try {
+                    const { order, membership } = await this.getOrder(orderId);
+                    if (onStatusChange) onStatusChange(order);
+
+                    if (order.status === 'fulfilled') {
+                        resolve({ order, membership });
+                        return;
+                    }
+                    if (order.status === 'expired' || order.status === 'refunded') {
+                        reject(new Error(order.status === 'expired' ? '订单已过期' : '订单已退款'));
+                        return;
+                    }
+                    if (Date.now() - start > timeout) {
+                        reject(new Error('支付超时，请稍后在订单列表中查看'));
+                        return;
+                    }
+                    setTimeout(poll, interval);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            poll();
+        });
+    }
+
     _notifyAuthChange() {
         window.dispatchEvent(new CustomEvent('auth-change', {
             detail: { authenticated: this.isAuthenticated() }

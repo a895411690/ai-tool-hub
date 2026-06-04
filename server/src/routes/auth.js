@@ -170,9 +170,11 @@ router.get('/me', authMiddleware, (req, res) => {
         }
 
         const quota = quotaService.checkQuota(user.id);
+        const membership = quotaService.getMembership(user.id);
         res.json({
             user: { id: user.id, email: user.email, createdAt: user.createdAt },
-            quota
+            quota,
+            membership: membership || { plan: 'free', status: 'active' },
         });
     } catch (error) {
         logger.error('Get user info error:', error);
