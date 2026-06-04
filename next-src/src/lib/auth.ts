@@ -1,5 +1,5 @@
 // Auth utilities for Supabase integration
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import type { User } from '@supabase/supabase-js';
 
 export type { User } from '@supabase/supabase-js';

@@ -15,7 +15,7 @@ export async function GET() {
   try {
     const data = getToolsData();
     return NextResponse.json(data);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to load tools' }, { status: 500 });
   }
 }

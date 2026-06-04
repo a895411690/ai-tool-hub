@@ -10,7 +10,45 @@ const config = {
     DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY || '',
     DEEPSEEK_BASE_URL: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1',
     DEEPSEEK_MODEL: process.env.DEEPSEEK_MODEL || 'deepseek-chat',
-    DAILY_QUOTA: parseInt(process.env.DAILY_QUOTA, 10) || 10,
+    DAILY_QUOTA: parseInt(process.env.DAILY_QUOTA, 10) || 1,
+
+    // ===== 会员体系 =====
+    MEMBERSHIP_PLANS: {
+        free: {
+            name: '免费用户',
+            dailyQuota: 1,
+            price: 0,
+        },
+        basic: {
+            name: '基础会员',
+            totalQuota: 10,       // 一次性 10 次
+            price: 9.9,
+            priceLabel: '¥9.9',
+            description: '10次简历优化',
+        },
+        vip: {
+            name: '永久VIP',
+            dailyQuota: Infinity,  // 不限次数
+            price: 99,
+            priceLabel: '¥99',
+            description: '无限次简历优化',
+            permanent: true,
+        },
+    },
+
+    // ===== 支付配置 =====
+    ALIPAY_APP_ID: process.env.ALIPAY_APP_ID || '',
+    ALIPAY_PRIVATE_KEY: process.env.ALIPAY_PRIVATE_KEY || '',
+    ALIPAY_PUBLIC_KEY: process.env.ALIPAY_PUBLIC_KEY || '',
+    ALIPAY_GATEWAY: process.env.ALIPAY_GATEWAY || 'https://openapi.alipay.com/gateway.do',
+    ALIPAY_NOTIFY_URL: process.env.ALIPAY_NOTIFY_URL || '',
+
+    WECHAT_MCH_ID: process.env.WECHAT_MCH_ID || '',
+    WECHAT_APP_ID: process.env.WECHAT_APP_ID || '',
+    WECHAT_API_KEY: process.env.WECHAT_API_KEY || '',
+    WECHAT_NOTIFY_URL: process.env.WECHAT_NOTIFY_URL || '',
+    WECHAT_CERT_PATH: process.env.WECHAT_CERT_PATH || '',
+
     CORS_ORIGIN: process.env.CORS_ORIGIN || 'https://weihub.cloud,http://localhost:3000',
     NODE_ENV: process.env.NODE_ENV || 'development'
 };

@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url';
 import config, { validateConfig } from './config.js';
 import authRoutes from './routes/auth.js';
 import resumeRoutes from './routes/resume.js';
+import paymentRoutes from './routes/payment.js';
 import { rateLimitMiddleware } from './middleware/rateLimit.js';
 import { requestIdMiddleware } from './middleware/requestId.js';
 import logger from './utils/logger.js';
@@ -76,6 +77,7 @@ app.use(rateLimitMiddleware);
 
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/resume', resumeRoutes);
+app.use('/api/v1/payment', paymentRoutes);
 
 app.get('/api/v1/health', (req, res) => {
   res.json({

@@ -1,7 +1,7 @@
 // API client for AI Tool Hub
 // All methods gracefully degrade to local operation when backend isn't available
 
-import type { Tool } from '@/types/tool';
+// types used by consumers
 
 export async function trackClick(toolId: number, toolSlug: string, fromPage?: string, fromSection?: string) {
   try {
