@@ -150,7 +150,7 @@ function showSearchHistory() {
             <button class="search-history-clear-all" data-action="clear-search-history">清空</button>
         </div>
     ` + state.searchHistory.slice(0, 8).map(term => `
-        <div class="search-suggestion-item" data-search-text="${escapeAttr(term)}">
+        <div class="search-suggestion-item" tabindex="0" role="option" data-search-text="${escapeAttr(term)}">
             <div class="search-suggestion-icon">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(-10deg)">
                     <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L13 11h7v7l-2.26-2.26"/>
@@ -159,7 +159,7 @@ function showSearchHistory() {
             <div class="search-suggestion-content">
                 <div class="search-suggestion-title">${escapeHtml(term)}</div>
             </div>
-            <button class="search-history-delete" data-delete-history="${escapeAttr(term)}" aria-label="删除">
+            <button class="search-history-delete" data-delete-history="${escapeAttr(term)}" aria-label="删除搜索历史">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
         </div>
@@ -423,7 +423,7 @@ function showSearchSuggestions(term, container) {
         const toolDetail = typeof s.id === 'number' ? state.tools.find(t => t.id === s.id) : null;
         const firstLetter = s.text && s.text.length > 0 ? s.text.charAt(0).toUpperCase() : '?';
         return `
-        <div class="search-suggestion-item" data-search-text="${escapeAttr(s.text)}" ${typeof s.id === 'number' ? `data-tool-id="${s.id}"` : ''}>
+        <div class="search-suggestion-item" tabindex="0" role="option" data-search-text="${escapeAttr(s.text)}" ${typeof s.id === 'number' ? `data-tool-id="${s.id}"` : ''}>
             <div class="search-suggestion-icon">${firstLetter}</div>
             <div class="search-suggestion-content">
                 <div class="search-suggestion-title">${highlightText(escapeHtml(s.text), term)}</div>

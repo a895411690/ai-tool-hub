@@ -1,0 +1,149 @@
+{
+  "scenes": [
+    {
+      "id": "ppt",
+      "name": "我要做PPT",
+      "icon": "presentation",
+      "description": "用 AI 快速生成精美演示文稿",
+      "toolIds": [
+        75,
+        53,
+        2,
+        51
+      ]
+    },
+    {
+      "id": "coding",
+      "name": "我要写代码",
+      "icon": "code",
+      "description": "AI 辅助编程，提升开发效率",
+      "toolIds": [
+        23,
+        21,
+        82,
+        83,
+        22
+      ]
+    },
+    {
+      "id": "video",
+      "name": "我要做短视频",
+      "icon": "video",
+      "description": "AI 视频生成与编辑工具",
+      "toolIds": [
+        39,
+        33,
+        87,
+        35,
+        31
+      ]
+    },
+    {
+      "id": "drawing",
+      "name": "我要画图",
+      "icon": "palette",
+      "description": "AI 绘画与图像生成",
+      "toolIds": [
+        11,
+        84,
+        86,
+        12
+      ]
+    },
+    {
+      "id": "copywriting",
+      "name": "我要写文案",
+      "icon": "pen-tool",
+      "description": "AI 文案写作与优化",
+      "toolIds": [
+        2,
+        80,
+        1,
+        9,
+        5
+      ]
+    },
+    {
+      "id": "music",
+      "name": "我要做音乐",
+      "icon": "music",
+      "description": "AI 音乐创作与编曲",
+      "toolIds": [
+        61,
+        62,
+        63
+      ]
+    },
+    {
+      "id": "research",
+      "name": "我要做调研",
+      "icon": "search",
+      "description": "AI 搜索与深度研究",
+      "toolIds": [
+        71,
+        72,
+        94
+      ]
+    },
+    {
+      "id": "agent",
+      "name": "我要建AI应用",
+      "icon": "bot",
+      "description": "AI 智能体与应用构建平台",
+      "toolIds": [
+        66,
+        67,
+        68
+      ]
+    }
+  ],
+  "sceneToolMapping": {
+    "ppt": [
+      "Gamma",
+      "WPS AI",
+      "ChatGPT",
+      "稿定设计"
+    ],
+    "coding": [
+      "Cursor",
+      "GitHub Copilot",
+      "Claude Code",
+      "Trae",
+      "CodeGeeX"
+    ],
+    "video": [
+      "可灵AI",
+      "剪映AI",
+      "Sora",
+      "即梦AI",
+      "Runway"
+    ],
+    "drawing": [
+      "Midjourney",
+      "Flux Pro",
+      "Canva AI",
+      "Stable Diffusion"
+    ],
+    "copywriting": [
+      "ChatGPT",
+      "DeepSeek",
+      "秘塔写作猫",
+      "Kimi",
+      "豆包"
+    ],
+    "music": [
+      "Suno AI",
+      "Udio",
+      "网易天音"
+    ],
+    "research": [
+      "Perplexity",
+      "秘塔AI搜索"
+    ],
+    "agent": [
+      "Coze(扣子)",
+      "Dify",
+      "FastGPT"
+    ]
+  }
+}

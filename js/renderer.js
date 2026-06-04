@@ -1,5 +1,5 @@
 // Import state from centralized state module
-import state, { getCategoryName, isFavorite } from './state.js';
+import state, { getCategoryName, isFavorite, PLATFORM_ICONS } from './state.js';
 import { escapeHtml, escapeAttr } from './utils.js';
 
 /**
@@ -49,7 +49,7 @@ function renderHotTools() {
 
         return `
             <div class="hot-tool-card" data-tool-id="${tool.id}">
-                <div class="hot-tool-icon" style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(168,85,247,0.1)); color: #00d4ff;">
+                <div class="hot-tool-icon" style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(168,85,247,0.1)); color: var(--neon-blue);">
                     <i class="fas ${escapeAttr(tool.icon)}"></i>
                 </div>
                 <div class="hot-tool-info">
@@ -57,7 +57,7 @@ function renderHotTools() {
                     <div class="hot-tool-desc">${escapeHtml(tool.desc)}</div>
                     <div class="hot-tool-tags">${tagsHtml}</div>
                 </div>
-                <i class="fas fa-arrow-right hot-tool-arrow" style="color: #00d4ff;"></i>
+                <i class="fas fa-arrow-right hot-tool-arrow" style="color: var(--neon-blue);"></i>
             </div>
         `;
     }).join('');
@@ -85,13 +85,13 @@ function renderStatisticsDashboard() {
     // Calculate total clicks
     let totalClicks = 0;
     Object.values(state.clickStats || {}).forEach(count => { totalClicks += count; });
-    if (totalClicksEl) totalClicksEl.textContent = totalClicks;
+    if (totalClicksEl) totalClicksEl.textContent = totalClicks > 0 ? totalClicks : '—';
 
     // Render category distribution bars
     const categoryBarsContainer = document.getElementById('categoryBars');
     if (categoryBarsContainer && state.categories.length > 0) {
         const categoryColors = [
-            '#00d4ff', '#a855f7', '#00ff88', '#faad14',
+            'var(--neon-blue)', 'var(--neon-purple)', 'var(--neon-green)', '#faad14',
             '#ff4d4f', '#13c2c2', '#722ed1', '#eb2f96',
             '#fa8c16', '#2f54eb'
         ];
@@ -122,29 +122,33 @@ function renderStatisticsDashboard() {
     // Render top tools ranking
     const topToolsListContainer = document.getElementById('topToolsList');
     if (topToolsListContainer) {
-        // Sort tools by click count descending
-        const sortedTools = [...state.tools].sort((a, b) =>
-            (state.clickStats[b.id] || 0) - (state.clickStats[a.id] || 0)
-        ).slice(0, 5);
+        if (totalClicks === 0) {
+            topToolsListContainer.innerHTML = '<p class="text-muted text-center py-4" style="opacity: 0.6;">暂无使用数据，浏览工具后自动生成排行榜</p>';
+        } else {
+            // Sort tools by click count descending
+            const sortedTools = [...state.tools].sort((a, b) =>
+                (state.clickStats[b.id] || 0) - (state.clickStats[a.id] || 0)
+            ).slice(0, 5);
 
-        const listHtml = sortedTools.map((tool, index) => {
-            const clicks = state.clickStats[tool.id] || 0;
-            const rankClass = index === 0 ? 'top-rank-1' : index === 1 ? 'top-rank-2' : index === 2 ? 'top-rank-3' : 'top-rank-default';
-            const rankColor = index === 0 ? '#00d4ff' : index === 1 ? '#a855f7' : index === 2 ? '#00ff88' : '';
+            const listHtml = sortedTools.map((tool, index) => {
+                const clicks = state.clickStats[tool.id] || 0;
+                const rankClass = index === 0 ? 'top-rank-1' : index === 1 ? 'top-rank-2' : index === 2 ? 'top-rank-3' : 'top-rank-default';
+                const rankColor = index === 0 ? 'var(--neon-blue)' : index === 1 ? 'var(--neon-purple)' : index === 2 ? 'var(--neon-green)' : '';
 
-            return `
-                <div class="top-tool-item" data-tool-id="${tool.id}">
-                    <span class="top-rank ${rankClass}" ${rankColor ? `style="color: ${rankColor};"` : ''}>${index + 1}</span>
-                    <div class="top-tool-info">
-                        <div class="top-tool-name">${escapeHtml(tool.name)}</div>
-                        <div class="top-tool-clicks">${clicks} 次点击</div>
+                return `
+                    <div class="top-tool-item" data-tool-id="${tool.id}">
+                        <span class="top-rank ${rankClass}" ${rankColor ? `style="color: ${rankColor};"` : ''}>${index + 1}</span>
+                        <div class="top-tool-info">
+                            <div class="top-tool-name">${escapeHtml(tool.name)}</div>
+                            <div class="top-tool-clicks">${clicks} 次点击</div>
+                        </div>
+                        <i class="fas ${escapeAttr(tool.icon)} top-tool-icon" style="color: var(--ant-text-tertiary);"></i>
                     </div>
-                    <i class="fas ${escapeAttr(tool.icon)} top-tool-icon" style="color: var(--ant-text-tertiary);"></i>
-                </div>
-            `;
-        }).join('');
+                `;
+            }).join('');
 
-        topToolsListContainer.innerHTML = listHtml || '<p class="text-muted text-center py-4">暂无使用数据</p>';
+            topToolsListContainer.innerHTML = listHtml;
+        }
     }
 }
 
@@ -188,7 +192,7 @@ function createToolCard(tool) {
     }
 
     return `
-        <div class="tool-card" data-tool-id="${tool.id}">
+        <div class="tool-card" data-tool-id="${tool.id}" tabindex="0" role="button" aria-label="${escapeAttr(tool.name)}">
             <div class="card-header">
                 <div class="card-icon" style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(168,85,247,0.1));">
                     <i class="fas ${escapeAttr(tool.icon)}"></i>
@@ -197,7 +201,7 @@ function createToolCard(tool) {
                     ${statusBadge}
                     ${difficultyLabel}
                 </div>
-                <button data-action="toggle-favorite" data-tool-id="${tool.id}" class="favorite-btn ${favorite ? 'active' : ''}" aria-label="${favorite ? '取消收藏' : '收藏'} ${escapeHtml(tool.name)}" ${favorite ? 'style="color: #00d4ff;"' : ''}>
+                <button data-action="toggle-favorite" data-tool-id="${tool.id}" class="favorite-btn ${favorite ? 'active' : ''}" aria-label="${favorite ? '取消收藏' : '收藏'} ${escapeHtml(tool.name)}" ${favorite ? 'style="color: var(--neon-blue);"' : ''}>
                     <i class="fas fa-star"></i>
                 </button>
             </div>
@@ -212,7 +216,7 @@ function createToolCard(tool) {
             </div>
             <div class="card-footer">
                 <span class="card-category">${escapeHtml(categoryName)}</span>
-                <button data-action="open-tool" data-tool-id="${tool.id}" data-tool-url="${escapeAttr(tool.url)}" class="card-action-btn" style="background: linear-gradient(135deg, #00d4ff, #a855f7);">
+                <button data-action="open-tool" data-tool-id="${tool.id}" data-tool-url="${escapeAttr(tool.url)}" class="card-action-btn" style="background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));">
                     <i class="fas fa-external-link-alt"></i> 使用
                 </button>
             </div>
@@ -241,6 +245,7 @@ function renderTools(tools) {
             <h3 class="empty-state-title">未找到相关工具</h3>
             <p class="empty-state-desc">没有与 "${escapeHtml(searchTerm)}" 匹配的 AI 工具</p>
             <button class="empty-state-btn" data-action="clear-all-filters">查看全部工具</button>
+            <p style="margin-top:16px;color:var(--text-tertiary);font-size:13px;">试试热门分类：<a href="#" data-action="filter-category" data-category="writing" style="color:var(--neon-blue)">写作工具</a> · <a href="#" data-action="filter-category" data-category="image" style="color:var(--neon-blue)">绘画工具</a> · <a href="#" data-action="filter-category" data-category="code" style="color:var(--neon-blue)">代码工具</a> · <a href="#" data-action="filter-category" data-category="video" style="color:var(--neon-blue)">视频工具</a></p>
         `;
         grid.appendChild(emptyState);
         return;
@@ -286,9 +291,8 @@ function generateTagsHtml(tool) {
 
 function generatePlatformBadgesHtml(platform) {
     if (!platform || !Array.isArray(platform)) return '';
-    const icons = { web: 'fa-globe', local: 'fa-server', mobile: 'fa-mobile-alt', desktop: 'fa-desktop' };
     return `<div class="platform-badges">${platform.map(p =>
-        `<i class="fas ${icons[p] || 'fa-cog'}" title="${escapeAttr(p)}"></i>`
+        `<i class="fas ${PLATFORM_ICONS[p] || 'fa-cog'}" title="${escapeAttr(p)}"></i>`
     ).join('')}</div>`;
 }
 
@@ -302,4 +306,120 @@ export { createToolCard, renderCategories, renderHotTools, renderStatisticsDashb
 
 // UI helper re-exports for consumers that import from renderer.js
 export { RATING_LABELS, generateTagsHtml, generatePlatformBadgesHtml, generateStatusBadgeHtml };
+
+// ── 3D Card Tilt Effect ──
+
+function setupCard3DEffect() {
+    const grid = document.getElementById('toolsGrid');
+    if (!grid) return;
+
+    grid.addEventListener('mousemove', (e) => {
+        const card = e.target.closest('.tool-card');
+        if (!card) return;
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateY = ((x - centerX) / centerX) * 8;
+        const rotateX = ((centerY - y) / centerY) * 8;
+        card.style.transform = `perspective(600px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-8px)`;
+        card.style.transition = 'transform 0.1s ease-out';
+    });
+
+    grid.addEventListener('mouseleave', (e) => {
+        const card = e.target.closest('.tool-card');
+        if (card) resetCardTilt(card);
+    });
+
+    grid.addEventListener('mouseout', (e) => {
+        if (e.target.classList && e.target.classList.contains('tool-card')) {
+            resetCardTilt(e.target);
+        }
+        const card = e.target.closest('.tool-card');
+        if (card && !card.contains(e.relatedTarget)) {
+            resetCardTilt(card);
+        }
+    });
+
+    // Keyboard: Enter key opens tool detail on focused card
+    grid.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const card = e.target.closest('.tool-card');
+            if (card) {
+                const toolId = parseInt(card.dataset.toolId);
+                if (toolId && typeof window.showToolDetail === 'function') {
+                    window.showToolDetail(toolId);
+                }
+            }
+        }
+    });
+}
+
+function resetCardTilt(card) {
+    card.style.transform = 'perspective(600px) rotateX(0) rotateY(0) translateY(0)';
+    card.style.transition = 'transform 0.3s ease';
+}
+
+// ── Number Count-Up Animation ──
+
+function animateCountUp(element, target, duration = 1500) {
+    if (!element) return;
+    const start = 0;
+    const startTime = performance.now();
+
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease out cubic
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const current = Math.round(start + (target - start) * eased);
+        element.textContent = current;
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    requestAnimationFrame(update);
+}
+
+function setupStatsAnimations() {
+    const statsSection = document.querySelector('.stats-grid');
+    if (!statsSection) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                // Animate stat values
+                const totalEl = document.getElementById('totalToolsCountStats');
+                const favEl = document.getElementById('favoritesCount');
+                const catEl = document.getElementById('categoriesCount');
+                const clicksEl = document.getElementById('totalClicksCount');
+
+                if (totalEl) animateCountUp(totalEl, parseInt(totalEl.textContent) || 0);
+                if (favEl) animateCountUp(favEl, parseInt(favEl.textContent) || 0);
+                if (catEl) animateCountUp(catEl, parseInt(catEl.textContent) || 0);
+                if (clicksEl) animateCountUp(clicksEl, parseInt(clicksEl.textContent) || 0);
+
+                // Animate progress bars
+                const bars = document.querySelectorAll('.category-bar-fill');
+                bars.forEach((bar) => {
+                    const targetWidth = bar.style.width;
+                    bar.style.width = '0';
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            bar.style.width = targetWidth;
+                            bar.classList.add('animated');
+                        });
+                    });
+                });
+
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.2 });
+
+    observer.observe(statsSection);
+}
+
+export { setupCard3DEffect, setupStatsAnimations, animateCountUp };
 

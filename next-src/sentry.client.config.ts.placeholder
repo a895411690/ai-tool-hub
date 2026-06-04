@@ -1,0 +1,6 @@
+// Install: npm install @sentry/nextjs
+// Then rename this file to sentry.client.config.ts
+// Set NEXT_PUBLIC_SENTRY_DSN in .env.local
+//
+// import * as Sentry from '@sentry/nextjs';
+// Sentry.init({ dsn: process.env.NEXT_PUBLIC_SENTRY_DSN, tracesSampleRate: 0.1 });
