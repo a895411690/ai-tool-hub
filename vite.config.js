@@ -27,6 +27,12 @@ function copyToolsPlugin() {
           copyFileSync('favicon.svg', 'dist/favicon.svg')
           copyFileSync('favicon.svg', 'dist/assets/favicon.svg')
         }
+        if (existsSync('sitemap.xml')) {
+          copyFileSync('sitemap.xml', 'dist/sitemap.xml')
+        }
+        if (existsSync('robots.txt')) {
+          copyFileSync('robots.txt', 'dist/robots.txt')
+        }
         console.log('✓ Files copied to dist/')
       } catch (err) {
         console.error('Failed to copy files:', err)
