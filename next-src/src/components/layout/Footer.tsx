@@ -27,7 +27,9 @@ export default function Footer() {
                             GitHub
                         </a>
                         <a
-                            href="#"
+                            href="https://github.com/a895411690/ai-tool-hub"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="text-[13px] text-[var(--text-secondary)] transition-colors duration-150 hover:text-[var(--neon-blue)]"
                         >
                             关于我们
