@@ -54,10 +54,7 @@ export default defineConfig(({ mode }) => ({
       compress: {
         drop_console: mode === 'production',
         drop_debugger: mode === 'production',
-        // Prevent terser from optimizing away DOM operations
-        side_effects: true,
-        reduce_vars: false,
-        collapse_vars: false
+        side_effects: true
       }
     },
     assetsInlineLimit: 4096,

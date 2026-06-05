@@ -13,6 +13,7 @@ const PASSWORD_STRENGTH_REGEX = /^(?=.*[A-Za-z])(?=.*\d)/;
 const loginAttempts = new Map();
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION = 15 * 60 * 1000;
+const MAX_LOCKOUT_ENTRIES = 5000;
 
 setInterval(() => {
     const now = Date.now();
@@ -23,8 +24,17 @@ setInterval(() => {
             cleaned++;
         }
     }
+    // Evict oldest entries if Map exceeds capacity
+    if (loginAttempts.size > MAX_LOCKOUT_ENTRIES) {
+        const entries = [...loginAttempts.entries()].sort((a, b) => a[1].lastAttempt - b[1].lastAttempt);
+        const excess = loginAttempts.size - MAX_LOCKOUT_ENTRIES;
+        for (let i = 0; i < excess; i++) {
+            loginAttempts.delete(entries[i][0]);
+            cleaned++;
+        }
+    }
     if (cleaned > 0) {
-        logger.info(`Cleaned ${cleaned} expired login lockouts`);
+        logger.info(`Cleaned ${cleaned} expired/evicted login lockouts`);
     }
 }, 5 * 60 * 1000);
 

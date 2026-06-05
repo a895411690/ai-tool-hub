@@ -6,7 +6,7 @@ import { scryptSync, randomBytes, timingSafeEqual } from 'crypto';
 
 function hashPassword(password) {
     const salt = randomBytes(16);
-    const derivedKey = scryptSync(password + config.JWT_SECRET, salt, 64);
+    const derivedKey = scryptSync(password + config.PASSWORD_PEPPER, salt, 64);
     return `${salt.toString('hex')}:${derivedKey.toString('hex')}`;
 }
 
@@ -15,7 +15,7 @@ function verifyPasswordHash(password, storedHash) {
         const [saltHex, keyHex] = storedHash.split(':');
         if (!saltHex || !keyHex) return false;
         const salt = Buffer.from(saltHex, 'hex');
-        const derivedKey = scryptSync(password + config.JWT_SECRET, salt, 64);
+        const derivedKey = scryptSync(password + config.PASSWORD_PEPPER, salt, 64);
         return timingSafeEqual(Buffer.from(keyHex, 'hex'), derivedKey);
     } catch {
         return false;

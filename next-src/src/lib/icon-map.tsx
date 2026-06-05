@@ -1,0 +1,87 @@
+import React from 'react';
+import {
+  Sun, Headphones, PenTool, Palette, Code, Video, Mic, Paintbrush,
+  Briefcase, Music, Bot, Search, Wrench, MessageSquare, FileText,
+  Image, Brain, Cog, Database, Globe, Zap, BookOpen, Heart,
+  Sparkles, Gamepad2, Shield, Layers, Cpu, Monitor, Smartphone,
+  Terminal, GraduationCap, Camera, Square, Rocket, type LucideIcon
+} from 'lucide-react';
+
+const FA_TO_LUCIDE: Record<string, LucideIcon> = {
+  'fa-sun': Sun,
+  'fa-headphones': Headphones,
+  'fa-pen-nib': PenTool,
+  'fa-palette': Palette,
+  'fa-code': Code,
+  'fa-video': Video,
+  'fa-microphone': Mic,
+  'fa-paint-brush': Paintbrush,
+  'fa-briefcase': Briefcase,
+  'fa-music': Music,
+  'fa-robot': Bot,
+  'fa-search': Search,
+  'fa-wrench': Wrench,
+  'fa-comment': MessageSquare,
+  'fa-file-text': FileText,
+  'fa-image': Image,
+  'fa-brain': Brain,
+  'fa-cog': Cog,
+  'fa-cogs': Cog,
+  'fa-database': Database,
+  'fa-globe': Globe,
+  'fa-bolt': Zap,
+  'fa-book': BookOpen,
+  'fa-heart': Heart,
+  'fa-magic': Sparkles,
+  'fa-gamepad': Gamepad2,
+  'fa-shield': Shield,
+  'fa-layer-group': Layers,
+  'fa-microchip': Cpu,
+  'fa-desktop': Monitor,
+  'fa-mobile-alt': Smartphone,
+  'fa-terminal': Terminal,
+  'fa-graduation-cap': GraduationCap,
+  'fa-camera': Camera,
+  'fa-cube': Square,
+  'fa-rocket': Rocket,
+  'fa-store': Globe,
+  'fa-pen': PenTool,
+  'fa-pencil': PenTool,
+  'fa-scissors': FileText,
+  'fa-chart-bar': Layers,
+  'fa-users': Globe,
+  'fa-star': Sparkles,
+  'fa-fire': Zap,
+  'fa-lightbulb': Brain,
+  'fa-tools': Wrench,
+  'fa-clipboard': FileText,
+  'fa-magic-wand-sparkles': Sparkles,
+  'fa-tower-broadcast': Globe,
+  'fa-comments': MessageSquare,
+  'fa-ghost': Bot,
+  'fa-eye': Search,
+  'fa-chart-line': Layers,
+  'fa-film': Video,
+  'fa-headset': Headphones,
+  'fa-podcast': Mic,
+  'fa-newspaper': FileText,
+  'fa-pen-fancy': PenTool,
+  'fa-atom': Brain,
+  'fa-dna': Brain,
+  'fa-hat-wizard': Sparkles,
+  'fa-wand-magic-sparkles': Sparkles,
+  'fa-microphone-lines': Mic,
+  'fa-comment-dots': MessageSquare,
+  'fa-vector-square': Square,
+  'fa-panorama': Camera,
+  'fa-satellite-dish': Globe,
+};
+
+export function getToolIcon(iconName: string): LucideIcon {
+  return FA_TO_LUCIDE[iconName] || Sparkles;
+}
+
+export function ToolIcon({ name, className }: { name: string; className?: string }) {
+  const Icon = getToolIcon(name);
+  return <Icon className={className} />;
+}

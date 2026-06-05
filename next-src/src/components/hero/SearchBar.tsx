@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, X, Command, Clock, ArrowRight } from 'lucide-react';
 import { useToolStore } from '@/stores/useToolStore';
+import { ToolIcon } from '@/lib/icon-map';
 import { cn } from '@/lib/utils';
 
 export function SearchBar() {
@@ -152,7 +153,7 @@ export function SearchBar() {
               }}
               className="flex w-full items-center gap-3 px-5 py-3 text-left text-sm text-white/70 transition-colors hover:bg-white/5 hover:text-white"
             >
-              <span className="text-lg">{tool.icon}</span>
+              <ToolIcon name={tool.icon} className="h-5 w-5 text-white/50" />
               <div className="flex flex-col">
                 <span className="font-medium text-white/90">{tool.name}</span>
                 <span className="truncate text-xs text-white/40">{tool.desc}</span>

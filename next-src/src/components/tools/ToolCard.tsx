@@ -9,6 +9,7 @@ import { useCompareStore } from '@/stores/useCompareStore';
 import { getToolSlug, getPricingHighlight } from '@/lib/tools-data';
 import { cn } from '@/lib/utils';
 import { trackClick } from '@/lib/api';
+import { ToolIcon } from '@/lib/icon-map';
 
 const TAG_STYLES: Record<string, string> = {
   free: 'bg-emerald-500/15 text-emerald-400',
@@ -113,8 +114,8 @@ export function ToolCard({ tool }: ToolCardProps) {
             <div className="absolute left-0 top-0 h-full w-1 rounded-l-2xl bg-gradient-to-b from-blue-500 to-purple-500 opacity-0 transition-opacity group-hover:opacity-100" />
 
             {/* Icon */}
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 text-2xl">
-              {tool.icon}
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20">
+              <ToolIcon name={tool.icon} className="h-6 w-6 text-white/70" />
             </div>
 
             <div className="flex min-w-0 flex-1 flex-col gap-1">

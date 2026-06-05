@@ -38,14 +38,25 @@ export default function Footer() {
                 {/* Bottom bar */}
                 <div className="mt-7 pt-5 border-t border-[var(--glass-border)] flex justify-between gap-3 flex-wrap text-xs text-[var(--text-tertiary)]">
                     <span>© {new Date().getFullYear()} AI Tool Hub. All rights reserved.</span>
-                    <a
-                        href="https://beian.miit.gov.cn/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[var(--text-tertiary)] transition-colors duration-150 hover:text-[var(--text-secondary)]"
-                    >
-                        粤ICP备2024198400号-1
-                    </a>
+                    <div className="flex items-center gap-4">
+                        <a
+                            href="https://beian.miit.gov.cn/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[var(--text-tertiary)] transition-colors duration-150 hover:text-[var(--text-secondary)]"
+                        >
+                            沪ICP备2026013388号
+                        </a>
+                        <a
+                            href="https://beian.mps.gov.cn/#/query/webSearch?code=31011502405714"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-[var(--text-tertiary)] transition-colors duration-150 hover:text-[var(--text-secondary)]"
+                        >
+                            <img src="/beian-icon.png" alt="公安备案" className="h-3.5 w-3.5" />
+                            沪公网安备31011502405714号
+                        </a>
+                    </div>
                 </div>
             </div>
         </footer>

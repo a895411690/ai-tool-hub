@@ -7,6 +7,7 @@ const config = {
     JWT_EXPIRES_IN: '7d',
     JWT_ISSUER: process.env.JWT_ISSUER || 'ai-tool-hub',
     JWT_AUDIENCE: process.env.JWT_AUDIENCE || 'ai-tool-hub-users',
+    PASSWORD_PEPPER: process.env.PASSWORD_PEPPER || process.env.JWT_SECRET || 'change-me-in-production',
     DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY || '',
     DEEPSEEK_BASE_URL: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com/v1',
     DEEPSEEK_MODEL: process.env.DEEPSEEK_MODEL || 'deepseek-chat',

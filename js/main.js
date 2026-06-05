@@ -226,15 +226,26 @@ function showAuthForm(type) {
         if (title) title.textContent = '登录';
     }
 }
-function doRegister() {
+// ── Local Auth (UI placeholder — NOT production-grade security) ──
+// WARNING: Stores user data in localStorage for demo purposes only.
+// Production auth should use the backend JWT-based API (/api/v1/auth).
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password + 'ai-tool-hub-client-salt');
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function doRegister() {
     const name = document.getElementById('registerName')?.value?.trim();
     const email = document.getElementById('registerEmail')?.value?.trim();
     const password = document.getElementById('registerPassword')?.value;
     if (!name || !email || !password) { showToast('请填写所有字段'); return; }
-    if (password.length < 6) { showToast('密码至少6位'); return; }
+    if (password.length < 8) { showToast('密码至少8位'); return; }
+    const passwordHash = await hashPassword(password);
     const users = JSON.parse(localStorage.getItem('ai-tool-hub-users') || '[]');
     if (users.find(u => u.email === email)) { showToast('该邮箱已注册'); return; }
-    const user = { id: Date.now(), name, email, createdAt: new Date().toISOString() };
+    const user = { id: Date.now(), name, email, passwordHash, createdAt: new Date().toISOString() };
     users.push(user);
     localStorage.setItem('ai-tool-hub-users', JSON.stringify(users));
     localStorage.setItem('ai-tool-hub-current-user', JSON.stringify({ id: user.id, name: user.name, email: user.email }));
@@ -242,12 +253,17 @@ function doRegister() {
     updateUserMenu(user);
     showToast('注册成功，欢迎 ' + name);
 }
-function doLogin() {
+async function doLogin() {
     const email = document.getElementById('loginEmail')?.value?.trim();
-    if (!email) { showToast('请填写邮箱'); return; }
+    const password = document.getElementById('loginPassword')?.value;
+    if (!email || !password) { showToast('请填写邮箱和密码'); return; }
     const users = JSON.parse(localStorage.getItem('ai-tool-hub-users') || '[]');
     const user = users.find(u => u.email === email);
-    if (!user) { showToast('该邮箱未注册'); return; }
+    if (!user) { showToast('邮箱或密码不正确'); return; }
+    if (user.passwordHash) {
+        const inputHash = await hashPassword(password);
+        if (inputHash !== user.passwordHash) { showToast('邮箱或密码不正确'); return; }
+    }
     localStorage.setItem('ai-tool-hub-current-user', JSON.stringify({ id: user.id, name: user.name, email: user.email }));
     closeAuthModal();
     updateUserMenu(user);
@@ -285,5 +301,6 @@ function updateUserMenu(user) {
     }
 }
 
+// Load saved session (only id/name/email — no password hash)
 const savedUser = JSON.parse(localStorage.getItem('ai-tool-hub-current-user') || 'null');
 if (savedUser) updateUserMenu(savedUser);
