@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "lastUpdated": "2026-05-31",
+  "lastUpdated": "2025-06-07",
   "categories": [
     {
       "id": "writing",
@@ -1681,6 +1681,36 @@
       "difficulty": "beginner",
       "platform": [
         "web"
+      ]
+    },
+    {
+      "id": 95,
+      "name": "AI 简历优化",
+      "category": "office",
+      "icon": "fa-file-alt",
+      "desc": "AI驱动的简历优化工具，支持实时预览、PDF导出、ATS过机筛优化、一键AI代写",
+      "tags": [
+        "free",
+        "new",
+        "online"
+      ],
+      "toolTags": [
+        "国产",
+        "无需登录",
+        "网页版",
+        "AI优化"
+      ],
+      "url": "./tools/resume-optimizer/dist/index.html",
+      "updateTime": "2025-06",
+      "status": "stable",
+      "difficulty": "beginner",
+      "platform": [
+        "web"
+      ],
+      "relatedTools": [
+        53,
+        54,
+        60
       ]
     }
   ]

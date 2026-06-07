@@ -1,5 +1,5 @@
 import { loadTools } from './app.js';
-import { renderTools, filterCategory, loadSavedFilters, clearSearch, setupSearch, setCurrentSort, applyFiltersAndSort, toggleAdvancedFilters, clearAllFilters, toggleAdvancedFilter } from './ui.js';
+import { renderTools, filterCategory, loadSavedFilters, clearSearch, setupSearch, setCurrentSort, applyFiltersAndSort, toggleAdvancedFilters, clearAllFilters, toggleAdvancedFilter, setupStickySearch } from './ui.js';
 import { openTool, toggleFavorite, showToolDetail, closeToolDetail, rateTool } from './tool.js';
 import { showShareModal, closeShareModal, shareToWeChat, shareToQQ, copyShareLink, generateShareImage } from './share.js';
 import { setupKeyboardShortcuts, setupPullToRefresh, toggleTheme, showToast, loadAnnouncement, closeAnnouncement, checkForUpdate, closeUpdateModal, registerServiceWorker, closeThemeModal, setTheme, loadSavedTheme } from './utils.js';
@@ -171,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSavedTheme();
     loadTools();
     setupSearch();
+    setupStickySearch();
     setupKeyboardShortcuts({
         onEscape: () => {
             clearSearch();

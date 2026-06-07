@@ -15,6 +15,9 @@ function filterCategory(category) {
         if (btn.dataset.category === category) btn.classList.add('active');
     });
 
+    // Update breadcrumb
+    updateBreadcrumb(category);
+
     // Apply current sort and filter
     applyFiltersAndSort();
 }
@@ -582,6 +585,64 @@ function clearAllFilters() {
     showToast('已清除所有筛选条件');
 }
 
+/**
+ * Update filter breadcrumb (v6.3)
+ */
+function updateBreadcrumb(category) {
+    var container = document.getElementById('breadcrumbBar');
+    if (!container) return;
+    if (category === 'all') {
+        container.style.display = 'none';
+        return;
+    }
+    var cat = state.categories.find(function(c) { return c.id === category; });
+    if (!cat) return;
+    container.innerHTML = '<i class="fas fa-filter" style="font-size:11px;"></i> 当前筛选：<span class="breadcrumb-tag">' + (cat.icon ? '<i class="fas ' + cat.icon + '"></i> ' : '') + cat.name + ' <button class="breadcrumb-clear" data-action="filter-category" data-category="all" aria-label="清除筛选"><i class="fas fa-times"></i></button></span>';
+    container.style.display = 'flex';
+}
+
+/**
+ * Sync sticky search with main search (v6.3)
+ */
+function setupStickySearch() {
+    var mainInput = document.getElementById('mainSearch');
+    var stickyInput = document.getElementById('stickySearchInput');
+    if (!mainInput || !stickyInput) return;
+    
+    stickyInput.addEventListener('input', function() {
+        mainInput.value = this.value;
+        var event = new Event('input', { bubbles: true });
+        mainInput.dispatchEvent(event);
+    });
+    
+    var clearBtn = document.getElementById('stickySearchClear');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            stickyInput.value = '';
+            mainInput.value = '';
+            var event = new Event('input', { bubbles: true });
+            mainInput.dispatchEvent(event);
+            mainInput.focus();
+        });
+    }
+    
+    // Show sticky search on scroll past hero
+    var heroSection = document.getElementById('heroSection');
+    if (!heroSection) return;
+    var stickyBar = document.getElementById('stickySearch');
+    if (!stickyBar) return;
+    
+    window.addEventListener('scroll', function() {
+        var heroBottom = heroSection.offsetTop + heroSection.offsetHeight;
+        var shouldShow = window.scrollY > heroBottom - 80;
+        stickyBar.style.display = shouldShow ? 'block' : 'none';
+        if (shouldShow && document.activeElement === mainInput) {
+            stickyInput.focus();
+        }
+    }, { passive: true });
+}
+
+
 // Export functions
 // Import renderTools for local use (filter functions call renderTools internally)
 import { renderTools } from './renderer.js';
@@ -590,4 +651,4 @@ import { renderTools } from './renderer.js';
 export { createToolCard, renderCategories, renderHotTools, renderStatisticsDashboard, renderTools } from './renderer.js';
 
 // Filter, sort, and search functions (defined below)
-export { filterCategory, loadSavedFilters, setSearch, clearSearch, setupSearch, sortTools, setCurrentSort, applyAdvancedFilters, applyFiltersAndSort, toggleAdvancedFilters, toggleAdvancedFilter, clearAllFilters, highlightText, escapeRegex };
+export { filterCategory, loadSavedFilters, setSearch, clearSearch, setupSearch, sortTools, setCurrentSort, applyAdvancedFilters, applyFiltersAndSort, toggleAdvancedFilters, toggleAdvancedFilter, clearAllFilters, highlightText, escapeRegex, updateBreadcrumb, setupStickySearch };

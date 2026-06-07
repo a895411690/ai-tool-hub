@@ -52,7 +52,8 @@ class ImportUtils {
     getFileType(file) {
         const fileName = file.name.toLowerCase();
         if (fileName.endsWith('.pdf')) return 'pdf';
-        if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) return 'docx';
+        if (fileName.endsWith('.docx')) return 'docx';
+        if (fileName.endsWith('.doc')) return 'doc';
         if (fileName.endsWith('.txt')) return 'txt';
         if (fileName.endsWith('.html') || fileName.endsWith('.htm')) return 'html';
         if (fileName.endsWith('.md') || fileName.endsWith('.markdown')) return 'markdown';
@@ -116,6 +117,8 @@ class ImportUtils {
                 case 'docx':
                     rawText = await extractTextFromDOCX(fileData.content);
                     break;
+                case 'doc':
+                    throw new Error('不支持旧版 .doc 格式，请将文件另存为 .docx 格式后再上传');
                 case 'txt':
                     rawText = fileData.content;
                     break;
@@ -127,6 +130,11 @@ class ImportUtils {
                     break;
                 default:
                     throw new Error(`不支持的文件类型: ${fileData.fileType}`);
+            }
+
+            // 检查文本提取是否成功
+            if (!rawText || rawText.trim().length === 0) {
+                throw new Error('无法从文件中提取文本内容，请确保文件不是扫描件或图片格式，或尝试复制粘贴文本内容');
             }
 
 // Step 2: Try LLM-based parsing first (more accurate)
@@ -302,7 +310,7 @@ class ImportUtils {
      * @returns {string} - 净化后的安全HTML
      */
     sanitizeHtml(html) {
-    { return sanitizeHtml(html); }
+        return sanitizeHtml(html);
     }
 
     /**

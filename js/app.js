@@ -53,6 +53,15 @@ async function loadTools() {
         }
 
         // Notify dependent modules that tools are ready
+                // Hide skeletons, show real grids
+        const hotSkel = document.getElementById('hotSkeleton');
+        if (hotSkel) hotSkel.style.display = 'none';
+        const hotGrid = document.getElementById('hotToolsGrid');
+        if (hotGrid) hotGrid.style.display = '';
+        const toolsSkel = document.getElementById('toolsSkeleton');
+        if (toolsSkel) toolsSkel.style.display = 'none';
+        const toolsGrid = document.getElementById('toolsGrid');
+        if (toolsGrid) toolsGrid.style.display = '';
         document.dispatchEvent(new CustomEvent('tools:loaded'));
     } catch (error) {
         showToast(`加载失败: ${error.message}`);

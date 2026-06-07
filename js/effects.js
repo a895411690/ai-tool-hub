@@ -3,7 +3,7 @@
  */
 
 const PARTICLE_COUNT = 50;
-const COLORS = ['#00d4ff', '#a855f7'];
+const COLORS = ['#6366f1', '#8b5cf6'];
 
 function initParticles() {
     const canvas = document.createElement('canvas');

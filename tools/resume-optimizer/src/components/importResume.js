@@ -755,6 +755,20 @@ class ImportResume {
             const result = await importUtils.parseResumeFile(this.currentFile);
             
             if (result.success) {
+                // 检查解析出的数据是否有效
+                const data = result.data;
+                const hasContent = data.profile && (
+                    data.profile.name || data.profile.phone || data.profile.email ||
+                    data.profile.location || data.profile.title
+                ) || (data.experience && data.experience.length > 0) ||
+                   (data.education && data.education.length > 0) ||
+                   (data.skills && data.skills.length > 0);
+
+                if (!hasContent) {
+                    this.showError('解析失败', '未能从文件中识别出简历内容，请确保文件包含可读的文本信息', '请尝试上传格式更规范的简历文件，或使用复制粘贴方式导入');
+                    return;
+                }
+
                 this.updateProgress(80, '正在处理数据...');
                 this.parsedData = result.data;
                 
@@ -1016,6 +1030,7 @@ class ImportResume {
     open() {
         if (this.container) {
             this.container.classList.remove('hidden');
+            this.container.style.display = 'flex';
             this.isActive = true;
         }
     }
@@ -1026,6 +1041,7 @@ class ImportResume {
     close() {
         if (this.container) {
             this.container.classList.add('hidden');
+            this.container.style.display = '';
             this.isActive = false;
         }
     }

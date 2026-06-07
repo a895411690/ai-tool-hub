@@ -14,10 +14,10 @@ function renderCategories() {
     container.setAttribute('aria-label', '工具分类');
 
     const buttons = state.categories.map(cat =>
-        `<button class="category-btn px-5 py-2 rounded-full border text-sm font-medium transition-all" data-category="${escapeAttr(cat.id)}" data-action="filter-category" aria-label="查看${escapeHtml(cat.name)}分类的工具" tabindex="0">${escapeHtml(cat.name)}</button>`
+        `<button class="category-btn px-5 py-2 rounded-full border text-sm font-medium transition-all" data-category="${escapeAttr(cat.id)}" data-action="filter-category" aria-label="查看${escapeHtml(cat.name)}分类的工具" tabindex="0"><i class="fas ${escapeAttr(cat.icon || "fa-folder")}"></i> ${escapeHtml(cat.name)}</button>`
     ).join('');
 
-    container.innerHTML = '<button class="category-btn active px-5 py-2 rounded-full border text-sm font-medium transition-all" data-category="all" data-action="filter-category" aria-label="查看全部工具" tabindex="0">全部</button>' + buttons;
+    container.innerHTML = '<button class="category-btn active px-5 py-2 rounded-full border text-sm font-medium transition-all" data-category="all" data-action="filter-category" aria-label="查看全部工具" tabindex="0"><i class="fas fa-th-large"></i> 全部</button>' + buttons;
 }
 
 /**
@@ -49,7 +49,7 @@ function renderHotTools() {
 
         return `
             <div class="hot-tool-card" data-tool-id="${tool.id}">
-                <div class="hot-tool-icon" style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(168,85,247,0.1)); color: var(--neon-blue);">
+                <div class="hot-tool-icon" style="background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12)); color: var(--neon-blue);">
                     <i class="fas ${escapeAttr(tool.icon)}"></i>
                 </div>
                 <div class="hot-tool-info">
@@ -91,7 +91,7 @@ function renderStatisticsDashboard() {
     const categoryBarsContainer = document.getElementById('categoryBars');
     if (categoryBarsContainer && state.categories.length > 0) {
         const categoryColors = [
-            'var(--neon-blue)', 'var(--neon-purple)', 'var(--neon-green)', '#faad14',
+            'var(--brand-primary)', 'var(--brand-secondary)', 'var(--brand-success)', '#faad14',
             '#ff4d4f', '#13c2c2', '#722ed1', '#eb2f96',
             '#fa8c16', '#2f54eb'
         ];
@@ -133,7 +133,7 @@ function renderStatisticsDashboard() {
             const listHtml = sortedTools.map((tool, index) => {
                 const clicks = state.clickStats[tool.id] || 0;
                 const rankClass = index === 0 ? 'top-rank-1' : index === 1 ? 'top-rank-2' : index === 2 ? 'top-rank-3' : 'top-rank-default';
-                const rankColor = index === 0 ? 'var(--neon-blue)' : index === 1 ? 'var(--neon-purple)' : index === 2 ? 'var(--neon-green)' : '';
+                const rankColor = index === 0 ? 'var(--brand-primary)' : index === 1 ? 'var(--brand-secondary)' : index === 2 ? 'var(--brand-success)' : '';
 
                 return `
                     <div class="top-tool-item" data-tool-id="${tool.id}">
@@ -194,7 +194,7 @@ function createToolCard(tool) {
     return `
         <div class="tool-card" data-tool-id="${tool.id}" tabindex="0" role="button" aria-label="${escapeAttr(tool.name)}">
             <div class="card-header">
-                <div class="card-icon" style="background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(168,85,247,0.1));">
+                <div class="card-icon" style="background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.12));">
                     <i class="fas ${escapeAttr(tool.icon)}"></i>
                 </div>
                 <div class="card-badges">
